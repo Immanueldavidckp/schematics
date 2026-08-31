@@ -1,0 +1,71 @@
+{
+  "board": {
+    "design_settings": {
+      "defaults": {},
+      "rules": {
+        "min_clearance": 0.15,
+        "min_copper_edge_clearance": 0.3,
+        "min_hole_to_hole": 0.25,
+        "min_microvia_diameter": 0.2,
+        "min_microvia_drill": 0.1,
+        "min_text_height": 0.8,
+        "min_text_thickness": 0.08,
+        "min_through_hole_diameter": 0.3,
+        "min_track_width": 0.15,
+        "min_via_annular_width": 0.075,
+        "min_via_diameter": 0.45
+      }
+    }
+  },
+  "boards": [],
+  "cvpcb": {
+    "equivalence_files": []
+  },
+  "libraries": {
+    "pinned_footprint_libs": ["jlc"],
+    "pinned_symbol_libs": ["jlc"]
+  },
+  "meta": {
+    "filename": "telematics-tracker.kicad_pro",
+    "version": 3
+  },
+  "net_settings": {
+    "classes": [
+      {
+        "clearance": 0.15,
+        "diff_pair_gap": 0.25,
+        "diff_pair_via_gap": 0.25,
+        "diff_pair_width": 0.2,
+        "line_style": 0,
+        "microvia_diameter": 0.3,
+        "microvia_drill": 0.1,
+        "name": "Default",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "schematic_color": "rgba(0, 0, 0, 0.000)",
+        "track_width": 0.2,
+        "via_diameter": 0.6,
+        "via_drill": 0.3,
+        "wire_width": 6.0
+      }
+    ],
+    "meta": {
+      "version": 4
+    }
+  },
+  "pcbnew": {
+    "page_layout_descr_file": ""
+  },
+  "schematic": {
+    "drawing": {
+      "default_line_thickness": 6.0,
+      "default_text_size": 50.0,
+      "pin_symbol_size": 25.0
+    },
+    "legacy_lib_dir": "",
+    "legacy_lib_list": []
+  },
+  "sheets": [
+    ["784bc421-9fc7-43cb-bfc3-562714cb3f68", "Root"]
+  ],
+  "text_variables": {}
+}
