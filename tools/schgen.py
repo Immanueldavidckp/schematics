@@ -32,6 +32,12 @@ NS = _uuid.UUID("11111111-2222-3333-4444-555555555555")
 # shows up as bogus "pin not connected" errors. One process-wide counter.
 _PWR_SEQ = [0]
 
+# Every reference must be unique across the whole project, and every pin may
+# be connected only once -- connecting a pin twice quietly parallels the two
+# nets and can short a series component out of circuit.
+_USED_REFS = {}
+_CONNECTED_PINS = set()
+
 SCH_VERSION = "20250610"
 
 
@@ -264,6 +270,9 @@ class Sheet:
         # same point. Such a collision silently merges the nets, which is the
         # one dangerous failure mode of label-based connection.
         self._net_pts = {}
+        # stub segments as (net, x1, y1, x2, y2); collinear overlap between two
+        # different nets is a short, and it is invisible to a point-only check
+        self._segs = []
 
     # -- placement ---------------------------------------------------------
     def place(self, lib_id, ref, value, at, footprint="", lcsc="", dnp=False,
@@ -274,6 +283,12 @@ class Sheet:
             if abs(round(v / 1.27) * 1.27 - v) > 1e-6:
                 raise ValueError(
                     f"{ref}: {axis}={v} is off the 1.27 mm grid")
+        if ref in _USED_REFS and _USED_REFS[ref] != (self.name, at):
+            raise ValueError(
+                f"duplicate reference '{ref}': already used on sheet "
+                f"'{_USED_REFS[ref][0]}'. References must be unique "
+                f"project-wide.")
+        _USED_REFS[ref] = (self.name, at)
         if lib_id not in self.used:
             self.used.append(lib_id)
         p = Part(self, lib_id, ref, value, at, footprint, lcsc, dnp, fields, rot)
@@ -281,29 +296,62 @@ class Sheet:
         return p
 
     # -- connections -------------------------------------------------------
-    def _stub(self, part, pin, length=3.81):
+    def _register_seg(self, net, a, b):
+        """Flag a stub that overlaps another net's stub along the same line."""
+        ax, ay, bx, by = a[0], a[1], b[0], b[1]
+        horiz = abs(ay - by) < 1e-6
+        for (onet, ox1, oy1, ox2, oy2) in self._segs:
+            if onet == net:
+                continue
+            ohoriz = abs(oy1 - oy2) < 1e-6
+            if horiz != ohoriz:
+                continue
+            if horiz and abs(ay - oy1) > 1e-6:
+                continue
+            if not horiz and abs(ax - ox1) > 1e-6:
+                continue
+            lo, hi = sorted((ax, bx)) if horiz else sorted((ay, by))
+            olo, ohi = sorted((ox1, ox2)) if horiz else sorted((oy1, oy2))
+            if min(hi, ohi) - max(lo, olo) > 1e-6:      # true overlap
+                raise ValueError(
+                    f"{self.name}: stub for net '{net}' overlaps the stub for "
+                    f"net '{onet}' along the same line "
+                    f"({a} -> {b} vs ({ox1},{oy1}) -> ({ox2},{oy2})). "
+                    f"They would short. Move the parts further apart.")
+        self._segs.append((net, ax, ay, bx, by))
+
+    def _stub(self, part, pin, length=3.81, net=None):
+        key = (part.ref, pin)
+        if key in _CONNECTED_PINS:
+            raise ValueError(
+                f"{part.ref} pin {pin} is being connected twice. The two "
+                f"stubs overlap, so both nets merge -- this silently shorts "
+                f"out anything in series with the pin.")
+        _CONNECTED_PINS.add(key)
         x, y = part.pin_xy(pin)
         vx, vy = part.pin_out(pin)
         ex, ey = x + vx * length, y + vy * length
         if length > 0:
             self.wire((x, y), (ex, ey))
+            if net is not None:
+                self._register_seg(net, (x, y), (ex, ey))
         return (ex, ey), (vx, vy)
 
     def net(self, part, pin, name, length=3.81):
         """Stub + local label on a pin."""
-        (ex, ey), v = self._stub(part, pin, length)
+        (ex, ey), v = self._stub(part, pin, length, name)
         self.label(name, (ex, ey), _LBL_ROT[v])
         return (ex, ey)
 
     def hier(self, part, pin, name, shape="passive", length=5.08):
         """Stub + hierarchical label on a pin (becomes a sheet pin on parent)."""
-        (ex, ey), v = self._stub(part, pin, length)
+        (ex, ey), v = self._stub(part, pin, length, name)
         self.hier_label(name, (ex, ey), _LBL_ROT[v], shape)
         return (ex, ey)
 
     def gnd(self, part, pin, length=2.54, sym="power:GND"):
         """Stub + GND power symbol on a pin."""
-        (ex, ey), v = self._stub(part, pin, length)
+        (ex, ey), v = self._stub(part, pin, length, "GND")
         self.power_at(sym, (ex, ey))
         return (ex, ey)
 

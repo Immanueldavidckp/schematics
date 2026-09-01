@@ -281,7 +281,202 @@ def build_storage():
     return sh
 
 
-BUILDERS = {"mcu": build_mcu, "storage": build_storage}
+# ----------------------------------------------------------------------- IO
+
+# Parts still awaiting the in-stock selection sweep (design-log flag F-8).
+TBD = "TBD-F8"
+
+
+def build_io():
+    sh = Sheet("io", paper="A3")
+    sh.text("MACHINE I/O - CAN, isolated digital inputs, low-side outputs, "
+            "supply sensing.  HV zone: J1 / dividers / DI series R / DO drains.",
+            (g(20), g(16)), 2.0)
+    sh.text("Valid DI input range 9-100 V.  DO loads: relay coils / buzzers "
+            "<= 0.5 A at 12/24 V.", (g(20), g(20)))
+
+    # ---------------- J1 machine harness, 12-pin Micro-Fit 3.0 class --------
+    j1 = sh.place("Connector_Generic:Conn_01x12", "J1", "Micro-Fit-12",
+                  (g(46), g(80)), "TBD:MicroFit3_12pin", TBD)
+    J1MAP = {
+        "1": ("VIN", "hier", "input"), "2": ("GND", "gnd", None),
+        "3": ("IGN", "net", None), "4": ("CANH", "net", None),
+        "5": ("CANL", "net", None), "6": ("GND", "gnd", None),
+        "7": ("DI1_IN", "net", None), "8": ("DI2_IN", "net", None),
+        "9": ("DO1_OUT", "net", None), "10": ("DO2_OUT", "net", None),
+        "11": ("J1_SPARE1", "net", None), "12": ("J1_SPARE2", "net", None),
+    }
+    for pin, (net, kind, shape) in J1MAP.items():
+        if kind == "gnd":
+            sh.gnd(j1, pin, length=g(3))
+        elif kind == "hier":
+            sh.hier(j1, pin, net, shape, length=g(6))
+        else:
+            sh.net(j1, pin, net, length=g(6))
+    sh.text("J1 pinout: 1 VIN, 2 GND, 3 IGN, 4 CANH, 5 CANL, 6 GND, 7 DI1, "
+            "8 DI2, 9 DO1, 10 DO2, 11/12 spare.", (g(20), g(104)))
+    for i, net in (("8", "J1_SPARE1"), ("9", "J1_SPARE2")):
+        tp = sh.place("Connector:TestPoint", f"TP{i}", net,
+                      (g(20 + (0 if net.endswith('1') else 8)), g(96)), TP)
+        sh.net(tp, "1", net, length=g(3))
+
+    # ---------------- CAN: choke + TVS at connector, transceiver, split term
+    ch = sh.place("Device:L_Ferrite_Coupled", "L2", "51uH CM choke",
+                  (g(84), g(52)), "TBD:CM_choke_4pin", TBD)
+    sh.net(ch, "1", "CANH", length=g(4))
+    sh.net(ch, "2", "CANH_T", length=g(4))
+    sh.net(ch, "3", "CANL", length=g(4))
+    sh.net(ch, "4", "CANL_T", length=g(4))
+    sh.series("Device:D_TVS", "D3", "CAN TVS", (g(66), g(36)), "CANH", None,
+              "TBD:CAN_TVS", TBD, gnd_b=True)
+    sh.series("Device:D_TVS", "D4", "CAN TVS", (g(82), g(36)), "CANL", None,
+              "TBD:CAN_TVS", TBD, gnd_b=True)
+    sh.text("D3/D4 model the CAN-line TVS (PESD1CAN class) at the connector; "
+            "if a single 3-pin dual-line part is chosen, merge at layout.",
+            (g(56), g(28)))
+
+    u4 = sh.place("jlc:SIT1051AT_3", "U4", "SIT1051AT/3",
+                  (g(140), g(48)), "jlc:SOP-8_L4.9-W3.9-P1.27-LS6.0-BL",
+                  "C5382551")
+    sh.hier(u4, "1", "CAN1_TX", "input", length=g(6))
+    sh.hier(u4, "4", "CAN1_RX", "output", length=g(6))
+    sh.hier(u4, "3", "5V0", "input", length=g(6))
+    sh.hier(u4, "5", "3V3", "input", length=g(6))
+    sh.hier(u4, "8", "CAN_STB", "input", length=g(6))
+    sh.gnd(u4, "2", length=g(3))
+    sh.net(u4, "7", "CANH_T", length=g(6))
+    sh.net(u4, "6", "CANL_T", length=g(6))
+    sh.series("Device:C", "C23", "100nF", (g(118), g(28)), "5V0", None,
+              C0603, LCSC_C100N, gnd_b=True)
+    sh.series("Device:C", "C24", "100nF", (g(128), g(28)), "3V3", None,
+              C0603, LCSC_C100N, gnd_b=True)
+
+    # split termination, jumper-selectable, DEFAULT OPEN (machine bus is
+    # already terminated at both physical ends)
+    sh.series("Device:R", "R11", "60R", (g(108), g(64)), "CANH_T", "CAN_MID",
+              R0805, TBD)
+    sh.series("Device:R", "R12", "60R", (g(118), g(64)), "CANL_T", "CAN_MID",
+              R0805, TBD)
+    jp2 = sh.place("Jumper:SolderJumper_2_Open", "JP2", "CAN_TERM",
+                   (g(130), g(72)), SJ_OPEN)
+    sh.net(jp2, "1", "CAN_MID", length=g(4))
+    sh.net(jp2, "2", "CAN_SPLIT", length=g(4))
+    sh.series("Device:C", "C22", "4.7nF", (g(140), g(78)), "CAN_SPLIT", None,
+              C0603, TBD, gnd_b=True)
+    sh.text("Split termination 2x60R + 4.7nF behind JP2, DEFAULT OPEN.",
+            (g(104), g(58)))
+
+    # ---------------- isolated digital inputs DI1/DI2 -----------------------
+    for n, ybase in ((1, 130), (2, 168)):
+        sh.series("Device:R", f"R{12 + n * 2}", "12k",
+                  (g(70), g(ybase)), f"DI{n}_IN", f"DI{n}_M", R1206, TBD)
+        sh.series("Device:R", f"R{13 + n * 2}", "12k",
+                  (g(84), g(ybase)), f"DI{n}_M", f"DI{n}_LED", R1206, TBD)
+        ok = sh.place("jlc:EL357N", f"OK{n}", "EL357N(D)",
+                      (g(112), g(ybase + 8)),
+                      "jlc:OPTO-SMD-4_L4.4-W4.1-P2.54-LS7.0-BL", "C359074")
+        sh.net(ok, "1", f"DI{n}_LED", length=g(5))
+        sh.gnd(ok, "2", length=g(3))
+        sh.gnd(ok, "3", length=g(3))
+        sh.hier(ok, "4", f"DI{n}", "output", length=g(6))
+        # BAV99 as the antiparallel (reverse) diode across the opto LED.
+        # Series pair: D2 conducts GND->LED anode on reverse input; pin 1 is
+        # tied to pin 3 so the unused half carries no current.
+        bav = sh.place("Diode:BAV99", f"D{4 + n}", "BAV99",
+                       (g(96), g(ybase + 20)), SOT23, TBD)
+        sh.net(bav, "3", f"DI{n}_LED", length=g(4))
+        sh.net(bav, "1", f"DI{n}_LED", length=g(4))
+        sh.gnd(bav, "2", length=g(3))
+        sh.series("Device:R", f"R{20 + n}", "47k", (g(134), g(ybase)),
+                  "3V3", f"DI{n}", R0805, TBD)
+        sh.series("Device:C", f"C{24 + n}", "100nF", (g(146), g(ybase + 6)),
+                  f"DI{n}", None, C0603, LCSC_C100N, gnd_b=True)
+    sh.text("DI1/DI2: 24k series (2x12k 1206) -> EL357N(D) opto, 47k pull-up "
+            "+ 100nF at the MCU side.  See design-log for the CTR/current-window "
+            "check and the 1206 power-derating flag.", (g(64), g(124)))
+
+    # ---------------- low-side digital outputs DO1/DO2 ----------------------
+    for n, ybase in ((1, 210), (2, 246)):
+        # gate series resistor sits between the MCU signal and the gate
+        rg = sh.place("Device:R", f"R{22 + n}", "100R", (g(70), g(ybase)),
+                      R0805, TBD)
+        sh.hier(rg, "1", f"DO{n}_GATE", "input", length=g(6))
+        sh.net(rg, "2", f"Q{n}_G", length=g(4))
+        sh.series("Device:R", f"R{24 + n}", "10k", (g(82), g(ybase + 6)),
+                  f"Q{n}_G", None, R0805, LCSC_R10K, gnd_b=True)
+        q = sh.place("Transistor_FET:Q_NMOS_GSD", f"Q{n}", "NMOS 150V TBD",
+                     (g(104), g(ybase)), SOT23, TBD)
+        sh.net(q, "1", f"Q{n}_G", length=g(4))
+        sh.gnd(q, "2", length=g(3))
+        sh.net(q, "3", f"DO{n}_OUT", length=g(4))
+        # flyback: anode on the drain, cathode to VIN
+        d = sh.place("Device:D_Schottky", f"D{6 + n}", "SS310",
+                     (g(128), g(ybase - 8)), "Diode_SMD:D_SMA", TBD)
+        sh.net(d, "2", f"DO{n}_OUT", length=g(4))
+        sh.net(d, "1", "VIN", length=g(4))
+    sh.text("DO1/DO2 low-side: 100R gate series, 10k pulldown, SS310 flyback "
+            "from each drain to VIN.", (g(64), g(204)))
+
+    # ---------------- supply / ignition / battery sensing -------------------
+    for tag, src, ysense in (("VIN", "VIN", 40), ("IGN", "IGN", 74)):
+        prev = src
+        for k in range(3):
+            nxt = f"{tag}_D{k}" if k < 2 else f"{tag}_SENSE"
+            sh.series("Device:R", f"R{30 + (0 if tag == 'VIN' else 3) + k}",
+                      "100k", (g(230 + k * 12), g(ysense)), prev, nxt,
+                      R0805, TBD)
+            prev = nxt
+        sh.series("Device:R", f"R{36 + (0 if tag == 'VIN' else 1)}", "9.1k",
+                  (g(268), g(ysense)), f"{tag}_SENSE", None, R0805, TBD,
+                  gnd_b=True)
+        sh.series("Device:C", f"C{27 + (0 if tag == 'VIN' else 1)}", "100nF",
+                  (g(278), g(ysense)), f"{tag}_SENSE", None, C0603,
+                  LCSC_C100N, gnd_b=True)
+        # BAV99 rail clamp: signal on pin 3, pin 1 to 3V3, pin 2 to GND
+        bav = sh.place("Diode:BAV99", f"D{10 if tag == 'VIN' else 11}", "BAV99",
+                       (g(292), g(ysense + 10)), SOT23, TBD)
+        sh.net(bav, "3", f"{tag}_SENSE", length=g(4))
+        sh.net(bav, "1", "3V3", length=g(4))
+        sh.gnd(bav, "2", length=g(3))
+        shape = "output"
+        sh.hier(sh.place("Connector:TestPoint", f"TP{10 if tag == 'VIN' else 11}",
+                         f"{tag}_SENSE", (g(304), g(ysense)), TP),
+                "1", f"{tag}_SENSE", shape, length=g(4))
+    sh.text("VIN and IGN sensing: 300k (3x100k 0805) : 9.1k, 100nF, BAV99 "
+            "clamp to 3V3/GND.  IGN also serves as the EXTI wake input.",
+            (g(224), g(30)))
+
+    # battery sense from the SYS power-path node
+    sh.series("Device:R", "R38", "1M", (g(230), g(108)), "SYS", "VBAT_SENSE",
+              R0805, TBD)
+    sh.series("Device:R", "R39", "1M", (g(242), g(108)), "VBAT_SENSE", None,
+              R0805, TBD, gnd_b=True)
+    sh.series("Device:C", "C29", "100nF", (g(254), g(108)), "VBAT_SENSE", None,
+              C0603, LCSC_C100N, gnd_b=True)
+    bs = sh.place("Connector:TestPoint", "TP12", "VBAT_SENSE",
+                  (g(266), g(108)), TP)
+    sh.hier(bs, "1", "VBAT_SENSE", "output", length=g(4))
+    sh.hier(sh.place("Connector:TestPoint", "TP13", "SYS", (g(218), g(116)), TP),
+            "1", "SYS", "input", length=g(4))
+    sh.text("Battery sense 1M:1M from SYS (~2 uA standing drain).",
+            (g(224), g(102)))
+
+    # spare ADC divider footprint, fitted DNP
+    sh.series("Device:R", "R40", "100k", (g(230), g(140)), "VIN", "ADC_SPARE",
+              R0805, TBD, dnp=True)
+    sh.series("Device:R", "R41", "9.1k", (g(242), g(140)), "ADC_SPARE", None,
+              R0805, TBD, dnp=True, gnd_b=True)
+    sp = sh.place("Device:C", "C30", "100nF", (g(254), g(140)), C0603,
+                  LCSC_C100N, dnp=True)
+    sh.hier(sp, "1", "ADC_SPARE", "output", length=g(5))
+    sh.gnd(sp, "2", length=g(3))
+    sh.text("Spare ADC divider footprint - fitted DNP (handoff section 5, PB1).",
+            (g(224), g(134)))
+
+    return sh
+
+
+BUILDERS = {"mcu": build_mcu, "storage": build_storage, "io": build_io}
 
 RAILS = ["VIN", "SYS", "5V0", "3V3", "VBAT_MODEM", "VDD_EXT_1V8"]
 NOTES = [
