@@ -187,4 +187,218 @@ Only 105 °C 64 Mbit part found anywhere: **W25Q64JWBYIQ (C2691929)** — WLCSP-
 - Milestone 2 remains **on hold** pending handoff §9 answers (max sustained VIN, housing model, DO load spec). F-1 and F-2 are both closed; **no open blockers on the library side** — all U1–U7 footprints verified and released for schematic capture.
 
 ---
-*Next entry: milestone 2 kickoff after §9 answers.*
+
+## 2026-09-01 — §9 answered: VIN = 9–100 V sustained (80 V packs, ~96–100 V while charging)
+
+User confirmed fleet max is 80 V packs, so sustained input reaches ~96–100 V while
+charging, with load-dump transients above that. Design range **9–100 V DC**. The
+≥150 V-class buck rule stands. This closes the §9 max-voltage open item and
+**invalidates the LM5164 (U5, C477928)** from the original BOM: 100 V abs max on a
+100 V sustained rail is zero derating, against handoff rule 1.
+
+## 2026-09-01 — MILESTONE 2 TASK A: buck selection + worst-case margin analysis
+
+### A1. Named candidates — **both FAIL**
+
+| Candidate | Verdict | Evidence |
+|---|---|---|
+| **SL3036H** | **FAILS — not buyable, no datasheet** | 0 stock at LCSC *and* JLCPCB for every SL3036* code (C2843664, C9900190738, C9900293210); LCSC product page returns "part not found". No official datasheet PDF exists anywhere — only vendor/blog marketing claims ("150 V transient"), never an abs-max table. Unsourceable and unverifiable: must not be designed in. |
+| **LTC7138** | **FAILS twice** | Abs max VIN is **140 V, not ≥150 V** (ADI doc 7138f p.2: "VIN Supply Voltage −0.3 V to 140 V"), and max output is **0.4 A, not ≥0.7 A** ("Adjustable 100 mA to 400 mA Maximum Output Current"). Also $13.79@1 / $10.18@111+, ~50× the viable parts. |
+
+### A2. LCSC sweep — method and completeness
+
+The catalogue was enumerated through LCSC's own backend rather than the JS pages:
+the parametric facet list for category 1029 (DC-DC switching regulators, 31,024
+parts) yields 1,108 distinct "Operating Voltage" values, of which exactly **29**
+have an upper limit ≥115 V; every part carrying those 29 values (57 rows) was
+enumerated and cross-checked with MPN-prefix sweeps. **Nothing above 115 V in
+LCSC's regulator catalogue is unexamined.**
+
+**Critical sourcing lesson: LCSC's parametric "Operating Voltage" field is not
+trustworthy.** It lists Hi9261 as 6–140 V when its datasheet says 100 V max
+withstand, and U3213 as 150 V when the datasheet says 160 V. Every abs-max figure
+below was taken from the datasheet's own absolute-maximum-ratings table.
+
+Also debunked: the widely repeated "XL7005A = 150 V" claim is a **misreading of
+150 kHz** — its datasheet abs max is VIN −0.3 to 85 V, 0.4 A. Fails both rules.
+
+Families checked and eliminated: MP4572 (3 in stock, 100 V-class), MPQ4572 /
+MP4576 / MPQ4569 (not carried), XL7005A (85 V), XL7015 (80 V), XL7016 (not
+carried), SCT2xxx (36–60 V), LTC3639 (150 V ✓ but 100 mA), LT8631 (100 V),
+AP1509 (42 V), SD42xxx, LM5164 (100 V), LM5017 (100 V), LM5163 (100 V),
+LM5168 (120 V, 300 mA), HT1203A (120 V), Hi9261 (100 V), EG11727/EG11721
+(min VIN 18–20 V), U3018/U3015 (600 mA), ICW6215 (650 mA), plus all
+external-FET controllers (violate the integrated-FET requirement).
+
+### A3. Worst-case margin analysis — 10 Ω series + SMBJ100A clamp event
+
+**Topology analysed:** `J1.VIN → F1 → D1(S3M) → node A → [SMBJ100A to GND] → 10 Ω → node B (buck VIN + Cin) → buck`
+
+**SMBJ100A parameters** (600 W, 10/1000 µs): V_RWM 100 V; V_BR 111 V min /
+**123 V max** @1 mA; V_C **162 V @ I_PP 3.7 A**.
+Dynamic resistance R_d = (162 − 123) / 3.7 = **10.5 Ω**.
+Clamp model (conservative, from V_BR max): `V_clamp(I) = 123 + 10.5·I`
+
+**Why the 10 Ω does not attenuate the governing case.** Buck input current is
+small: 5 V × 1 A at ~85 % efficiency ≈ 5.9 W, so I_in ≈ 59 mA at 100 V, giving
+only 10 Ω × 59 mA = **0.6 V** of DC drop. The 10 Ω does form a low-pass with
+C_in (2 × 2.2 µF per §4): τ = 10 Ω × 4.4 µF = **44 µs**. That attenuates fast
+ISO 7637-2 pulses 3a/3b (100 ns) strongly and pulse 2a (50 µs) partially, but the
+SMBJ's own 10/1000 µs surge and a real load dump both last ≫ 44 µs, so C_in
+charges fully and **node B sees essentially the full clamp voltage**. The series
+resistor therefore buys transient-edge protection, not clamp-level protection —
+the buck's abs max must cover V_clamp directly.
+
+So: `V_B = V_clamp(I) − 0.6 V`, and the rule V_B ≤ 0.85 × V_absmax gives a
+**maximum permissible TVS surge current** per abs-max class:
+
+| Buck abs max | Max V_B for 15 % margin | Permitted TVS current | Covers SMBJ100A full 3.7 A rating? |
+|---|---|---|---|
+| 150 V | 127.5 V | 0.43 A | **No** — only 12 % of rating |
+| 160 V | 136.0 V | 1.24 A | **No** — only 34 % of rating |
+| **200 V** | **170.0 V** | **4.48 A** | **Yes** — exceeds the 3.7 A rating outright |
+
+**Only a 200 V-class part holds ≥15 % margin across the SMBJ100A's entire rated
+surge range.** Margins at two bracket currents (V_B = 161.4 V at full 3.7 A;
+V_B = 132.9 V at a moderate 1 A transient):
+
+| Part | C# | Abs max (conservative) | Margin @3.7 A | Margin @1 A | Verdict |
+|---|---|---|---|---|---|
+| **EG11752** | C53368402 | **200 V** (§7.1, unambiguous) | **+19.3 %** ✓ | +33.6 % ✓ | **PASSES the rule** |
+| Hi9263 | C51889967 | 150 V (§4 table; §6 says 160 V — **conflicting**) | −7.6 % ✗ | +11.4 % ✗ | fails |
+| TX4135A | C20625825 | 150 V (BVSW min; SW–GND 160 V — conflicting) | −7.6 % ✗ | +11.4 % ✗ | fails |
+| EG11722 | C53368437 | 150 V (§7.1) | −7.6 % ✗ | +11.4 % ✗ | fails |
+| Hi9103B | C52952898 | 150 V (§4) | −7.6 % ✗ | +11.4 % ✗ | fails (also peak-only current spec) |
+
+Where a datasheet gives two conflicting numbers (Hi9263, TX4135A) the
+**lower** figure is used — a part whose own document contradicts itself cannot be
+credited with the higher rating on a 5-year deployment.
+
+**Second finding — the SMBJ100A itself is the wrong TVS for this bus.** Its
+standoff is exactly 100 V against a 100 V sustained rail: zero margin, sitting on
+the knee where leakage rises steeply, and worse at 85 °C — a self-heating and
+long-term-drift risk. Normal practice is standoff ≥1.15–1.25 × sustained. But
+raising standoff raises clamp (SMBJ120A V_C = 193 V, SMBJ130A 209 V), which
+would break even a 200 V part. The correct fix is to **keep the 100 V standoff and
+upsize the package for lower dynamic resistance**:
+
+| TVS | Rating | R_d | V_clamp @3.7 A | V_B | Margin on 200 V part |
+|---|---|---|---|---|---|
+| SMBJ100A (as specified) | 600 W | 10.5 Ω | 162.0 V | 161.4 V | +19.3 % ✓ |
+| SMCJ100A | 1500 W | 4.2 Ω | 138.5 V | 137.9 V | +31.1 % ✓ |
+| **SMDJ100A** | 3000 W | 2.1 Ω | 130.8 V | 130.2 V | **+34.9 %** ✓ |
+
+### A4. Recommendation
+
+**U5 = EG11752, LCSC C53368402** — the only part in LCSC's entire catalogue that
+satisfies all three constraints simultaneously (≥150 V abs max, ≥0.7 A, and ≥15 %
+margin under a full-rated SMBJ100A clamp). 200 V abs max, 1.5 A continuous
+(2 A short-term), ESOP-8, 3,355 in stock, $0.293@1 / **$0.1722@500**, ~11 external
+parts, 110 kHz with spread-spectrum dithering.
+
+**Paired change: upgrade D2 from SMBJ100A to SMDJ100A** (3000 W, same 100 V
+standoff, ~5× lower dynamic resistance). Raises margin from 19.3 % to 34.9 % and
+costs a package step. Not a BOM substitution I have made — flagged for approval
+with the buck.
+
+**Risks that must be accepted or retired before layout freeze:**
+1. **Min VIN is 10 V; spec floor is 9 V.** VCC(ON) 8.5 V / VCC(OFF) 7.8 V suggest
+   it will run at 9 V, but that is outside the guaranteed range. Either bench-verify
+   at 9 V or confirm the 9 V floor is soft. (Hi9263 is the only viable part with a
+   datasheet-guaranteed 6 V floor — but it fails the margin rule.)
+2. **Minimum on-time is unspecified.** At 100 V→5 V the duty is 5 %, i.e. Ton ≈
+   450 ns at 110 kHz. No Chinese datasheet in this set specifies a min on-time.
+   This is the single most likely bench surprise; test at 100 V in / 0.7–1 A out.
+3. **Datasheet is V1.0, dated Nov 2024** — very new silicon, no field history,
+   Chinese-only documentation, single-source vendor. Against a 5-year field-life
+   requirement this is the biggest non-electrical risk in the whole BOM.
+4. **Extended, not Basic, at JLCPCB** — true of all five viable parts; budget the
+   extended-part fee.
+5. **Second source:** EG11722 (C53368437) is pin-for-pin identical at 150 V —
+   the only drop-in redundancy available anywhere in this search, though it does
+   not meet the margin rule and would be a derated emergency substitution only.
+
+**STOP POINT — awaiting user approval of U5 before power.kicad_sch is drawn.**
+
+## 2026-09-01 — MILESTONE 2 TASK B, sheet 1 of 4: mcu.kicad_sch **ERC-clean**
+
+Commit `c0e2dec`. 38 components, 49 nets, ERC **0 errors**.
+
+**Pin map verified 48/48** against the exported netlist by the new
+`tools/checkpins.py`, which asserts every handoff §5 row against the real netlist
+rather than by eye. Output is reproduced in the milestone-2 report.
+
+### Tooling (commit `818c562`)
+
+Sheets are generated by `tools/schgen.py` + `tools/sheets.py` rather than
+hand-written, so they are reproducible and diffable. Symbol definitions are copied
+from the KiCad 10 stock libraries and `lib/jlc.kicad_sym`; connections are made by
+labels on short pin stubs. Five KiCad file-format traps were found the hard way
+(each reported only as "Failed to load schematic") and are now guarded with loud
+assertions: bare-named child unit symbols, schematic-illegal `show_name` /
+`do_not_autoplace` / `in_pos_files` tokens, the 1.27 mm grid, `in_bom`/`on_board`
+on power symbols, and project-wide-unique power references.
+
+The net-collision detector added during this work immediately earned itself: it
+caught R3's and FB1's stubs both landing on (88.9, 88.9), which had **silently
+merged VBAT_MCU into 3V3 and shorted MCU pin 1 to pin 48**. That is exactly the
+class of fault that survives visual review, and it would have reached the PCB.
+
+### Deviations and additions on this sheet (all flagged)
+
+1. **U3 (QMI8658B IMU) placed on the mcu sheet.** The skill's sheet list and TASK B
+   assign it no sheet, but §5 rows for PB5/PB6/PB7 say "goes to U3 INT1/SCL/SDA",
+   so honouring §5 exactly requires U3 to exist. Placed here as the MCU-attached
+   peripheral it is. Flag **F-6** if you want it moved to a sensors sheet.
+2. **VSSA (pin 8) tied directly to GND, not to a separate AGND island.** §5 says
+   "AGND", but the skill's PCB rules mandate a solid L2 ground plane; a split
+   analog island would violate that and degrade the RF return. VDDA still gets its
+   own ferrite + 1 µF + 100 nF filter, which is what actually buys ADC quiet.
+3. **PB2/BOOT1 10 k pulldown added** (not in §5). Required for a deterministic boot
+   mode on this MCU family; leaving BOOT1 floating risks random bootloader entry
+   in the field.
+4. **IMU wiring taken from the QST QMI8658B datasheet Rev D §1.4**, which
+   contradicts the naive reading: **RESV (pin 10) must NOT be tied to GND** — it is
+   tied to 3V3 (datasheet: "should NOT be connected to GND or Logic Low… connecting
+   it to VDDIO is preferred"). **RESV-NC (pin 11) must float** — left as a
+   no-connect. CS tied high selects I2C; SDO/SA0 tied high sets address 0x6A.
+   Tying pin 10 low, the obvious guess, would have been a silent field failure.
+5. **PC13 heartbeat LED wired as a current sink** (3V3 → 1 k → LED → PC13), because
+   PC13 on this family has weak source drive.
+
+### ERC exceptions on this sheet — individually justified
+
+- **51 × `isolated_pin_label`** — every one is a root-level sheet-pin label whose
+  net currently has only the mcu sheet as a member. 24 of them (FLASH_CS, SPI1_*,
+  DI*, DO*_GATE, CAN1_*, CAN_STB, MODEM_*, *_SENSE, ADC_SPARE) pair up as
+  storage/io/modem_rf are added; the 6 rail labels (VIN, SYS, 5V0, 3V3,
+  VBAT_MODEM, VDD_EXT_1V8) resolve when power.kicad_sch lands. **Zero remain
+  unexplained.**
+- **0 errors.** No error-severity exception is being carried.
+- Importer symbols declare every pin "unspecified", which made ERC flag all 36
+  IC-to-passive connections as pin conflicts. Rather than suppress the check
+  project-wide (which would hide real conflicts), the embed step remaps
+  `unspecified` → `passive`, the honest neutral type for a pin whose direction the
+  importer never recorded. `pin_to_pin` warnings went 36 → 0 with the check still
+  live.
+
+### New flag — **F-5: passive C-numbers are PROVISIONAL and unverified**
+
+The generic passives on this sheet carry C-numbers I selected as well-known JLCPCB
+Basic parts (10 k C17414, 100 nF C14663, 1 µF C15849, 4.7 µF C23733, 18 pF C1653,
+6.8 pF C1555, 4.7 k C17673, 2.2 k C4356, 1 k C17513, 100 R C17408, 0 R C17477,
+LED C2286, MMBT3904 C20526, ferrite C1017, 8 MHz C115962, 32.768 kHz C32346).
+**These have NOT been verified against live LCSC stock or datasheets in this
+session** — unlike the U1–U7 semiconductors, which were. Per golden rule 2 they are
+recorded as chosen but must be stock- and package-checked before any order; the
+crystal load capacitance in particular (18 pF/6.8 pF) must be recomputed against
+the actual crystal's C_L once the crystal part is fixed. Treat every value in that
+list as provisional.
+
+### Status
+
+Sheets 2–4 (storage, io, modem_rf) still to draw. Power sheet and milestone 3
+remain blocked on the U5 approval above.
+
+---
+*Next entry: storage.kicad_sch.*
