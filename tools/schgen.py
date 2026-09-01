@@ -371,6 +371,28 @@ class Sheet:
             f'\t\t\t(justify {just})\n\t\t)\n'
             f'\t\t(uuid "{det_uuid(self.name, "hlbl", name, at, self._n)}")\n\t)')
 
+    def global_label(self, name, at, rot=0, shape="bidirectional"):
+        """Global label: merges by name across the entire design.
+
+        Root-level plumbing between sheet pins needs this rather than a plain
+        label -- two same-named plain labels attached to sheet pins on
+        different sheets are reported as dangling instead of merging.
+        """
+        self._claim(name, at)
+        self._n += 1
+        just = "left" if rot in (0, 90) else "right"
+        self.items.append(
+            f'\t(global_label {_sq(name)}\n\t\t(shape {shape})\n'
+            f'\t\t(at {_fmt(at[0])} {_fmt(at[1])} {rot})\n'
+            f'\t\t(fields_autoplaced yes)\n'
+            f'\t\t(effects\n\t\t\t(font\n\t\t\t\t(size 1.27 1.27)\n\t\t\t)\n'
+            f'\t\t\t(justify {just})\n\t\t)\n'
+            f'\t\t(uuid "{det_uuid(self.name, "glbl", name, at, self._n)}")\n'
+            f'\t\t(property "Intersheetrefs" "${{INTERSHEET_REFS}}"\n'
+            f'\t\t\t(at {_fmt(at[0])} {_fmt(at[1])} 0)\n\t\t\t(hide yes)\n'
+            f'\t\t\t(effects\n\t\t\t\t(font\n\t\t\t\t\t(size 1.27 1.27)\n\t\t\t\t)\n'
+            f'\t\t\t\t(justify {just})\n\t\t\t)\n\t\t)\n\t)')
+
     def power_at(self, lib_id, at, value=None, rot=0):
         """Place a power symbol so its single pin sits exactly on `at`."""
         if lib_id not in self.used:
@@ -544,10 +566,16 @@ def write_root(directory, sheets, rails=(), notes=()):
                 f'\t\t(stroke\n\t\t\t(width 0)\n\t\t\t(type default)\n\t\t)\n'
                 f'\t\t(uuid "{det_uuid("rootwire", sh.name, net)}")\n\t)')
             items.append(
-                f'\t(label {_sq(net)}\n\t\t(at {_fmt(bx)} {_fmt(ay)} 180)\n'
+                f'\t(global_label {_sq(net)}\n\t\t(shape {shape})\n'
+                f'\t\t(at {_fmt(bx)} {_fmt(ay)} 180)\n'
+                f'\t\t(fields_autoplaced yes)\n'
                 f'\t\t(effects\n\t\t\t(font\n\t\t\t\t(size 1.27 1.27)\n\t\t\t)\n'
-                f'\t\t\t(justify right bottom)\n\t\t)\n'
-                f'\t\t(uuid "{det_uuid("rootlbl", sh.name, net)}")\n\t)')
+                f'\t\t\t(justify right)\n\t\t)\n'
+                f'\t\t(uuid "{det_uuid("rootlbl", sh.name, net)}")\n'
+                f'\t\t(property "Intersheetrefs" "${{INTERSHEET_REFS}}"\n'
+                f'\t\t\t(at {_fmt(bx)} {_fmt(ay)} 0)\n\t\t\t(hide yes)\n'
+                f'\t\t\t(effects\n\t\t\t\t(font\n\t\t\t\t\t(size 1.27 1.27)\n\t\t\t\t)\n'
+                f'\t\t\t\t(justify right)\n\t\t\t)\n\t\t)\n\t)')
         s.append('\t\t(instances')
         s.append(f'\t\t\t(project "{PROJECT}"')
         s.append(f'\t\t\t\t(path "/{ROOT_UUID}"\n\t\t\t\t\t(page "{idx + 2}")\n\t\t\t\t)')

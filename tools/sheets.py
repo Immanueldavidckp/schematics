@@ -246,7 +246,42 @@ def build_mcu():
     return sh
 
 
-BUILDERS = {"mcu": build_mcu}
+# ------------------------------------------------------------------ STORAGE
+
+def build_storage():
+    sh = Sheet("storage", paper="A4")
+    sh.text("SPI NOR flash - telemetry ring buffer (>=6 days at 150 B/10 s).",
+            (g(20), g(24)), 2.0)
+    sh.text("U7 = GD25Q64ESIGR (tape & reel, C2831359) per F-3; W25Q64JVSSIQ "
+            "(C179171/C2904572) is a verified pin- and command-compatible alternate.",
+            (g(20), g(28)))
+
+    u7 = sh.place("jlc:GD25Q64ESIG", "U7", "GD25Q64ESIGR",
+                  (g(90), g(80)), "jlc:SOP-8_L5.3-W5.3-P1.27-LS8.0-BL",
+                  "C2831359",
+                  fields={"Alternate": "W25Q64JVSSIQ C179171/C2904572"})
+    # SPI1 to the MCU
+    sh.hier(u7, "1", "FLASH_CS", "input", length=g(6))
+    sh.hier(u7, "6", "SPI1_SCK", "input", length=g(6))
+    sh.hier(u7, "5", "SPI1_MOSI", "input", length=g(6))
+    sh.hier(u7, "2", "SPI1_MISO", "output", length=g(6))
+    # WP# and HOLD# tied high: write protect and hold both disabled
+    sh.net(u7, "3", "3V3", length=g(6))
+    sh.net(u7, "7", "3V3", length=g(6))
+    sh.net(u7, "8", "3V3", length=g(6))
+    sh.gnd(u7, "4", length=g(3))
+
+    sh.series("Device:C", "C20", "100nF", (g(46), g(60)), "3V3", None,
+              C0603, LCSC_C100N, gnd_b=True)
+    bulk = sh.place("Device:C", "C21", "1uF", (g(56), g(60)), C0603, LCSC_C1U)
+    sh.hier(bulk, "1", "3V3", "input", length=g(5))
+    sh.gnd(bulk, "2", length=g(3))
+    sh.text("WP#(3) and HOLD#(7) tied to 3V3 per handoff section 5.",
+            (g(20), g(112)))
+    return sh
+
+
+BUILDERS = {"mcu": build_mcu, "storage": build_storage}
 
 RAILS = ["VIN", "SYS", "5V0", "3V3", "VBAT_MODEM", "VDD_EXT_1V8"]
 NOTES = [
