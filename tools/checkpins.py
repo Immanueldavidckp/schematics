@@ -65,6 +65,25 @@ def load_nets(path):
     return nets
 
 
+# handoff section 5 "Goes to" column: pin -> (ref, pin) that must share the net
+FAR_END = {
+    "14": ("U7", "1"), "15": ("U7", "6"), "16": ("U7", "2"), "17": ("U7", "5"),
+    "25": ("OK1", "4"), "26": ("OK2", "4"),
+    "27": ("R23", "1"), "28": ("R24", "1"),
+    "38": ("U4", "8"), "45": ("U4", "4"), "46": ("U4", "1"),
+    "41": ("U3", "4"), "42": ("U3", "13"), "43": ("U3", "14"),
+    "10": ("R35", "2"), "11": ("R32", "2"), "18": ("R38", "2"),
+    "3": ("Y2", "1"), "4": ("Y2", "2"), "5": ("Y1", "1"), "6": ("Y1", "3"),
+}
+# nets whose far end lives on a sheet that is not drawn yet
+PENDING = {
+    "21": "modem_rf (F-9)", "29": "modem_rf (F-9)", "30": "modem_rf (F-9)",
+    "31": "modem_rf (F-9)", "32": "modem_rf (F-9)", "33": "modem_rf (F-9)",
+    "39": "modem_rf (F-9)", "40": "modem_rf (F-9)",
+    "22": "on-sheet LED via Q4", "19": "spare divider, fitted DNP",
+}
+
+
 def main():
     path = sys.argv[1] if len(sys.argv) > 1 else os.path.join(PROJ, "nl.net")
     nets = load_nets(path)
@@ -73,19 +92,37 @@ def main():
         for ref, pin in nodes:
             pin_of.setdefault((ref, pin), []).append(net)
 
-    ok, bad = [], []
+    rows, bad = [], []
     for pin, want in sorted(SEC5.items(), key=lambda kv: int(kv[0])):
         got = pin_of.get(("U2", pin))
         if not got:
             bad.append(f"pin {pin:>2}: expected '{want}' but pin is UNCONNECTED")
-        elif want not in got:
+            continue
+        if want not in got:
             bad.append(f"pin {pin:>2}: expected '{want}', netlist says {got}")
-        else:
-            ok.append((pin, want, got[0]))
+            continue
+        members = sorted(nets[want] - {("U2", pin)})
+        note = ""
+        if pin in FAR_END:
+            fe = FAR_END[pin]
+            if fe in nets[want]:
+                note = f"-> {fe[0]}.{fe[1]} OK"
+            else:
+                bad.append(f"pin {pin:>2} ({want}): far end {fe[0]}.{fe[1]} "
+                           f"NOT on this net; net has {members}")
+                continue
+        elif pin in PENDING:
+            note = f"(pending: {PENDING[pin]})"
+        rows.append((pin, want, note, members))
 
-    print(f"U2 AT32F403ACGT7 - section 5 pin map: {len(ok)}/{len(SEC5)} verified")
-    for pin, want, got in ok:
-        print(f"  [x] pin {pin:>2}  {want}")
+    print(f"U2 AT32F403ACGT7 - handoff section 5, {len(rows)}/{len(SEC5)} rows verified\n")
+    print(f"{'pin':>4}  {'net':<16} {'far end':<22} other nodes on net")
+    print("-" * 100)
+    for pin, want, note, members in rows:
+        mem = ", ".join(f"{r}.{p}" for r, p in members[:6])
+        if len(members) > 6:
+            mem += f", +{len(members) - 6} more"
+        print(f"{pin:>4}  {want:<16} {note:<22} {mem}")
     if bad:
         print("\nMISMATCHES:")
         for b in bad:
