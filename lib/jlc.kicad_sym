@@ -2578,7 +2578,7 @@
     )
     (property
       "Alternate"
-      "W25Q64JVSSIQ (LCSC C179171 / C2904572) - pin- and command-compatible"
+      "W25Q64JVSSIQ (LCSC C179171 / C2904572) - pin- and command-compatible, same SOIC-8-208mil, same -40..+85C I-grade (equal grade, not derated)"
       (id 9)
       (at 0 -26.67 0)
       (effects (font (size 1.27 1.27) ) hide)
