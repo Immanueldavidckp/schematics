@@ -81,4 +81,41 @@ Method: automated S-expression parse of every `.kicad_mod` (pad count, numbering
 - Milestone 2 (schematics) **NOT started** — on hold per user instruction pending handoff §9 open items (max sustained VIN, housing model, DO load spec). The §9 VIN answer may change the power front end (LM5164 at 100 V has zero derating margin; XL7015 fallback caps at 80 V).
 
 ---
-*Next entry: milestone 2 kickoff after §9 answers.*
+
+## 2026-09-01 — F-1 resolution: U7 flash import, GD32 removal
+
+User resolved issue F-1: C81551 (GD32F105RBT6) was a leftover fallback MCU, not a flash typo. Actions taken on user instruction:
+
+### Removals
+
+- **C81551 / GD32F105RBT6 removed** from the `SKILL.md` import loop (replaced with C2685734) and purged from the library: symbol block deleted from `jlc.kicad_sym` (14,459 chars, balanced S-expression removal, zero residual references), `LQFP-64_L10.0-W10.0-P0.50-LS12.0-BL.kicad_mod` deleted, both LQFP-64 3D models (.wrl/.step) deleted. Library re-validated with `kicad-cli sym upgrade` on a scratch copy — parses clean.
+
+### U7 flash: GD25Q64ESIG (LCSC C2685734) imported as primary
+
+- Symbol + footprint `SOP-8_L5.3-W5.3-P1.27-LS8.0-BL` + 3D models imported via easyeda2kicad. Stock at import decision: 20,951 pcs (user-verified).
+- **Alternates recorded** (user-verified pin- and command-compatible): **W25Q64JVSSIQ — LCSC C179171 / C2904572**, same SOIC-8 208mil footprint. Stored in the symbol's `Alternate` property and here.
+
+### Footprint verification vs GD25Q64E datasheet rev 1.5 §10.2 (SOP8 208MIL)
+
+| Check | Datasheet | Footprint | Result |
+|---|---|---|---|
+| Lead span E | 7.70–8.10 (nom 7.90) | outer extent 9.28 = nom span + IPC toe | ✓ |
+| Body width E1 | 5.18–5.38 | inner pad gap 4.87 (heel under lead, L=0.50–0.85) | ✓ |
+| Pitch e | 1.27 | 1.27 | ✓ |
+| Lead width b | 0.31–0.51 (nom 0.41) | pad width 0.609 | ✓ |
+| Pads/numbering | 8, no gaps, pad 1 + silk marker, courtyard | — | ✓ |
+| Pinout | 1 CS#, 2 SO(IO1), 3 WP#(IO2), 4 VSS, 5 SI(IO0), 6 SCLK, 7 HOLD#(IO3), 8 VCC | symbol matches; identical to W25Q64JV; matches handoff §5 U7 wiring (WP#/HOLD# to 3V3) | ✓ |
+| Speed/size | 133 MHz, 8 MB | handoff needs ≥30 MHz SPI, 8 MB ≈ 6 days buffer | ✓ |
+
+**VERIFIED** — U7 footprint and symbol released for schematic capture.
+
+### New flag for the user
+
+- **F-2 (temperature grade):** C2685734 = GD25Q64E**SI**G = industrial **I-grade, −40…+85 °C**. The datasheet ordering table lists a J-grade (−40…**+105 °C**) variant of the same package: **GD25Q64ESJG**. Handoff rule 6 requires ≥105 °C semiconductors *where available*. Options: (a) keep ESIG (85 °C) and justify — flash is low-self-heating and inside the enclosure thermal budget; (b) switch to ESJG if stocked at JLCPCB. **Awaiting user decision; no change made.**
+
+### Status
+
+- Milestone 2 remains **on hold** pending handoff §9 answers (unchanged).
+
+---
+*Next entry: milestone 2 kickoff after §9 answers (+ F-2 decision).*
