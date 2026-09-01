@@ -401,4 +401,167 @@ Sheets 2–4 (storage, io, modem_rf) still to draw. Power sheet and milestone 3
 remain blocked on the U5 approval above.
 
 ---
-*Next entry: storage.kicad_sch.*
+
+## 2026-09-02 — TASK B sheets 2 and 3: storage and io **ERC-clean**
+
+**storage.kicad_sch** (commit `d8a4b5d`) — 6 components. U7 GD25Q64ESIGR on SPI1:
+CS from FLASH_CS (PA4), SCK/MOSI/MISO on SPI1_*, WP#(3) and HOLD#(7) tied to 3V3
+per §5, 100 nF + 1 µF. **F-3 resolved by the user's instruction**: U7 is now the
+tape-and-reel **C2831359**, not the tube-packed C2685734. The W25Q64JVSSIQ
+alternate is carried in the symbol's `Alternate` field.
+
+**io.kicad_sch** (commit `bda73f0`) — 85 symbols, 15 sheet pins. Contents exactly as
+specified in TASK B: J1 12-pin harness on the given pinout (spares 11/12 brought
+out to test points), SIT1051AT/3 with VIO=3V3 / VCC=5V0 / STB=PA15, CM choke plus
+TVS at the connector, split termination 2×60 Ω + 4.7 nF behind JP2 **default
+OPEN**, opto-isolated DI1/DI2, low-side DO1/DO2 with 100 R gate series + 10 k
+pulldown + SS310 flyback to VIN, VIN/IGN dividers with BAV99 rail clamps, 1 M:1 M
+battery divider from SYS, and the DNP spare ADC divider.
+
+### Root inter-sheet plumbing changed: global labels, not plain labels
+
+With only the mcu sheet present, a plain label on a sheet-pin stub behaved
+correctly. As soon as a second sheet exposed the *same* net name, KiCad reported
+**both** labels as `label_dangling` (error) rather than merging them. Root-level
+plumbing now uses **global labels**, which merge by name by definition. Verified by
+netlist, not by eye: `FLASH_CS -> [(U2,14), (U7,1)]`, `SPI1_SCK -> [(U2,15),
+(U7,6)]`, and so on.
+
+### Two real electrical faults caught by new generator guards
+
+Both would have survived a visual review and reached the PCB:
+
+1. **The 100 R DO gate resistor was shorted out.** The FET gate pin had received
+   *two* connections (a local label to `Qn_G` and a hierarchical label to
+   `DOn_GATE`), whose stubs overlap, so the MCU drove the gate directly and the
+   series resistor sat on a dead net. A **pin-connected-twice** guard now raises on
+   this. Verified fixed: `DO1_GATE -> [(R23,1), (U2,27)]`.
+2. **CANL was shorted to GND.** D3's GND stub (x 87.63→90.17) and D4's CANL stub
+   (x 88.90→92.71) were collinear at y=45.72 and overlapped by 1.27 mm — the two
+   horizontal TVS symbols sat 12.70 mm apart where their stubs need >13.97 mm. ERC
+   had reported this only as a `multiple_net_names` *warning*, which is easy to skim
+   past. A **collinear stub-overlap** guard now raises on it. Verified fixed:
+   `CANL -> [(D4,1), (J1,5), (L2,3)]`, no GND.
+
+The earlier net-collision guard (point-based) could not see either fault; the
+generator now checks points, whole segments, duplicate references, duplicate pin
+connections, and the 1.27 mm grid.
+
+### DI1/DI2 LED current window vs EL357N(D) CTR — requested check
+
+Series resistance 24 kΩ (2 × 12 kΩ), opto V_F ≈ 1.2 V:
+
+| Input | I_LED | Collector current needed | Available at CTR ≥ 300 % (D bin) | Margin |
+|---|---|---|---|---|
+| 9 V (min) | **0.325 mA** | 62 µA (3.3 V through 47 k to V_IL 0.4 V) | 0.98 mA | **16×** |
+| 100 V (max) | **4.12 mA** | 62 µA | 12.4 mA | 200× |
+
+The window is comfortable at both ends — the input works down to 9 V with 16× CTR
+margin, and 4.12 mA at 100 V is well inside the EL357N's LED rating.
+
+**F-7 (real thermal problem, needs a decision).** The *resistors* are the issue, not
+the opto. At 100 V, I²R = (4.12 mA)² × 24 kΩ = **0.407 W total, 0.204 W per 12 kΩ
+1206**. A 1206 is rated 0.25 W at 70 °C and derates to roughly **0.125 W at 105 °C
+ambient** — so each resistor is at ~1.6× its derated rating in a hot enclosure, on a
+part that handoff rule 6 wants good to 105 °C. Options: (a) split into **3 × 8.2 kΩ
+1206** (same 24.6 kΩ, 0.136 W each — still marginal), (b) **3 × 12 kΩ** for 36 kΩ
+total (0.09 W each, comfortable; min I_LED falls to 0.22 mA, still ~10× CTR margin),
+or (c) keep 2 resistors but specify **0.5 W 1206** parts. **Recommendation: (b).**
+Implemented as specified (2 × 12 kΩ 1206) pending your decision — this is a
+sustained-dissipation issue, not a transient one, so it should be resolved before
+layout.
+
+### ERC exceptions on io — individually justified
+
+- **18 × `isolated_pin_label`** — root global labels whose net has only one sheet so
+  far; all resolve when power.kicad_sch and modem_rf land.
+- **10 × `same_local_global_label`** — a net name exists both as a sheet-local label
+  and as the root global label (e.g. DI1, VIN, 3V3). This is by design: the sheet's
+  local net is joined to the root net *through the hierarchical sheet pin*, which is
+  the required hierarchical structure. Renaming either side would violate the §5
+  net-name requirement. Verified connected by netlist, e.g.
+  `DI1 -> [(C25,1), (OK1,4), (R21,2), (U2,25)]`.
+- **4 × `footprint_link_issues`** — the four parts still carrying the placeholder
+  `TBD:` footprint (J1, L2, D3, D4), pending the in-stock selection sweep (F-8).
+- **0 errors.**
+
+### F-8: parts awaiting the in-stock sweep
+
+These carry LCSC `TBD-F8` in the schematic and must be filled before any order:
+Q1/Q2 (150 V logic-level NMOS), J1 (12-pin Micro-Fit), L2 (CAN CM choke), D3/D4
+(CAN TVS), D5–D8 and D10/D11 (BAV99, SS310), the 60 Ω/47 k/12 k/100 k/9.1 k/1 M
+resistors and the 4.7 nF cap. A selection sweep is running; results will be logged
+and the generator constants updated in a follow-up commit.
+
+## 2026-09-02 — TASK B sheet 4: modem_rf **BLOCKED — do not draw**
+
+### F-9 (BLOCKER): the imported EC200U symbol's pin numbering contradicts Quectel's datasheet
+
+While preparing modem_rf I checked the imported symbol for `C2916205` against
+**Quectel EC200U Series Hardware Design V1.2, Table 7 (Pin Description)**. It does
+not match, and the mismatch is on the most destructive pin in the design:
+
+| Signal | Quectel Table 7 | Imported symbol | |
+|---|---|---|---|
+| **VBAT_BB** | **59, 60** | **90, 91** | **WRONG** |
+| **VBAT_RF** | **57, 58** | absent | **WRONG** |
+| PWRKEY | 21 | absent (pin 21 unnamed) | missing |
+| RESET_N | 20 | absent (pin 20 unnamed) | missing |
+| MAIN_TXD / MAIN_RXD | 67 / 68 | absent | missing |
+| MAIN_RI / MAIN_DTR | 62 / 66 | absent | missing |
+| STATUS | 61 | absent | missing |
+| USB_DP / USB_DM / USB_VBUS | 69 / 70 / 71 | absent | missing |
+| MAIN_DCD | 63 | labelled "LOUDSPK" | **WRONG** |
+| ANT_MAIN / ANT_GNSS | 49 / 47 | 49 / 47 | ok |
+| USIM_VDD/DATA/CLK/RST/DET/GND | 14/15/16/17/13/10 | same | ok |
+| VDD_EXT | 7 | 7 (+109, spurious) | partly ok |
+| NET_STATUS / AP_READY | 6 / 2 | 6 / 2 | ok |
+| I2C_SCL/SDA, ADC0-2, DBG_TXD/RXD | 41/42, 45/44/43, 12/11 | same | ok |
+
+**80 of the symbol's 144 pins carry no name at all** ("undefined"), and every pin in
+the 57–71 block — VBAT, STATUS, the main UART, and USB — is either missing or
+mislabelled.
+
+**Root cause:** this is the failure mode note **V-1** flagged in milestone 1 but
+under-weighted. The footprint is `LCC-LGA-144_…_L610-CN-02`, i.e. the EasyEDA entry
+is built around the **MobileTek L610**, a different module in the same LCC-144 form
+factor. In milestone 1 I verified the **footprint geometry** against Quectel's
+mechanical drawing and it matched (pad sizes, 1.30 mm pitch, 31×28 mm body) — but I
+did **not** verify the **symbol's pin assignment**, and that is where it diverges.
+Correcting the record: V-1's "geometry matches, accepted" conclusion was sound for
+the land pattern and **wrong to extend to the symbol**.
+
+**Consequence if ignored:** VBAT wired to pads 90/91 puts the 3.3–4.4 V, 1.5 A
+battery rail on the wrong pads and leaves the real VBAT pads (57–60) unpowered.
+That destroys the modem on first power-up, and possibly more. There is also no way
+to wire PWRKEY, RESET_N, the UART or USB at all, so handoff §6 and §5 rows 29–33
+and 39–40 cannot be honoured from this symbol.
+
+**Action taken:** modem_rf.kicad_sch **not drawn**. Per golden rule 1 (never invent
+a symbol) I have not fabricated pin assignments, and per rule 2 I have changed no
+C-number. The authoritative pin table extracted from the Quectel PDF is saved to
+`docs/ec200u-pinmap-extracted.md` (99 of 144 pins parsed; the unparsed remainder are
+mostly GND/RESERVED/NC rows, and the file is explicitly marked as needing a
+line-by-line human check before use).
+
+**Options for you to choose from:**
+1. **Re-import from a correct source.** Check whether another LCSC/EasyEDA entry for
+   the EC200U carries a correct symbol, or obtain Quectel's official library.
+   Cheapest if such an entry exists.
+2. **Build a datasheet-derived EC200U symbol** in a project-local library from
+   Table 7, with the pin table human-verified first, and keep the existing
+   (geometrically verified) footprint. ~1 session of work plus review. This is my
+   recommendation if option 1 comes up empty.
+3. **Defer modem_rf** to after the power sheet.
+
+Whichever path, the footprint should also be re-checked for **pad numbering** (not
+just geometry) before layout: matching pad *positions* does not guarantee the L610
+and EC200U number those pads identically, and note V-1 only established geometry.
+
+### Status
+
+Sheets 1–3 (mcu, storage, io) are drawn and ERC-clean. Sheet 4 is blocked on F-9.
+Power sheet and milestone 3 remain blocked on the U5 buck approval.
+
+---
+*Next entry: F-9 resolution, then modem_rf.*
