@@ -27,6 +27,11 @@ PROJECT = "telematics-tracker"
 ROOT_UUID = "784bc421-9fc7-43cb-bfc3-562714cb3f68"
 NS = _uuid.UUID("11111111-2222-3333-4444-555555555555")
 
+# Power-symbol references must be unique across the WHOLE project, not per
+# sheet: two sheets both emitting #PWR001 makes KiCad conflate them, which
+# shows up as bogus "pin not connected" errors. One process-wide counter.
+_PWR_SEQ = [0]
+
 SCH_VERSION = "20250610"
 
 
@@ -64,7 +69,14 @@ def sanitize_for_schematic(block):
     sheet with only 'Failed to load schematic'."""
     for tok in ("show_name", "do_not_autoplace", "in_pos_files"):
         block = re.sub(r'\n[ \t]*\(' + tok + r' (?:yes|no)\)', '', block)
-    return _drop_balanced(block, "(property private ")
+    # (property private ...) IS accepted inside a schematic; stripping it only
+    # caused a spurious lib_symbol_mismatch warning, so it is kept verbatim.
+    # easyeda2kicad declares every pin "unspecified", which makes ERC flag
+    # every IC-to-passive connection as a pin conflict -- pure noise that
+    # buries real findings. "passive" is the honest neutral type for a pin
+    # whose direction the importer never recorded, and it conflicts with
+    # nothing, so real findings stay visible.
+    return block.replace("(pin unspecified ", "(pin passive ")
 
 
 def det_uuid(*parts):
@@ -248,6 +260,10 @@ class Sheet:
         self.used = []           # lib_ids in placement order
         self.hier_pins = {}      # net name -> shape
         self._n = 0
+        # (x, y) -> net name, used to catch two different nets landing on the
+        # same point. Such a collision silently merges the nets, which is the
+        # one dangerous failure mode of label-based connection.
+        self._net_pts = {}
 
     # -- placement ---------------------------------------------------------
     def place(self, lib_id, ref, value, at, footprint="", lcsc="", dnp=False,
@@ -291,6 +307,16 @@ class Sheet:
         self.power_at(sym, (ex, ey))
         return (ex, ey)
 
+    def gnd_driver(self, at):
+        """Declare the global GND net driven: a PWR_FLAG wired to a GND symbol.
+
+        Needed exactly once per project. The two pins require a real wire
+        between them; co-locating them is not treated as a connection.
+        """
+        self.power_at("power:PWR_FLAG", at)
+        self.power_at("power:GND", (at[0], at[1] + 5.08))
+        self.wire(at, (at[0], at[1] + 5.08))
+
     def nc(self, part, pin):
         x, y = part.pin_xy(pin)
         self._n += 1
@@ -313,7 +339,18 @@ class Sheet:
             f'\t\t(color 0 0 0 0)\n'
             f'\t\t(uuid "{det_uuid(self.name, "junc", at)}")\n\t)')
 
+    def _claim(self, name, at):
+        key = (round(at[0], 3), round(at[1], 3))
+        prev = self._net_pts.get(key)
+        if prev is not None and prev != name:
+            raise ValueError(
+                f"{self.name}: nets '{prev}' and '{name}' both land on "
+                f"{key} -- they would silently merge into one net. "
+                f"Move one of the parts.")
+        self._net_pts[key] = name
+
     def label(self, name, at, rot=0):
+        self._claim(name, at)
         self._n += 1
         just = "left bottom" if rot in (0, 90) else "right bottom"
         self.items.append(
@@ -323,6 +360,7 @@ class Sheet:
             f'\t\t(uuid "{det_uuid(self.name, "lbl", name, at, self._n)}")\n\t)')
 
     def hier_label(self, name, at, rot=0, shape="passive"):
+        self._claim(name, at)
         self._n += 1
         just = "left" if rot in (0, 90) else "right"
         self.hier_pins.setdefault(name, shape)
@@ -340,11 +378,14 @@ class Sheet:
         _, pins = CACHE.get(lib_id)
         pnum = sorted(pins)[0]
         sx, sy, _ang, _ln, _nm, _ty = pins[pnum]
+        if lib_id.endswith(":GND"):
+            self._claim("GND", at)
         # want origin + (sx, -sy) == at   (rot 0)
         ox, oy = at[0] - sx, at[1] + sy
         name = lib_id.split(":", 1)[1]
         self._n += 1
-        ref = f"#PWR{self._n:03d}"
+        _PWR_SEQ[0] += 1
+        ref = f"#PWR{_PWR_SEQ[0]:03d}"
         p = Part(self, lib_id, ref, value or name, (ox, oy), "", "", False, None, rot)
         p._is_power = True
         self.parts.append(p)
@@ -389,8 +430,12 @@ class Sheet:
         out = ['\t(symbol', f'\t\t(lib_id "{p.lib_id}")',
                f'\t\t(at {_fmt(p.x)} {_fmt(p.y)} {p.rot})', '\t\t(unit 1)',
                '\t\t(exclude_from_sim no)',
-               f'\t\t(in_bom {"no" if is_power else "yes"})',
-               f'\t\t(on_board {"no" if is_power else "yes"})',
+               # Power symbols must be in_bom/on_board yes, exactly as KiCad
+               # writes them: marking them "no" excludes them from the netlist
+               # and their pins then read as unconnected. Their "#"-prefixed
+               # references keep them out of the real BOM anyway.
+               '\t\t(in_bom yes)',
+               '\t\t(on_board yes)',
                f'\t\t(dnp {"yes" if p.dnp else "no"})',
                '\t\t(fields_autoplaced yes)',
                f'\t\t(uuid "{det_uuid(self.name, "sym", p.ref)}")']

@@ -1,13 +1,1264 @@
 (kicad_sch
-	(version 20250114)
-	(generator "eeschema")
+	(version 20250610)
+	(generator "schgen.py")
 	(generator_version "9.0")
 	(uuid "784bc421-9fc7-43cb-bfc3-562714cb3f68")
-	(paper "A4")
-	(lib_symbols)
+	(paper "A3")
+	(lib_symbols
+		(symbol "power:PWR_FLAG"
+				(power global)
+				(pin_numbers
+					(hide yes)
+				)
+				(pin_names
+					(offset 0)
+					(hide yes)
+				)
+				(exclude_from_sim no)
+				(in_bom yes)
+				(on_board yes)
+				(duplicate_pin_numbers_are_jumpers no)
+				(property "Reference" "#FLG"
+					(at 0 1.905 0)
+					(hide yes)
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(property "Value" "PWR_FLAG"
+					(at 0 3.81 0)
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(property "Footprint" ""
+					(at 0 0 0)
+					(hide yes)
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(property "Datasheet" ""
+					(at 0 0 0)
+					(hide yes)
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(property "Description" "Special symbol for telling ERC where power comes from"
+					(at 0 0 0)
+					(hide yes)
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(property "ki_keywords" "flag power"
+					(at 0 0 0)
+					(hide yes)
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(symbol "PWR_FLAG_0_0"
+					(pin power_out line
+						(at 0 0 90)
+						(length 0)
+						(name ""
+							(effects
+								(font
+									(size 1.27 1.27)
+								)
+							)
+						)
+						(number "1"
+							(effects
+								(font
+									(size 1.27 1.27)
+								)
+							)
+						)
+					)
+				)
+				(symbol "PWR_FLAG_0_1"
+					(polyline
+						(pts
+							(xy 0 0) (xy 0 1.27) (xy -1.016 1.905) (xy 0 2.54) (xy 1.016 1.905) (xy 0 1.27)
+						)
+						(stroke
+							(width 0)
+							(type default)
+						)
+						(fill
+							(type none)
+						)
+					)
+				)
+				(embedded_fonts no)
+			)
+	)
+	(wire
+		(pts
+			(xy 25.4 27.94) (xy 17.78 27.94)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d1d25faf-a202-59f7-a0c3-0f3ed1ebf32a")
+	)
+	(label "3V3"
+		(at 17.78 27.94 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "0ba6fd68-4a91-57e3-8cbd-0ee4f630446a")
+	)
+	(wire
+		(pts
+			(xy 25.4 30.48) (xy 17.78 30.48)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "28ef15cc-5de1-5afb-9148-f327142ebe1f")
+	)
+	(label "ADC_SPARE"
+		(at 17.78 30.48 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "c0afa41b-48e7-5914-8a40-c3259a8f5a34")
+	)
+	(wire
+		(pts
+			(xy 25.4 33.02) (xy 17.78 33.02)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "922c34cd-a8ac-55f4-be17-febd76a83170")
+	)
+	(label "CAN1_RX"
+		(at 17.78 33.02 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "963f657f-0509-53b3-a663-064415129ed7")
+	)
+	(wire
+		(pts
+			(xy 25.4 35.56) (xy 17.78 35.56)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "998221b1-b0b7-55d8-b3ad-a62e5150ef86")
+	)
+	(label "CAN1_TX"
+		(at 17.78 35.56 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "a5b7c2cc-abc8-53c3-b38c-b9c7e1df8fb7")
+	)
+	(wire
+		(pts
+			(xy 25.4 38.1) (xy 17.78 38.1)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0c360e63-e2e9-51fa-90d1-f3f6205bb364")
+	)
+	(label "CAN_STB"
+		(at 17.78 38.1 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "6a8b15eb-6c5b-590f-bde3-aae70d046077")
+	)
+	(wire
+		(pts
+			(xy 25.4 40.64) (xy 17.78 40.64)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d830fc98-20d9-599c-8f7b-4ad2d4e2f9da")
+	)
+	(label "DI1"
+		(at 17.78 40.64 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "92febdd0-0107-5f4e-b547-7bb230fc9124")
+	)
+	(wire
+		(pts
+			(xy 25.4 43.18) (xy 17.78 43.18)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a5b6c6c2-9b7e-54bd-aa3b-3ddab0ee2913")
+	)
+	(label "DI2"
+		(at 17.78 43.18 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "87d74aed-d8f5-5f59-bfb7-2912b1be6fd1")
+	)
+	(wire
+		(pts
+			(xy 25.4 45.72) (xy 17.78 45.72)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e4e3c36c-bbca-5996-9b90-0c398c944268")
+	)
+	(label "DO1_GATE"
+		(at 17.78 45.72 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "fb6b6e92-4ee9-5b23-bac1-5517a4f50271")
+	)
+	(wire
+		(pts
+			(xy 25.4 48.26) (xy 17.78 48.26)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "853d518a-8323-53e6-adbd-7a4944d839cc")
+	)
+	(label "DO2_GATE"
+		(at 17.78 48.26 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "7cda63c9-c220-5578-9aa7-a74854e1bf1a")
+	)
+	(wire
+		(pts
+			(xy 25.4 50.8) (xy 17.78 50.8)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "00a7b751-5e0a-52cd-a665-95347769e3fc")
+	)
+	(label "FLASH_CS"
+		(at 17.78 50.8 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "01014c43-2f95-5aae-8fda-1d420dc3dc52")
+	)
+	(wire
+		(pts
+			(xy 25.4 53.34) (xy 17.78 53.34)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d7e3d721-59d5-59f0-86b2-78958d1f662e")
+	)
+	(label "IGN_SENSE"
+		(at 17.78 53.34 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "debd02f8-d774-5f4f-9e7d-54730daf2bcc")
+	)
+	(wire
+		(pts
+			(xy 25.4 55.88) (xy 17.78 55.88)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4dcf632b-66ef-57eb-950a-8fcf1084112a")
+	)
+	(label "MODEM_DTR"
+		(at 17.78 55.88 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "de773803-0d4e-559e-8d57-6f1eafae114d")
+	)
+	(wire
+		(pts
+			(xy 25.4 58.42) (xy 17.78 58.42)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5222e046-7dcd-5106-8d5d-5b622fe5dde3")
+	)
+	(label "MODEM_PWRKEY"
+		(at 17.78 58.42 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "db59e8a1-edff-5d84-ac2c-d59fcc024230")
+	)
+	(wire
+		(pts
+			(xy 25.4 60.96) (xy 17.78 60.96)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6001f9d6-abf7-5a3d-9fae-cb3ef8ca73cc")
+	)
+	(label "MODEM_PWR_EN"
+		(at 17.78 60.96 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "9129efb6-65b7-520f-af16-d653acf50cff")
+	)
+	(wire
+		(pts
+			(xy 25.4 63.5) (xy 17.78 63.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fad81e62-b805-50f4-9b42-e48d6e5ba064")
+	)
+	(label "MODEM_RESET"
+		(at 17.78 63.5 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "bed86f97-1005-5c28-b162-e6b519124b6c")
+	)
+	(wire
+		(pts
+			(xy 25.4 66.04) (xy 17.78 66.04)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "467bd485-3572-51f5-aac1-2c465c0908bd")
+	)
+	(label "MODEM_RI"
+		(at 17.78 66.04 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "47884917-c7a9-5233-bef2-c44f5ee92bd9")
+	)
+	(wire
+		(pts
+			(xy 25.4 68.58) (xy 17.78 68.58)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "691988a3-db9d-5363-9179-f325244336a1")
+	)
+	(label "MODEM_RX"
+		(at 17.78 68.58 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "c36d07cc-e2d8-5b94-a2bc-e0fdd72a112a")
+	)
+	(wire
+		(pts
+			(xy 25.4 71.12) (xy 17.78 71.12)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f5e50820-e32b-57f0-a3aa-665734b78d98")
+	)
+	(label "MODEM_STATUS"
+		(at 17.78 71.12 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "039a3828-6028-52b5-8537-16a49a7bcbf9")
+	)
+	(wire
+		(pts
+			(xy 25.4 73.66) (xy 17.78 73.66)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4a25803d-a416-5ff9-a658-91cfbebcc692")
+	)
+	(label "MODEM_TX"
+		(at 17.78 73.66 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "6be49c6d-e437-5014-b36d-ae9472c5a64c")
+	)
+	(wire
+		(pts
+			(xy 25.4 76.2) (xy 17.78 76.2)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4fe3da2c-0eb1-570e-862e-a354874a10e7")
+	)
+	(label "SPI1_MISO"
+		(at 17.78 76.2 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "cccba6a1-5948-52e2-8979-af68ec1f7d05")
+	)
+	(wire
+		(pts
+			(xy 25.4 78.74) (xy 17.78 78.74)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "04108597-02a7-5e3f-8587-7ff256fbe7f5")
+	)
+	(label "SPI1_MOSI"
+		(at 17.78 78.74 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "149f1784-0511-5b0b-a7bb-2c221ec58099")
+	)
+	(wire
+		(pts
+			(xy 25.4 81.28) (xy 17.78 81.28)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7299ff9b-c941-5fd5-8890-d81a8a3e1e1e")
+	)
+	(label "SPI1_SCK"
+		(at 17.78 81.28 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "21abf2cc-d86a-5851-ad9e-f89d7a8256a2")
+	)
+	(wire
+		(pts
+			(xy 25.4 83.82) (xy 17.78 83.82)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "05f9d992-6c38-5ec4-9316-ef8c2e36118c")
+	)
+	(label "VBAT_SENSE"
+		(at 17.78 83.82 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "e2e5fc2b-22e8-5534-a865-33b0afac15bd")
+	)
+	(wire
+		(pts
+			(xy 25.4 86.36) (xy 17.78 86.36)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ffedc59e-360b-59fd-b6a8-12b76ce7fcca")
+	)
+	(label "VIN_SENSE"
+		(at 17.78 86.36 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "7fb409cd-469d-5266-9c03-c367f9a6957d")
+	)
+	(wire
+		(pts
+			(xy 25.4 269.24) (xy 25.4 274.32)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "92706c85-9466-5f2b-b215-988cc2628179")
+	)
+	(label "VIN"
+		(at 25.4 274.32 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "5d7035b9-d33a-5ecf-989e-508b112e49b5")
+	)
+	(wire
+		(pts
+			(xy 45.72 269.24) (xy 45.72 274.32)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "af9a43e4-50df-5f87-b70a-0c95cc3785ea")
+	)
+	(label "SYS"
+		(at 45.72 274.32 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "23df6b62-333a-5fdb-8940-878cbfc7ed0c")
+	)
+	(wire
+		(pts
+			(xy 66.04 269.24) (xy 66.04 274.32)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0f9cd7bd-eb0d-5c87-a2a8-cbe0829bae98")
+	)
+	(label "5V0"
+		(at 66.04 274.32 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "09aaf887-ad62-5aa5-b59b-3fb5a7c6efb8")
+	)
+	(wire
+		(pts
+			(xy 86.36 269.24) (xy 86.36 274.32)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "04f1f7db-1669-579e-ada7-b3d65e69a507")
+	)
+	(label "3V3"
+		(at 86.36 274.32 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "de3cece4-6c5f-5faa-9513-5172ced92b1c")
+	)
+	(wire
+		(pts
+			(xy 106.68 269.24) (xy 106.68 274.32)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e2fcb863-b47b-566e-a6cf-d7721da0ffbc")
+	)
+	(label "VBAT_MODEM"
+		(at 106.68 274.32 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "f52701d9-bd56-5db7-a5c1-61f7ba082042")
+	)
+	(wire
+		(pts
+			(xy 127 269.24) (xy 127 274.32)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "85b17cbb-2584-51ca-ba10-c5196989e6c6")
+	)
+	(label "VDD_EXT_1V8"
+		(at 127 274.32 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "6299938c-69b1-57c3-a3e1-f7bf2fbab4a7")
+	)
+	(text "TEMPORARY: the PWR_FLAG symbols below mark rails that will be driven by"
+		(exclude_from_sim no)
+		(at 25.4 200.66 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "9e491b4c-6a33-5d95-80ad-7ad4434228c9")
+	)
+	(text "power.kicad_sch (not yet drawn - pending the buck selection decision)."
+		(exclude_from_sim no)
+		(at 25.4 205.74 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "2012a4ec-4f7f-5f32-8e6a-06fbacd2936b")
+	)
+	(text "Remove them when the power sheet is added."
+		(exclude_from_sim no)
+		(at 25.4 210.82 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "8d04935e-b302-53c1-be28-90f6e0c2a30b")
+	)
+	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 25.4 269.24 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "db03a0a2-20be-519f-9790-3ed140079f10")
+		(property "Reference" "#PWR028"
+			(at 25.4 261.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 25.4 269.24 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "3cbf8d56-1cd9-592b-b9aa-bd142b7313ef")
+		)
+		(instances
+			(project "telematics-tracker"
+				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68"
+					(reference "#PWR028")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 45.72 269.24 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "d74dc9bb-7633-5865-837d-07ef0f9ed9a4")
+		(property "Reference" "#PWR029"
+			(at 45.72 261.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 45.72 269.24 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "965f2175-79ca-50ed-bfa6-8491bb9ef607")
+		)
+		(instances
+			(project "telematics-tracker"
+				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68"
+					(reference "#PWR029")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 66.04 269.24 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "6c967bea-5bb1-5ad0-8102-c6e3e75d1f81")
+		(property "Reference" "#PWR030"
+			(at 66.04 261.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 66.04 269.24 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "459b656e-8656-5765-b448-020a39f4ebf1")
+		)
+		(instances
+			(project "telematics-tracker"
+				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68"
+					(reference "#PWR030")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 86.36 269.24 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "85e662a8-b99a-5859-8672-8c4ccdcca8bc")
+		(property "Reference" "#PWR031"
+			(at 86.36 261.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 86.36 269.24 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "9bf0ba4b-8d2f-550d-a9eb-c6cba267665c")
+		)
+		(instances
+			(project "telematics-tracker"
+				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68"
+					(reference "#PWR031")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 106.68 269.24 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "caa21b61-0024-5010-b8f7-1971b8b406d8")
+		(property "Reference" "#PWR032"
+			(at 106.68 261.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 106.68 269.24 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "ff701caf-41c3-57ce-935f-f91c782103cc")
+		)
+		(instances
+			(project "telematics-tracker"
+				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68"
+					(reference "#PWR032")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 127 269.24 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "ec848d58-b30d-52fb-8b9a-ff235c6e9337")
+		(property "Reference" "#PWR033"
+			(at 127 261.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 127 269.24 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "380093c9-4168-5a61-9680-86289f62ba4f")
+		)
+		(instances
+			(project "telematics-tracker"
+				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68"
+					(reference "#PWR033")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(sheet
+		(at 25.4 25.4)
+		(size 44.45 66.04)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "f6e9097b-45bc-5b1a-80f4-03a0e0f8043a")
+		(property "Sheetname" "mcu"
+			(at 25.4 24.7 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "mcu.kicad_sch"
+			(at 25.4 92.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(pin "3V3" input
+			(at 25.4 27.94 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "4ddc27d4-673e-5e7b-a84b-aff93e8c9e44")
+		)
+		(pin "ADC_SPARE" passive
+			(at 25.4 30.48 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "e37412bd-4123-5da4-93bd-a8fad7f58749")
+		)
+		(pin "CAN1_RX" input
+			(at 25.4 33.02 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "eb22122b-7366-57c2-b7c3-3360770c05d0")
+		)
+		(pin "CAN1_TX" output
+			(at 25.4 35.56 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "4216be35-2a64-57bd-9716-ecf84bd728b5")
+		)
+		(pin "CAN_STB" output
+			(at 25.4 38.1 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "ba7510f4-f552-52ad-9bd6-ffc841949df2")
+		)
+		(pin "DI1" input
+			(at 25.4 40.64 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "0f8343b9-a16d-5211-ad7b-6305e6b44abc")
+		)
+		(pin "DI2" input
+			(at 25.4 43.18 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "a048cb5c-7599-53f9-b335-cf370039edb3")
+		)
+		(pin "DO1_GATE" output
+			(at 25.4 45.72 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "62f35e3b-400d-57e6-843c-14f350e5ce9b")
+		)
+		(pin "DO2_GATE" output
+			(at 25.4 48.26 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "6c6d8ad5-be2c-5286-b048-43b6afaeb6b7")
+		)
+		(pin "FLASH_CS" output
+			(at 25.4 50.8 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "a05528a9-d6ed-5c15-90ce-8ed45c079d89")
+		)
+		(pin "IGN_SENSE" input
+			(at 25.4 53.34 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "c320bf4e-4722-51c4-9642-ea4112d07486")
+		)
+		(pin "MODEM_DTR" output
+			(at 25.4 55.88 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "704a2933-fed9-571d-a511-05aa49950cbf")
+		)
+		(pin "MODEM_PWRKEY" output
+			(at 25.4 58.42 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "7b32e2d4-7c4e-58ac-9121-b1b46c4ab1c3")
+		)
+		(pin "MODEM_PWR_EN" output
+			(at 25.4 60.96 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "aed6c61c-0d73-5e49-8d50-f5b11491b9f3")
+		)
+		(pin "MODEM_RESET" output
+			(at 25.4 63.5 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "7ad753c2-2d3b-53bd-ab01-d228c25a5af0")
+		)
+		(pin "MODEM_RI" input
+			(at 25.4 66.04 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "34b4aa55-8b27-5e6f-a810-0c5dde7f171f")
+		)
+		(pin "MODEM_RX" input
+			(at 25.4 68.58 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "0918ba56-7055-5406-accf-0cf6b5f744f1")
+		)
+		(pin "MODEM_STATUS" input
+			(at 25.4 71.12 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "9bc65641-1a94-55f7-a9c8-747bce569734")
+		)
+		(pin "MODEM_TX" output
+			(at 25.4 73.66 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "d2a54f92-f4a9-5fa8-b921-5ab42c88a289")
+		)
+		(pin "SPI1_MISO" input
+			(at 25.4 76.2 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "7b0709ec-2b02-5a5d-a8c8-38444c88d356")
+		)
+		(pin "SPI1_MOSI" output
+			(at 25.4 78.74 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "67e8e1fd-fbbb-5ffa-98bf-7bca0b6364c3")
+		)
+		(pin "SPI1_SCK" output
+			(at 25.4 81.28 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "dbf526d0-6bc8-586c-95f0-bfb1d4a9737d")
+		)
+		(pin "VBAT_SENSE" input
+			(at 25.4 83.82 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "94f9d472-5eec-5083-9ea0-ff1fa4dc09a1")
+		)
+		(pin "VIN_SENSE" input
+			(at 25.4 86.36 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "0886cecc-9039-5f88-9787-5edc62deedec")
+		)
+		(instances
+			(project "telematics-tracker"
+				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68"
+					(page "2")
+				)
+			)
+		)
+	)
 	(sheet_instances
 		(path "/"
 			(page "1")
+		)
+		(path "/f6e9097b-45bc-5b1a-80f4-03a0e0f8043a"
+			(page "2")
 		)
 	)
 	(embedded_fonts no)

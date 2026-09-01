@@ -5,3 +5,5 @@ fp-info-cache
 ~*.lck
 tools/__pycache__/
 *.bak
+nl.net
+erc-t*.rpt
