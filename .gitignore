@@ -3,3 +3,5 @@
 fp-info-cache
 *.lck
 ~*.lck
+tools/__pycache__/
+*.bak
