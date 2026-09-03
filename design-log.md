@@ -564,4 +564,189 @@ Sheets 1–3 (mcu, storage, io) are drawn and ERC-clean. Sheet 4 is blocked on F
 Power sheet and milestone 3 remain blocked on the U5 buck approval.
 
 ---
-*Next entry: F-9 resolution, then modem_rf.*
+
+## 2026-09-02 — U5 APPROVED: EG11752 (C53368402), with conditions
+
+User approved U5 = EG11752. Conditions logged as binding design requirements:
+
+**(a) Guaranteed input range redefined: 10.5-100 V. The 9 V floor is WITHDRAWN.**
+Rationale: EG11752 VCC(ON) = 8.5 V / VCC(OFF) = 7.8 V, datasheet operating floor
+10 V. With 0.5 V margin the guaranteed floor is set at 10.5 V; the backup battery
+rides the unit through supply dips below 10.5 V (that is what it is for).
+The DI input validity range and all divider math now quote 10.5-100 V.
+
+**(b) D2 upgraded SMBJ100A -> SMDJ100A.** Selected: **Littelfuse SMDJ100A,
+LCSC C1977839** — DO-214AB (SMC), 3 kW 10/1000 us, V_RWM 100 V, V_BR 111 V min,
+**V_C 162 V @ I_PP 18.5 A** -> R_d ~ 2.1 ohm. 2,955 in stock, $0.6112@1 /
+$0.3187@1k, tape & reel. Tier-1 vendor chosen deliberately for a protection part
+on a 5-year product over four cheaper Asian-brand listings.
+**Margin verified: at the analysed 3.7 A surge, V_clamp = 123 + 2.1 x 3.7 =
+130.8 V -> V(buck-in) = 130.2 V = 34.9 % below the EG11752's 200 V abs max** —
+matches the predicted 34.9 % in the TASK A table. Even at the SMDJ's full
+18.5 A rating, V_clamp = 162 V leaves 19 % margin.
+
+**(c) Qualification requirement added to milestone 6:** 3 prototype units,
+1000 h burn-in at 100 V input / 85 C ambient, plus thermal cycling
+(-40 <-> +85 C), before any volume order — mitigation for the V1.0-datasheet
+new-silicon risk. Pass criteria to be defined with the milestone-6 test plan.
+
+**Leakage acceptance for the 100 V standoff at 96 V sustained:** SMDJ100A
+I_R <= 2 uA at V_RWM = 100 V (25 C). At 96 V sustained, leakage is below that
+at 25 C and rises roughly a decade over temperature to an estimated <~100 uA at
+85 C worst case — << 10 mW, thermally negligible, and irrelevant to the sleep
+budget (the TVS sits on the machine-power side). **Accepted.** Note V_BR min
+111 V > 100 V sustained: the diode never enters breakdown in normal operation;
+96-100 V sustained sits between V_RWM and V_BR where only leakage flows.
+
+### EG11752 datasheet values for power.kicad_sch (drawn after F-9 release)
+
+From EG11752 datasheet V1.0 (Chinese), sections 5/6/7/8 — app circuit =
+Figure 6-2 (5 V/3.3 V variant, which omits Fig 6-1's D2+R6 VCC bootstrap):
+
+| Item | Value | Source |
+|---|---|---|
+| Topology | non-sync buck, internal 200 V/2 A high-side MOS, floating VB/VS bootstrap driver | s5 |
+| Pins (ESOP-8) | 1 VCC, 2 EN, 3 GND, 4 FB, 5 VB, 6 VS, 7 IS, 8 VIN (+pad=VIN) | fig 5-1/6-2 |
+| VREF (FB) | 1.28 / 1.30 / 1.32 V | s7 |
+| I_FB | <= 1 uA | s7 |
+| IS current-limit threshold | 0.2 V typ (R_IS between IS and VS sets peak current) | s7 |
+| Fosc | 110 kHz typ, +/-5 % vs VCC, +/-8 % vs temp | s7 |
+| D_max | 90 % | s7 |
+| VCC internal LDO | <= 10 V; VCC(ON) 8.5 V, VCC(OFF) 7.8 V, Icc ~ 1 mA | s7 |
+| VB(ON)/VB(OFF) | 7 / 6.5 V | s7 |
+| EN(on)/EN(off) | 2.5 / 2.3 V | s7 |
+| Ron / BV | 650 mohm / 200 V min | s7 |
+| Thermal shutdown | 155 C | s7 |
+| C_VCC (C2) | **1 uF, 25 V** | fig 6-2 |
+| C_boot VB-VS (C5) | **0.1 uF, 25 V** | fig 6-2 |
+| FB divider for 5 V | **R_top 4.3 k / R_bot 1.5 k -> 5.03 V** | s8.5 worked example |
+| Freewheel D1 | Schottky, fast + low V_F (SS3200-class 200 V given our bus) | s8.3 |
+| L selection | L = Vout(Vin-Vout)/(Vin x Fs x Iripple), Iripple <= 30 % Iout(max) | s8.2 |
+| EN (R1) | pull-up to VIN (> 2.5 V turns on) | fig 6-2 |
+| Output caps | electrolytic + ceramic in fig 6-2; ceramic-only per handoff rule 1, sized by dVo = dIL x (ESR + 1/(8 x Fs x Co)) | s8.4 |
+
+*Derived (mine, not the datasheet's):* at Iout(max) = 1 A, Iripple = 0.3 A:
+L = 5x95/(100 x 110k x 0.3) ~ **144 uH at Vin = 100 V** (governing case) ->
+**150 uH standard value, Isat >= 1.6 A**, finalised with the IS resistor when
+power.kicad_sch is drawn. Min on-time check: at 100 V -> 5 V, Ton ~ 455 ns;
+the datasheet specifies no minimum on-time — **the 100 V-in / 0.7-1 A-out
+regulation test remains the #1 bench item** (carried from TASK A risk list).
+
+## 2026-09-02 — F-7 closed (commit `c30340b`)
+
+DI series = **3 x 12 k 1206** (36 k). Per-resistor dissipation at 100 V:
+0.090 W = 72 % of the 105 C-derated 0.125 W rating (was 163 % with two).
+**Current window at the new 10.5 V floor:** I_LED = (10.5 - 1.2)/36 k =
+**0.258 mA** -> collector capability at CTR >= 300 % (EL357N D-bin) = 0.775 mA
+vs 61.7 uA needed to pull the 47 k node below V_IL — **12.6x margin**. At
+100 V: I_LED = 2.74 mA — 133x margin, LED rating untouched. Chain verified by
+netlist on both channels; ERC 0 errors.
+
+## 2026-09-02 — F-9 CLOSED at step 1 (commits `a086213`, `01f7cc6`)
+
+**C2916206 (EC200UCNLA-N05-SGNSA) imported and adopted; the defective
+C2916205 symbol deleted from the library.** Comparison against Quectel EC200U
+HW Design V1.2 Table 7: all 144 pins named, **0 wrong / 0 missing** on the 23
+design-critical pins once documented naming variants are mapped (TXD->MAIN_TXD,
+RXD->MAIN_RXD, RI*->MAIN_RI, DTR*->MAIN_DTR, DCD*->MAIN_DCD,
+USIM_PRESENCE->USIM_DET, NETLIGHT->NET_STATUS). VBAT_BB 59/60 ok, VBAT_RF
+57/58 ok, PWRKEY 21 ok, RESET_N 20 ok, STATUS 61 ok, UART 67/68/62/66 ok,
+USB 69/70/71 ok, USIM block ok, ANT 47/49 ok, VDD_EXT 7 ok.
+
+Footprint pad numbering independently cross-checked geometrically (the F-9
+step 3 requirement): ANT_GNSS(47) and ANT_MAIN(49) are each flanked by GND
+pads (46/48/50/51) on the same edge — the RF fence Quectel's drawing shows;
+VBAT block 57-60 contiguous on one edge; 80 perimeter + 64 inner pads =
+Quectel's 80 LCC + 64 LGA split.
+
+`docs/ec200u-pinmap-extracted.md` regenerated per step 4: **all 144 rows,
+68 VERIFIED / 76 NEEDS-HUMAN**, each with its Table 7 PDF-page reference and
+the alias map stated. The NEEDS-HUMAN set is dominated by the GND block
+(Table 7's comma-list rows defeat the parser) plus naming variants on
+peripherals this design does not use. Two rows deserve attention in review:
+- **pins 64/65**: symbol says RTS/CTS, Table 7 says MAIN_CTS/MAIN_RTS —
+  apparently swapped. Unused here (s5 uses no flow control), but a symbol
+  relabel to match Table 7 is recommended before any future use.
+- **pin 128**: symbol NC, Table 7 USIM2_VDD — matters only if the MFF2 eSIM
+  is ever wired to USIM2 instead of parallel to USIM1 (handoff s6 wires it
+  parallel, so no impact now).
+
+**RELEASE GATE unchanged: modem_rf is not drawn until the user has reviewed
+the 76 NEEDS-HUMAN rows.**
+
+Housekeeping: a `.history/` directory appeared during this work — it is
+KiCad 10's own Local History feature (automatic project snapshots, nested git
+repo). Gitignored; safe to delete at will.
+
+## 2026-09-02 — F-8 in-stock sweep (foreground re-run, commit `c8434d5`)
+
+Method: LCSC browser search for discovery + the wmsc.lcsc.com product-detail
+API for verification; datasheets fetched and read where a single parameter
+decides viability (Q1/Q2 threshold voltage, L2 winding topology). A calibration
+check of my remembered C-numbers found 4 of 11 wrong — every selection below is
+API- or datasheet-verified, none from memory. F-5 stands.
+
+| Ref | Part | LCSC | Stock | Price | Rationale / caveats |
+|---|---|---|---|---|---|
+| Q1,Q2 | **AM2390N-TP** 150 V 4 A SOT-23-3L | C51886143 | 1,930 | $0.084@500 | Only 150 V SOT-23 class with R_DS spec'd at V_GS = 4.5 V (250/300 mohm) and 4 A headroom. **See F-10.** Datasheet read: V_GS(th) 1.5/2.0/3.5 min/typ/max, BV_DSS 150 V min, pinout G/S/D = std SOT-23. Runners-up: HSS2N15 C2987707, FDN86246-clone C7421706. |
+| D2 | **SMDJ100A** Littelfuse | C1977839 | 2,955 | $0.32@1k | See U5 condition (b). |
+| D3 | **PESD1CAN,215** Nexperia | C15771 | 248,810 | $0.056@100 | Original manufacturer, dual-line bidirectional 24 V CAN TVS, SOT-23. One part replaces the D3/D4 placeholder pair. |
+| L2 | **ACT45B-510-2P-TL003** TDK | C76584 | **232** | $0.28@1k | Genuine TDK, 51 uH @ 100 kHz, -40..+150 C. **Stock 232 < a 500-unit run** — alternate in symbol field: MetalLions ACT45B-510-2P-TF C48928226 (760). Re-verify at order day. Winding topology from the TDK circuit diagram: **1->4 and 2->3** — wired accordingly (mis-pairing would short CANH to CANL through a winding). Footprint verified vs TDK land pattern (inner 3.16/outer 5.96 vs 3.2/5.9; corners 1 TL / 2 BL / 3 BR / 4 TR match). |
+| J1 | **WAFER-MX3.0-12PZZ** XUNPU | C7588012 | 415 | $0.21@500 | Micro-Fit(MX 3.0) reference series per LCSC params: 2x6, 3 mm, TH vertical, 600 V, 5 A, UL94V-0, with locating columns. Footprint: KiCad stock Molex 43045-1212 2x06 vertical. **Caveats:** op-temp -25..+85 C (Molex original is -40..+105) — acceptable inside the IP65 enclosure but logged; EasyEDA carries no CAD data for this part, so **locating-post positions must be checked against the XUNPU drawing before layout** (milestone-4 list). |
+| D5,D6,D10,D11 | **BAV99,215** Nexperia | C2500 | 874,450 | $0.01 | Dual series diode, SOT-23. |
+| D7,D8 | **SS310** MDD | C15874 | 571,680 | $0.026@600 | Per BOM. **See F-11.** |
+| R11,R12 | 60.4 ohm 1 % 0805 **AC0805FR-0760R4L** YAGEO | C228935 | 72,700 | $0.009@1k | Exact split-termination value. FOJAN C2933479 (332k) is the cheap alternate. |
+| DI chain | 12 k 1 % 1206 **1206W4F1202T5E** UNI-ROYAL | C17912 | **7,000** | — | 6 per board -> 3,000 for a 500 run; adequate today but thin — re-verify at order. |
+| pull-ups | 47 k 0805 UNI-ROYAL 0805W8F4702T5E | C17713 | 1,569,700 | — | |
+| dividers | 100 k / 9.1 k / 1 M 0805 UNI-ROYAL | C17407 / C17855 / C17514 | 186k / 46k / 1.9M | — | |
+| C22 | 4.7 nF 50 V X7R 0603 **CL10B472KB8NNNC** Samsung | C1621 | 659,550 | — | |
+
+### Generator: third silent-merge failure mode found and guarded
+
+D3's CANL **label point** landed mid-span on L2's CANH **wire stub** — the
+nets merge, KiCad reports only a `multiple_net_names` *warning*, and neither
+the point-collision nor the segment-overlap guard could see it
+(point-on-segment is a distinct geometry case). A new guard raises on any
+label/stub point lying on another net's segment and on any new segment passing
+through a foreign claimed point; it reproduced the fault exactly. D3 was
+moved, and the CAN pair now verifies by netlist: CANH = {J1.4, D3.1, L2.1},
+CANH_T = {L2.4, R11.1, U4.7}, mirrored for CANL via winding 2->3. This is the
+third fault class in three sheets caught by generation-time guards after ERC
+passed or merely warned — the script-generation + netlist-diff step is
+retained as a permanent per-sheet step, per the user's process directive.
+
+### New flags
+
+- **F-10 (decision needed before layout): DO gate drive at 3.3 V is not
+  worst-case guaranteed.** AM2390N-TP V_GS(th) max = 3.5 V (typ 2.0 V), and
+  the threshold rises further at -40 C — a cold-start relay switch could fail
+  in the tail of the distribution. This is physics, not sourcing: **no
+  in-stock 150 V SOT-23 NMOS specifies guaranteed enhancement at 3.3 V** (the
+  sweep checked all 15; best alternatives are typ-only). Options: (a) add a
+  small NPN/2N7002 level stage per channel to drive the gates from **5V0**
+  (present whenever machine power — and thus any DO load — exists; R_DS then
+  = the specified 250 mohm @ 4.5 V); 2 extra parts per channel, deviates from
+  handoff s6's direct-drive wording; (b) accept typ-only 3.3 V operation
+  (rejected: cold-start risk on a 5-year fleet product); (c) relax Q1/Q2 to
+  100 V logic-level parts (rejected: violates the 150 V rule).
+  **Recommendation: (a).** The schematic currently implements the handoff
+  wording (direct 100 R from PB14/PB15); awaiting decision.
+- **F-11 (recommended swap): SS310 flyback is a 100 V Schottky on a bus that
+  sustains 100 V** and reaches ~131 V during the analysed clamp event — zero
+  standoff margin, negative under transient; the same logic that retired the
+  LM5164 and SMBJ100A. Recommended: **SS3200 (200 V 3 A SMA), MDD C65001,
+  114,730 in stock, $0.0675@300** — same SMA footprint, drop-in. The BOM says
+  SS310, so per golden rule 2 the schematic keeps SS310 (C15874) until the
+  swap is approved.
+- **J1 locating posts** and **L2 / 12 k stock depth** carried to the
+  milestone-4 pre-layout checklist.
+
+### Status
+
+- mcu / storage / io: ERC 0 errors, all F-8 C-numbers filled, committed.
+- modem_rf: awaiting user review of docs/ec200u-pinmap-extracted.md (release gate).
+- power: U5 approved; sheet waits for F-9 release per user instruction.
+- Open decisions: **F-10** (DO gate drive), **F-11** (SS3200 swap).
+
+---
+*Next entry: pin-map review release / modem_rf, or F-10/F-11 decisions.*
