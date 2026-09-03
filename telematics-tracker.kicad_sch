@@ -5,108 +5,6 @@
 	(uuid "784bc421-9fc7-43cb-bfc3-562714cb3f68")
 	(paper "A3")
 	(lib_symbols
-		(symbol "power:PWR_FLAG"
-				(power global)
-				(pin_numbers
-					(hide yes)
-				)
-				(pin_names
-					(offset 0)
-					(hide yes)
-				)
-				(exclude_from_sim no)
-				(in_bom yes)
-				(on_board yes)
-				(duplicate_pin_numbers_are_jumpers no)
-				(property "Reference" "#FLG"
-					(at 0 1.905 0)
-					(hide yes)
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(property "Value" "PWR_FLAG"
-					(at 0 3.81 0)
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(property "Footprint" ""
-					(at 0 0 0)
-					(hide yes)
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(property "Datasheet" ""
-					(at 0 0 0)
-					(hide yes)
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(property "Description" "Special symbol for telling ERC where power comes from"
-					(at 0 0 0)
-					(hide yes)
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(property "ki_keywords" "flag power"
-					(at 0 0 0)
-					(hide yes)
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(symbol "PWR_FLAG_0_0"
-					(pin power_out line
-						(at 0 0 90)
-						(length 0)
-						(name ""
-							(effects
-								(font
-									(size 1.27 1.27)
-								)
-							)
-						)
-						(number "1"
-							(effects
-								(font
-									(size 1.27 1.27)
-								)
-							)
-						)
-					)
-				)
-				(symbol "PWR_FLAG_0_1"
-					(polyline
-						(pts
-							(xy 0 0) (xy 0 1.27) (xy -1.016 1.905) (xy 0 2.54) (xy 1.016 1.905) (xy 0 1.27)
-						)
-						(stroke
-							(width 0)
-							(type default)
-						)
-						(fill
-							(type none)
-						)
-					)
-				)
-				(embedded_fonts no)
-			)
 	)
 	(wire
 		(pts
@@ -1518,388 +1416,449 @@
 	)
 	(wire
 		(pts
-			(xy 25.4 269.24) (xy 25.4 274.32)
+			(xy 330.2 27.94) (xy 322.58 27.94)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "92706c85-9466-5f2b-b215-988cc2628179")
+		(uuid "9fe90845-e6a4-5de1-bcee-49b4e4fe086f")
 	)
-	(label "VIN"
-		(at 25.4 274.32 270)
+	(global_label "3V3"
+		(shape input)
+		(at 322.58 27.94 180)
+		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify right)
 		)
-		(uuid "5d7035b9-d33a-5ecf-989e-508b112e49b5")
+		(uuid "7776bfd4-808b-55ea-bd2d-619cccbb578e")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 322.58 27.94 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
 	)
 	(wire
 		(pts
-			(xy 45.72 269.24) (xy 45.72 274.32)
+			(xy 330.2 30.48) (xy 322.58 30.48)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "af9a43e4-50df-5f87-b70a-0c95cc3785ea")
+		(uuid "5fd98316-f253-5172-908d-cec305085c94")
 	)
-	(label "SYS"
-		(at 45.72 274.32 270)
+	(global_label "MODEM_DTR"
+		(shape input)
+		(at 322.58 30.48 180)
+		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify right)
 		)
-		(uuid "23df6b62-333a-5fdb-8940-878cbfc7ed0c")
+		(uuid "f84b6c90-ce83-5106-b589-bd719dd475d8")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 322.58 30.48 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
 	)
 	(wire
 		(pts
-			(xy 66.04 269.24) (xy 66.04 274.32)
+			(xy 330.2 33.02) (xy 322.58 33.02)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "0f9cd7bd-eb0d-5c87-a2a8-cbe0829bae98")
+		(uuid "a645c339-f520-5fdb-8319-c64148c08e7a")
 	)
-	(label "5V0"
-		(at 66.04 274.32 270)
+	(global_label "MODEM_PWRKEY"
+		(shape input)
+		(at 322.58 33.02 180)
+		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify right)
 		)
-		(uuid "09aaf887-ad62-5aa5-b59b-3fb5a7c6efb8")
+		(uuid "0fc080cb-ce76-57c4-a30a-f7154d49a395")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 322.58 33.02 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
 	)
 	(wire
 		(pts
-			(xy 86.36 269.24) (xy 86.36 274.32)
+			(xy 330.2 35.56) (xy 322.58 35.56)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "04f1f7db-1669-579e-ada7-b3d65e69a507")
+		(uuid "5ff7171b-86ba-52e3-8bbf-5b5496938a80")
 	)
-	(label "3V3"
-		(at 86.36 274.32 270)
+	(global_label "MODEM_PWR_EN"
+		(shape input)
+		(at 322.58 35.56 180)
+		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify right)
 		)
-		(uuid "de3cece4-6c5f-5faa-9513-5172ced92b1c")
+		(uuid "554feca5-c296-5440-87e7-a85c76714a8c")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 322.58 35.56 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
 	)
 	(wire
 		(pts
-			(xy 106.68 269.24) (xy 106.68 274.32)
+			(xy 330.2 38.1) (xy 322.58 38.1)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "e2fcb863-b47b-566e-a6cf-d7721da0ffbc")
+		(uuid "d8342eb5-dc4e-5637-8035-dae2f641c991")
 	)
-	(label "VBAT_MODEM"
-		(at 106.68 274.32 270)
+	(global_label "MODEM_RESET"
+		(shape input)
+		(at 322.58 38.1 180)
+		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify right)
 		)
-		(uuid "f52701d9-bd56-5db7-a5c1-61f7ba082042")
+		(uuid "e20176d7-67d3-5562-bddd-4a9a40581585")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 322.58 38.1 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
 	)
 	(wire
 		(pts
-			(xy 127 269.24) (xy 127 274.32)
+			(xy 330.2 40.64) (xy 322.58 40.64)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "85b17cbb-2584-51ca-ba10-c5196989e6c6")
+		(uuid "0de6917b-81d1-503d-8bff-8c83d4b7b14e")
 	)
-	(label "VDD_EXT_1V8"
-		(at 127 274.32 270)
+	(global_label "MODEM_RI"
+		(shape output)
+		(at 322.58 40.64 180)
+		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify right)
 		)
-		(uuid "6299938c-69b1-57c3-a3e1-f7bf2fbab4a7")
+		(uuid "8305aa88-1bc0-5540-a632-c2686304d252")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 322.58 40.64 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
 	)
-	(text "TEMPORARY: the PWR_FLAG symbols below mark rails that will be driven by"
-		(exclude_from_sim no)
-		(at 25.4 200.66 0)
+	(wire
+		(pts
+			(xy 330.2 43.18) (xy 322.58 43.18)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a86667ae-0a31-5679-8f28-8fb6d4b0c855")
+	)
+	(global_label "MODEM_RX"
+		(shape output)
+		(at 322.58 43.18 180)
+		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify right)
 		)
-		(uuid "9e491b4c-6a33-5d95-80ad-7ad4434228c9")
+		(uuid "b3369d47-4f84-533d-b048-fb4aa66f8c5c")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 322.58 43.18 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
 	)
-	(text "power.kicad_sch (not yet drawn - pending the buck selection decision)."
-		(exclude_from_sim no)
-		(at 25.4 205.74 0)
+	(wire
+		(pts
+			(xy 330.2 45.72) (xy 322.58 45.72)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "127b3a23-0f8c-5a3e-b53b-1ac2a3d1e236")
+	)
+	(global_label "MODEM_STATUS"
+		(shape output)
+		(at 322.58 45.72 180)
+		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify right)
 		)
-		(uuid "2012a4ec-4f7f-5f32-8e6a-06fbacd2936b")
+		(uuid "64b0363e-9379-5f68-8369-c5582a1b8774")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 322.58 45.72 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
 	)
-	(text "Remove them when the power sheet is added."
-		(exclude_from_sim no)
-		(at 25.4 210.82 0)
+	(wire
+		(pts
+			(xy 330.2 48.26) (xy 322.58 48.26)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0670fe3a-801b-54d3-b1a7-a9c61d279428")
+	)
+	(global_label "MODEM_TX"
+		(shape input)
+		(at 322.58 48.26 180)
+		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify right)
 		)
-		(uuid "8d04935e-b302-53c1-be28-90f6e0c2a30b")
-	)
-	(symbol
-		(lib_id "power:PWR_FLAG")
-		(at 25.4 269.24 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "612b5afd-aa86-5bc5-9452-4cd028be9f54")
-		(property "Reference" "#PWR066"
-			(at 25.4 261.62 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "PWR_FLAG"
-			(at 25.4 269.24 0)
+		(uuid "3572a21d-de3b-56f2-a8a9-e5de3c0f5350")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 322.58 48.26 0)
 			(hide yes)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-			)
-		)
-		(pin "1"
-			(uuid "4b2c27e6-e625-5f22-99db-601c8b96ae75")
-		)
-		(instances
-			(project "telematics-tracker"
-				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68"
-					(reference "#PWR066")
-					(unit 1)
-				)
+				(justify right)
 			)
 		)
 	)
-	(symbol
-		(lib_id "power:PWR_FLAG")
-		(at 45.72 269.24 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "d5c1b82f-9afa-532a-a0bb-435437dbf639")
-		(property "Reference" "#PWR067"
-			(at 45.72 261.62 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
+	(wire
+		(pts
+			(xy 330.2 50.8) (xy 322.58 50.8)
 		)
-		(property "Value" "PWR_FLAG"
-			(at 45.72 269.24 0)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "23d1dcaf-2220-5592-bd89-bf5418031fe8")
+	)
+	(global_label "SYS"
+		(shape input)
+		(at 322.58 50.8 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "37935568-3b7d-5531-a134-ab708d1f9bc2")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 322.58 50.8 0)
 			(hide yes)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-			)
-		)
-		(pin "1"
-			(uuid "d225ce91-ef8c-52ea-9032-dc5ce805588a")
-		)
-		(instances
-			(project "telematics-tracker"
-				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68"
-					(reference "#PWR067")
-					(unit 1)
-				)
+				(justify right)
 			)
 		)
 	)
-	(symbol
-		(lib_id "power:PWR_FLAG")
-		(at 66.04 269.24 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "26be1846-b258-56df-b65e-69f654cc5eec")
-		(property "Reference" "#PWR068"
-			(at 66.04 261.62 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
+	(wire
+		(pts
+			(xy 25.4 154.94) (xy 17.78 154.94)
 		)
-		(property "Value" "PWR_FLAG"
-			(at 66.04 269.24 0)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ee5f1b55-ad6d-507c-aaa9-2026a23cb6ef")
+	)
+	(global_label "3V3"
+		(shape output)
+		(at 17.78 154.94 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "d7a53402-20b2-50d3-8bb8-7160768dbfc6")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 17.78 154.94 0)
 			(hide yes)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-			)
-		)
-		(pin "1"
-			(uuid "74d60032-7627-5ded-b82d-a280661afe48")
-		)
-		(instances
-			(project "telematics-tracker"
-				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68"
-					(reference "#PWR068")
-					(unit 1)
-				)
+				(justify right)
 			)
 		)
 	)
-	(symbol
-		(lib_id "power:PWR_FLAG")
-		(at 86.36 269.24 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "1781287e-414b-57ad-88e4-dd2eb96aa3b3")
-		(property "Reference" "#PWR069"
-			(at 86.36 261.62 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
+	(wire
+		(pts
+			(xy 25.4 157.48) (xy 17.78 157.48)
 		)
-		(property "Value" "PWR_FLAG"
-			(at 86.36 269.24 0)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "57cef6e9-5c50-574c-9914-d198f2c7b65c")
+	)
+	(global_label "5V0"
+		(shape output)
+		(at 17.78 157.48 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "ef3896b4-3f80-5ea1-8e33-38edad0648cc")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 17.78 157.48 0)
 			(hide yes)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-			)
-		)
-		(pin "1"
-			(uuid "7583d33b-decf-5b23-bcdf-4f91af0d5794")
-		)
-		(instances
-			(project "telematics-tracker"
-				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68"
-					(reference "#PWR069")
-					(unit 1)
-				)
+				(justify right)
 			)
 		)
 	)
-	(symbol
-		(lib_id "power:PWR_FLAG")
-		(at 106.68 269.24 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "9280fb63-d60a-5b7f-9adf-343e0029a93b")
-		(property "Reference" "#PWR070"
-			(at 106.68 261.62 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
+	(wire
+		(pts
+			(xy 25.4 160.02) (xy 17.78 160.02)
 		)
-		(property "Value" "PWR_FLAG"
-			(at 106.68 269.24 0)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b1d8bee9-63e9-5ddc-aabf-283bc105399a")
+	)
+	(global_label "SYS"
+		(shape output)
+		(at 17.78 160.02 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "72e77f02-e0c3-50a6-9af3-f90303417239")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 17.78 160.02 0)
 			(hide yes)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-			)
-		)
-		(pin "1"
-			(uuid "8d1bdc7f-d3bf-5ff1-b4e6-17a576289cea")
-		)
-		(instances
-			(project "telematics-tracker"
-				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68"
-					(reference "#PWR070")
-					(unit 1)
-				)
+				(justify right)
 			)
 		)
 	)
-	(symbol
-		(lib_id "power:PWR_FLAG")
-		(at 127 269.24 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "0c0ebf1e-d548-5c9c-a3bc-15528a14b596")
-		(property "Reference" "#PWR071"
-			(at 127 261.62 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
+	(wire
+		(pts
+			(xy 25.4 162.56) (xy 17.78 162.56)
 		)
-		(property "Value" "PWR_FLAG"
-			(at 127 269.24 0)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "dcdf4659-706d-5063-968b-f42f16b9e3c4")
+	)
+	(global_label "VIN"
+		(shape input)
+		(at 17.78 162.56 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "39f10177-3726-5bee-a616-f65836fa0a41")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 17.78 162.56 0)
 			(hide yes)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-			)
-		)
-		(pin "1"
-			(uuid "05fb9026-f2f5-5911-98ce-02b8d1d89d72")
-		)
-		(instances
-			(project "telematics-tracker"
-				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68"
-					(reference "#PWR071")
-					(unit 1)
-				)
+				(justify right)
 			)
 		)
 	)
@@ -2457,6 +2416,222 @@
 			)
 		)
 	)
+	(sheet
+		(at 330.2 25.4)
+		(size 44.45 30.48)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "70fac1b9-7bfc-5985-a8dc-ae866bd73e38")
+		(property "Sheetname" "modem_rf"
+			(at 330.2 24.7 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "modem_rf.kicad_sch"
+			(at 330.2 57.28 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(pin "3V3" input
+			(at 330.2 27.94 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "7d563e0a-ac45-53f7-babd-8488d7eb7dc6")
+		)
+		(pin "MODEM_DTR" input
+			(at 330.2 30.48 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "3ee1ea05-dccc-5812-a188-08125f53d7aa")
+		)
+		(pin "MODEM_PWRKEY" input
+			(at 330.2 33.02 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "12ad6c0a-1850-5058-b1e1-c3c846fb7ee6")
+		)
+		(pin "MODEM_PWR_EN" input
+			(at 330.2 35.56 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "2fd1616e-530f-51f1-81d9-4dd8174d5791")
+		)
+		(pin "MODEM_RESET" input
+			(at 330.2 38.1 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "bfce67f7-4137-588f-bf78-a8312f9e1023")
+		)
+		(pin "MODEM_RI" output
+			(at 330.2 40.64 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "e643651e-21bd-5d9f-b895-d24b9454f175")
+		)
+		(pin "MODEM_RX" output
+			(at 330.2 43.18 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "664f8d0a-cd31-59ea-a84e-9e8988d4225b")
+		)
+		(pin "MODEM_STATUS" output
+			(at 330.2 45.72 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "e4ce5d4b-8154-5b79-bc8e-4eae266c3cf5")
+		)
+		(pin "MODEM_TX" input
+			(at 330.2 48.26 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "60f95ff1-d4f1-50cc-9799-4acba57a2a9d")
+		)
+		(pin "SYS" input
+			(at 330.2 50.8 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "6d9db47d-9b07-5bac-982d-d1901142c8cc")
+		)
+		(instances
+			(project "telematics-tracker"
+				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68"
+					(page "5")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 25.4 152.4)
+		(size 44.45 20.32)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "9e25249c-17f3-52b0-bdea-48010d482c2d")
+		(property "Sheetname" "power"
+			(at 25.4 151.7 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "power.kicad_sch"
+			(at 25.4 174.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(pin "3V3" output
+			(at 25.4 154.94 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "71f317fc-ecca-5023-8d04-c473378e37fe")
+		)
+		(pin "5V0" output
+			(at 25.4 157.48 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "d894b678-c311-57b8-9de9-c3f00643b2ba")
+		)
+		(pin "SYS" output
+			(at 25.4 160.02 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "fb2a9fce-5445-5f74-a59c-ee513ec56c0a")
+		)
+		(pin "VIN" input
+			(at 25.4 162.56 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "b9ee8482-6dd9-5031-b60f-411f10625ef1")
+		)
+		(instances
+			(project "telematics-tracker"
+				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68"
+					(page "6")
+				)
+			)
+		)
+	)
 	(sheet_instances
 		(path "/"
 			(page "1")
@@ -2469,6 +2644,12 @@
 		)
 		(path "/cbd713bf-4a1d-56fd-a164-2267d4bf4daf"
 			(page "4")
+		)
+		(path "/70fac1b9-7bfc-5985-a8dc-ae866bd73e38"
+			(page "5")
+		)
+		(path "/9e25249c-17f3-52b0-bdea-48010d482c2d"
+			(page "6")
 		)
 	)
 	(embedded_fonts no)

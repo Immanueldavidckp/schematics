@@ -606,7 +606,9 @@ def write_root(directory, sheets, rails=(), notes=()):
     for idx, sh in enumerate(sheets):
         pins = sorted(sh.hier_pins.items())
         h = max(20.32, 2.54 * (len(pins) + 2))
-        x, y = col_x[idx % 4], 25.4
+        # 4 columns per row; a 5th+ sheet starts a new row far below, otherwise
+        # it lands on top of column 0 and its pin stubs short into that sheet's
+        x, y = col_x[idx % 4], 25.4 + 127.0 * (idx // 4)
         uid = sh.sheet_symbol_uuid
         s = ['\t(sheet',
              f'\t\t(at {_fmt(x)} {_fmt(y)})',

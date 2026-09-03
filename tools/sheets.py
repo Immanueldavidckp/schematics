@@ -179,7 +179,7 @@ def build_mcu():
     # --- heartbeat LED on PC13 (sinks current: 3V3 -> R -> LED -> PC13)
     sh.series("Device:R", "R4", "1k", (g(252), g(150)), "3V3", "SYS_LED_A",
               R0805, LCSC_R1K)
-    d1 = sh.place("Device:LED", "D1", "GRN", (g(252), g(158)), LED0603, LCSC_LED_G)
+    d1 = sh.place("Device:LED", "D20", "GRN", (g(252), g(158)), LED0603, LCSC_LED_G)
     sh.net(d1, "2", "SYS_LED_A", length=g(3))
     sh.net(d1, "1", "SYS_LED", length=g(3))
 
@@ -191,7 +191,7 @@ def build_mcu():
     sh.net(q1, "1", "NSL_BASE", length=g(3))
     sh.gnd(q1, "2", length=g(3))
     sh.net(q1, "3", "NSL_K", length=g(3))
-    d2 = sh.place("Device:LED", "D2", "BLU", (g(280), g(142)), LED0603, LCSC_LED_G)
+    d2 = sh.place("Device:LED", "D21", "BLU", (g(280), g(142)), LED0603, LCSC_LED_G)
     sh.net(d2, "1", "NSL_K", length=g(3))
     sh.net(d2, "2", "NSL_A", length=g(3))
     sh.series("Device:R", "R6", "1k", (g(280), g(130)), "3V3", "NSL_A",
@@ -531,14 +531,525 @@ def build_io():
     return sh
 
 
-BUILDERS = {"mcu": build_mcu, "storage": build_storage, "io": build_io}
+# ------------------------------------------------------------------ MODEM_RF
 
-RAILS = ["VIN", "SYS", "5V0", "3V3", "VBAT_MODEM", "VDD_EXT_1V8"]
-NOTES = [
-    "TEMPORARY: the PWR_FLAG symbols below mark rails that will be driven by",
-    "power.kicad_sch (not yet drawn - pending the buck selection decision).",
-    "Remove them when the power sheet is added.",
-]
+# F-8/M2 sweep selections for modem_rf (2026-09-02, all API/browser-verified)
+LCSC_EC200U = "C2916205"       # BOM part EC200UCNAA-N05-SGNSA; symbol source C2916206
+LCSC_TXB0104 = "C60708"        # TI TXB0104PWR TSSOP-14
+LCSC_SIM = "C53207808"         # JXTCONN NANO SIM 7P 1.37H PUSH (6 contacts + CD)
+LCSC_UFL = "C53133524"         # XYECONN XY-IPEX1 (IPEX gen-1 / U.FL, 6 GHz 50R)
+LCSC_USBLC6 = "C7519"          # ST USBLC6-2SC6 (genuine)
+LCSC_SMF05C = "C15879"         # onsemi SMF05CT1G SOT-363
+LCSC_AO3401A = "C15127"        # AOS AO3401A -30V 4A SOT-23
+LCSC_MMBT3906 = "C75549"       # Nexperia MMBT3906,215
+LCSC_SMF50A = "C193402"        # MDD SMF5.0A (modem VBAT clamp)
+LCSC_C100U = "C49066"          # Samsung CL32A107MQVNNNE 100uF 6.3V X5R 1210
+LCSC_C10U = "C440198"          # Murata GRM21BR61H106KE43L 10uF 50V X5R 0805
+C1210 = "Capacitor_SMD:C_1210_3225Metric"
+
+
+def _ec200u_verified_pins():
+    """Parse docs/ec200u-pinmap-extracted.md -> (verified: {pin: name},
+    needs_human: {pin: name}). Single source of truth for the F-9 gate."""
+    import re as _re
+    path = os.path.join(PROJ, "docs", "ec200u-pinmap-extracted.md")
+    ver, human = {}, {}
+    for ln in open(path, encoding="utf-8"):
+        m = _re.match(r"\| (\d+) \| ([^|]+) \| (VERIFIED|NEEDS-HUMAN) \|", ln)
+        if m:
+            pin, name, status = m.group(1), m.group(2).strip(), m.group(3)
+            (ver if status == "VERIFIED" else human)[pin] = name
+    assert len(ver) + len(human) == 144, "pin map doc incomplete"
+    return ver, human
+
+
+def build_modem_rf():
+    sh = Sheet("modem_rf", paper="A2")
+    sh.text("MODEM + RF - Quectel EC200U-CN (BOM part C2916205; schematic symbol "
+            "imported from C2916206 after F-9). Wiring per Quectel EC200U HW "
+            "Design V1.2 and handoff section 6.", (g(20), g(14)), 2.0)
+    sh.text("F-9 CONDITIONAL RELEASE: only Table-7-VERIFIED pins are wired. "
+            "Every NEEDS-HUMAN pin is no-connect flagged F9-REVIEW until the "
+            "human review of docs/ec200u-pinmap-extracted.md completes.",
+            (g(20), g(18)))
+
+    ver, human = _ec200u_verified_pins()
+
+    u1 = sh.place("jlc:EC200UCNLA-N05-SGNSA", "U1", "EC200UCNAA-N05-SGNSA",
+                  (g(160), g(140)),
+                  "jlc:LCC-LGA-144_L31.0-W28.0-P1.30_L610-CN-02", LCSC_EC200U,
+                  fields={"SymbolSource": "C2916206 (F-9)"})
+
+    WIRE = {
+        "57": ("VBAT_MODEM", "net"), "58": ("VBAT_MODEM", "net"),
+        "59": ("VBAT_MODEM", "net"), "60": ("VBAT_MODEM", "net"),
+        "20": ("RESETN_MOD", "net"), "21": ("PWRKEY_MOD", "net"),
+        "61": ("STATUS_MOD", "net"),
+        "67": ("MTXD_1V8", "net"), "68": ("MRXD_1V8", "net"),
+        "62": ("MRI_1V8", "net"), "66": ("MDTR_1V8", "net"),
+        "69": ("USB_DP_M", "net"), "70": ("USB_DM_M", "net"),
+        "71": ("USB_VBUS", "net"),
+        "14": ("USIM_VDD", "net"), "15": ("USIM_DATA_M", "net"),
+        "16": ("USIM_CLK_M", "net"), "17": ("USIM_RST_M", "net"),
+        "13": ("USIM_DET", "net"), "10": ("GND", "net"),
+        "47": ("ANT_GNSS_M", "net"), "49": ("ANT_MAIN_M", "net"),
+        "7": ("VDD_EXT_1V8", "net"), "6": ("NETLIGHT_MOD", "net"),
+    }
+    review = []
+    for pin in sorted(u1.pins, key=int):
+        if pin in WIRE:
+            assert pin in ver, f"pin {pin} is wired but NOT VERIFIED -- F-9 gate"
+            sh.net(u1, pin, WIRE[pin][0], length=g(4))
+        elif pin in ver and ver[pin] == "GND":
+            sh.gnd(u1, pin, length=g(3))
+        else:
+            sh.nc(u1, pin)
+            if pin in human:
+                review.append(pin)
+    sh.text(f"F9-REVIEW: NC pins pending human review of the pin map "
+            f"({len(review)} pins): " + ", ".join(review[:38]) + " ...",
+            (g(20), g(230)))
+    sh.text("F9-REVIEW: the block 85-112 and 51-56/72/76 are GND per the "
+            "symbol; they MUST be connected to GND after review sign-off, "
+            "before layout (milestone-3 gate).", (g(20), g(234)))
+
+    # ---- VBAT_MODEM decoupling + clamp, <=5mm from U1 at layout -----------
+    sh.series("Device:C", "C40", "100uF", (g(60), g(40)), "VBAT_MODEM", None,
+              C1210, LCSC_C100U, gnd_b=True)
+    sh.series("Device:C", "C41", "100uF", (g(70), g(40)), "VBAT_MODEM", None,
+              C1210, LCSC_C100U, gnd_b=True)
+    sh.series("Device:C", "C42", "1uF", (g(80), g(40)), "VBAT_MODEM", None,
+              C0603, LCSC_C1U, gnd_b=True)
+    sh.series("Device:C", "C43", "100nF", (g(90), g(40)), "VBAT_MODEM", None,
+              C0603, LCSC_C100N, gnd_b=True)
+    dv = sh.place("jlc:SMF5.0A_C193402", "D12", "SMF5.0A",
+                  (g(100), g(46)), "jlc:SOD-123FL_L2.7-W1.8-LS3.8-RD",
+                  LCSC_SMF50A)
+    sh.net(dv, "1", "VBAT_MODEM", length=g(3))     # cathode to rail
+    sh.gnd(dv, "2", length=g(3))
+    sh.text("VBAT_MODEM: 2x100uF + 1uF + 100nF + SMF5.0A, place <=5mm from "
+            "U1 VBAT pads (57-60).", (g(50), g(32)))
+
+    # ---- Q3 modem power switch: default ON, MODEM_PWR_EN high = power cut --
+    q3 = sh.place("jlc:AO3401A", "Q3", "AO3401A", (g(36), g(60)),
+                  "jlc:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR", LCSC_AO3401A)
+    sh.hier(q3, "2", "SYS", "input", length=g(6))          # source
+    sh.net(q3, "3", "VBAT_MODEM", length=g(4))             # drain
+    sh.net(q3, "1", "Q3_G", length=g(4))
+    sh.series("Device:R", "R50", "100k", (g(24), g(70)), "Q3_G", None,
+              R0805, LCSC_R100K, gnd_b=True)               # default ON
+    q13 = sh.place("Transistor_BJT:Q_PNP_BEC", "Q13", "MMBT3906",
+                   (g(48), g(76)), SOT23, LCSC_MMBT3906)
+    sh.net(q13, "2", "SYS", length=g(3))                   # emitter
+    sh.net(q13, "3", "Q3_G", length=g(3))                  # collector
+    sh.net(q13, "1", "Q13_B", length=g(3))
+    sh.series("Device:R", "R51", "10k", (g(60), g(82)), "Q13_B", "Q14_C",
+              R0805, LCSC_R10K)
+    sh.series("Device:R", "R52", "47k", (g(48), g(90)), "SYS", "Q13_B",
+              R0805, LCSC_R47K)
+    q14 = sh.place("Transistor_BJT:Q_NPN_BEC", "Q14", "MMBT3904",
+                   (g(72), g(90)), SOT23, LCSC_MMBT3904V)
+    sh.net(q14, "3", "Q14_C", length=g(3))
+    sh.gnd(q14, "2", length=g(3))
+    sh.net(q14, "1", "Q14_B", length=g(3))
+    r53 = sh.place("Device:R", "R53", "4.7k", (g(84), g(84)), R0805, LCSC_R4K7)
+    sh.hier(r53, "1", "MODEM_PWR_EN", "input", length=g(6))
+    sh.net(r53, "2", "Q14_B", length=g(3))
+    sh.series("Device:R", "R54", "47k", (g(94), g(96)), "Q14_B", None,
+              R0805, LCSC_R47K, gnd_b=True)
+    sh.text("Q3 high-side switch: DEFAULT ON (R50 pulls gate low). "
+            "MODEM_PWR_EN HIGH = modem power CUT (power-cycle). Q14 NPN "
+            "level stage + Q13 PNP pull gate to SYS.", (g(20), g(102)))
+
+    # ---- PWRKEY / RESET_N open-collector NPN stages ------------------------
+    for ref, rref, sig, mod in (("Q9", 55, "MODEM_PWRKEY", "PWRKEY_MOD"),
+                                ("Q10", 57, "MODEM_RESET", "RESETN_MOD")):
+        qq = sh.place("Transistor_BJT:Q_NPN_BEC", ref, "MMBT3904",
+                      (g(36 + (0 if ref == "Q9" else 28)), g(120)),
+                      SOT23, LCSC_MMBT3904V)
+        rr = sh.place("Device:R", f"R{rref}", "4.7k",
+                      (g(24 + (0 if ref == "Q9" else 28)), g(112)),
+                      R0805, LCSC_R4K7)
+        sh.hier(rr, "1", sig, "input", length=g(6))
+        sh.net(rr, "2", f"{ref}_B", length=g(3))
+        sh.net(qq, "1", f"{ref}_B", length=g(3))
+        sh.gnd(qq, "2", length=g(3))
+        sh.net(qq, "3", mod, length=g(3))
+        sh.series("Device:R", f"R{rref + 1}", "47k",
+                  (g(30 + (0 if ref == "Q9" else 28)), g(130)),
+                  f"{ref}_B", None, R0805, LCSC_R10K, gnd_b=True)
+
+    # ---- STATUS: Quectel Fig 28 NPN stage (MODEM_STATUS is INVERTED) -------
+    sh.series("Device:R", "R59", "4.7k", (g(96), g(112)), "STATUS_MOD",
+              "Q11_B", R0805, LCSC_R4K7)
+    q11 = sh.place("Transistor_BJT:Q_NPN_BEC", "Q11", "MMBT3904",
+                   (g(108), g(120)), SOT23, LCSC_MMBT3904V)
+    sh.net(q11, "1", "Q11_B", length=g(3))
+    sh.gnd(q11, "2", length=g(3))
+    sh.hier(q11, "3", "MODEM_STATUS", "output", length=g(5))
+    sh.series("Device:R", "R60", "47k", (g(102), g(130)), "Q11_B", None,
+              R0805, LCSC_R47K, gnd_b=True)
+    r61 = sh.place("Device:R", "R61", "47k", (g(118), g(112)), R0805, LCSC_R47K)
+    sh.hier(r61, "1", "3V3", "input", length=g(5))   # brings 3V3 onto this sheet
+    sh.net(r61, "2", "MODEM_STATUS", length=g(3))
+    tp = sh.place("Connector:TestPoint", "TP14", "MODEM_STATUS",
+                  (g(130), g(120)), TP)
+    sh.net(tp, "1", "MODEM_STATUS", length=g(4))
+    sh.text("STATUS per Quectel Fig 28 NPN stage. NOTE: MODEM_STATUS at the "
+            "MCU is INVERTED (low = modem running) - firmware note logged.",
+            (g(92), g(136)))
+
+    # ---- UART level shifter U8: VCCA=VDD_EXT 1.8V, VCCB=3V3 ---------------
+    u8 = sh.place("jlc:TXB0104PWR", "U8", "TXB0104PWR", (g(200), g(60)),
+                  "jlc:TSSOP-14_L5.0-W4.4-P0.65-LS6.4-BL", LCSC_TXB0104)
+    sh.net(u8, "1", "VDD_EXT_1V8", length=g(4))
+    sh.net(u8, "14", "3V3", length=g(4))
+    sh.gnd(u8, "7", length=g(3))
+    sh.nc(u8, "6"); sh.nc(u8, "9")
+    # OE pulldown: outputs Hi-Z until modem's 1.8 V rail is up
+    sh.net(u8, "8", "U8_OE", length=g(4))
+    sh.series("Device:R", "R62", "10k", (g(178), g(76)), "U8_OE", None,
+              R0805, LCSC_R10K, gnd_b=True)
+    sh.series("Device:R", "R63", "47k", (g(168), g(52)), "VDD_EXT_1V8",
+              "U8_OE", R0805, LCSC_R47K)
+    # A side 1.8V, named directly for the modem pins they reach:
+    # A1 (from B1 = MODEM_TX) drives modem MAIN_RXD(68); A2 <- MAIN_TXD(67)
+    sh.net(u8, "2", "MRXD_1V8", length=g(4))
+    sh.net(u8, "3", "MTXD_1V8", length=g(4))
+    sh.net(u8, "4", "MRI_1V8", length=g(4))
+    sh.net(u8, "5", "MDTR_1V8", length=g(4))
+    # B side 3.3V to MCU (hier)
+    hb = {"13": ("MODEM_TX", "input"), "12": ("MODEM_RX", "output"),
+          "11": ("MODEM_RI", "output"), "10": ("MODEM_DTR", "input")}
+    for pin, (net, shape) in hb.items():
+        sh.hier(u8, pin, net, shape, length=g(6))
+    sh.series("Device:C", "C44", "1uF", (g(168), g(40)), "VDD_EXT_1V8", None,
+              C0603, LCSC_C1U, gnd_b=True)
+    sh.series("Device:C", "C45", "100nF", (g(178), g(40)), "VDD_EXT_1V8", None,
+              C0603, LCSC_C100N, gnd_b=True)
+    sh.series("Device:C", "C46", "100nF", (g(188), g(40)), "3V3", None,
+              C0603, LCSC_C100N, gnd_b=True)
+    sh.text("U8 TXB0104: A=1.8V (VDD_EXT), B=3V3. A1<->B1 carries MCU TX -> "
+            "modem MAIN_RXD(68); A2<->B2 modem MAIN_TXD(67) -> MCU RX; "
+            "A3 RI(62); A4 DTR(66). OE held low until VDD_EXT rises.",
+            (g(160), g(30)))
+
+    # ---- NETLIGHT LED ------------------------------------------------------
+    sh.series("Device:R", "R64", "4.7k", (g(148), g(112)), "NETLIGHT_MOD",
+              "Q12_B", R0805, LCSC_R4K7)
+    q12 = sh.place("Transistor_BJT:Q_NPN_BEC", "Q12", "MMBT3904",
+                   (g(160), g(120)), SOT23, LCSC_MMBT3904V)
+    sh.net(q12, "1", "Q12_B", length=g(3))
+    sh.gnd(q12, "2", length=g(3))
+    sh.net(q12, "3", "NETLED_K", length=g(3))
+    d13 = sh.place("Device:LED", "D13", "NET", (g(160), g(104)), LED0603,
+                   LCSC_LED_G)
+    sh.net(d13, "1", "NETLED_K", length=g(3))
+    sh.net(d13, "2", "NETLED_A", length=g(3))
+    sh.series("Device:R", "R65", "1k", (g(170), g(98)), "3V3", "NETLED_A",
+              R0805, LCSC_R1K)
+
+    # ---- USIM: holder + MFF2 eSIM pads in parallel -------------------------
+    for sig, xoff in (("DATA", 0), ("CLK", 10), ("RST", 20)):
+        sh.series("Device:R", f"R{66 + xoff // 10}", "33R",
+                  (g(232 + xoff), g(60)), f"USIM_{sig}_M", f"SIM_{sig}",
+                  R0805, LCSC_R100)   # F-5 provisional: 33R 0805 to verify
+    sh.series("Device:C", "C47", "100nF", (g(262), g(60)), "USIM_VDD", None,
+              C0603, LCSC_C100N, gnd_b=True)
+    x1 = sh.place("jlc:NANOSIM7P1.37HPUSH", "X1", "NANO-SIM",
+                  (g(250), g(100)), "jlc:SIM-SMD_YKSIM-PUSH137-140NANO",
+                  LCSC_SIM)
+    sh.net(x1, "C1", "USIM_VDD_SIM", length=g(4))
+    sh.net(x1, "C2", "SIM_RST", length=g(4))
+    sh.net(x1, "C3", "SIM_CLK", length=g(4))
+    sh.net(x1, "C7", "SIM_DATA", length=g(4))
+    sh.net(x1, "CD", "USIM_DET", length=g(4))
+    sh.gnd(x1, "C5", length=g(3))
+    sh.nc(x1, "C6")
+    for pnum in ("8", "9", "10", "11"):
+        sh.gnd(x1, pnum, length=g(3))              # shield/mount pads
+    # MFF2 eSIM pads in parallel, VDD via 0R selects (eSIM path DNP)
+    es = sh.place("Connector_Generic:Conn_01x06", "X2", "MFF2-eSIM-pads",
+                  (g(282), g(100)), "TBD-MFF2:eSIM_MFF2_pads", "DNP-MFF2",
+                  dnp=True)
+    sh.net(es, "1", "USIM_VDD_ESIM", length=g(4))
+    sh.net(es, "2", "SIM_RST", length=g(4))
+    sh.net(es, "3", "SIM_CLK", length=g(4))
+    sh.net(es, "4", "SIM_DATA", length=g(4))
+    sh.gnd(es, "5", length=g(3))
+    sh.nc(es, "6")
+    sh.series("Device:R", "R69", "0R", (g(272), g(76)), "USIM_VDD",
+              "USIM_VDD_SIM", R0805, LCSC_R0)
+    sh.series("Device:R", "R70", "0R", (g(282), g(76)), "USIM_VDD",
+              "USIM_VDD_ESIM", R0805, LCSC_R0, dnp=True)
+    # ESD array at the holder
+    e1 = sh.place("jlc:SMF05CT1G", "D14", "SMF05C", (g(232), g(130)),
+                  "jlc:SOT-363_L2.0-W1.3-P0.65-LS2.1-BR", LCSC_SMF05C)
+    sh.net(e1, "1", "SIM_DATA", length=g(4))
+    sh.net(e1, "3", "SIM_CLK", length=g(4))
+    sh.net(e1, "4", "SIM_RST", length=g(4))
+    sh.net(e1, "5", "USIM_VDD", length=g(4))
+    sh.gnd(e1, "2", length=g(3))
+    sh.nc(e1, "6")
+    sh.text("USIM: 33R series on DATA/CLK/RST, 100nF on VDD, SMF05C at the "
+            "holder. MFF2 eSIM pads (X2, DNP) parallel; VDD via 0R selects "
+            "R69 (fitted, holder) / R70 (DNP, eSIM). SMF05C pin2=GND to be "
+            "confirmed at footprint verification.", (g(226), g(146)))
+
+    # ---- USB to test pads with ESD -----------------------------------------
+    ud = sh.place("jlc:USBLC6-2SC6", "D15", "USBLC6-2SC6", (g(60), g(160)),
+                  "jlc:SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL", LCSC_USBLC6)
+    sh.net(ud, "1", "USB_DP_M", length=g(4))
+    sh.net(ud, "3", "USB_DM_M", length=g(4))
+    sh.net(ud, "6", "USB_DP_TP", length=g(4))
+    sh.net(ud, "4", "USB_DM_TP", length=g(4))
+    sh.net(ud, "5", "USB_VBUS", length=g(4))
+    sh.gnd(ud, "2", length=g(3))
+    for i, (net, x) in enumerate((("USB_DP_TP", 90), ("USB_DM_TP", 98),
+                                  ("USB_VBUS", 106))):
+        tp = sh.place("Connector:TestPoint", f"TP{15 + i}", net,
+                      (g(x), g(158)), TP)
+        sh.net(tp, "1", net, length=g(3))
+    tpg = sh.place("Connector:TestPoint", "TP18", "GND", (g(114), g(158)), TP)
+    sh.gnd(tpg, "1", length=g(3))
+    sh.text("USB (FOTA/Quectel tools): DP/DM/VBUS + GND on 4 test pads via "
+            "USBLC6-2SC6 flow-through ESD.", (g(52), g(172)))
+
+    # ---- RF: pi networks + U.FL --------------------------------------------
+    for tag, base, ref in (("MAIN", 190, 0), ("GNSS", 190 + 40, 1)):
+        yb = 160
+        rs = sh.place("Device:R", f"R{71 + ref}", "0R",
+                      (g(base), g(yb)), "Resistor_SMD:R_0402_1005Metric",
+                      LCSC_R0)
+        sh.net(rs, "1", f"ANT_{tag}_M", length=g(4))
+        sh.net(rs, "2", f"ANT_{tag}_C", length=g(4))
+        c1 = sh.place("Device:C", f"C{48 + 2 * ref}", "DNP",
+                      (g(base - 6), g(yb + 8)),
+                      "Capacitor_SMD:C_0402_1005Metric", "", dnp=True)
+        sh.net(c1, "1", f"ANT_{tag}_M", length=g(3))
+        sh.gnd(c1, "2", length=g(3))
+        c2 = sh.place("Device:C", f"C{49 + 2 * ref}", "DNP",
+                      (g(base + 6), g(yb + 8)),
+                      "Capacitor_SMD:C_0402_1005Metric", "", dnp=True)
+        sh.net(c2, "1", f"ANT_{tag}_C", length=g(3))
+        sh.gnd(c2, "2", length=g(3))
+        af = sh.place("jlc:XY-IPEX1", f"AF{1 + ref}", "U.FL",
+                      (g(base + 16), g(yb - 8)), "jlc:CONN-SMD_XY-IPEX1",
+                      LCSC_UFL)
+        sh.net(af, "3", f"ANT_{tag}_C", length=g(4))
+        sh.nc(af, "4")
+        sh.gnd(af, "1", length=g(3))
+        sh.gnd(af, "2", length=g(3))
+    sh.text("ANT_MAIN(49) / ANT_GNSS(47): 50R CPWG at layout, pi network "
+            "(series 0R fitted, shunts DNP) to U.FL. SMA drill template is a "
+            "housing option, not a board part.", (g(182), g(178)))
+
+    return sh
+
+
+# -------------------------------------------------------------------- POWER
+
+LCSC_EG11752 = "C53368402"     # EG11752 200V 2A buck (U5, approved)
+LCSC_SMDJ100A = "C1977839"     # Littelfuse SMDJ100A 3kW (D2, approved)
+LCSC_S3M = "C5204901"          # TWGMC S3M 1kV 3A (SMB variant)
+LCSC_FUSE = "C95352"           # Littelfuse 0443001.DR 1A 250VAC/VDC
+LCSC_L150U = "C21325"          # SMDRI127-151MT 150uH Isat 2.7A
+LCSC_L2R2 = "C391305"          # Murata DFE252012P-2R2M 2.2uH
+LCSC_C2U2_100V = "C5449052"    # CCTC TCC1210X7R225K101MT 2.2uF 100V X7R 1210
+LCSC_BQ25606 = "C374063"
+LCSC_ME6211 = "C82942"
+LCSC_JST_XH3 = "C144394"       # JST B3B-XH-A(LF)(SN)
+
+
+def build_power():
+    sh = Sheet("power", paper="A3")
+    sh.text("POWER - 10.5-100 V front end, EG11752 buck (U5, approved with "
+            "conditions a-c), BQ25606 charger, ME6211 3V3 LDO.",
+            (g(20), g(14)), 2.0)
+
+    # ---- HV front end -------------------------------------------------------
+    f1 = sh.place("jlc:0443001.DR", "F1", "1A 250V", (g(40), g(40)),
+                  "jlc:FUSE-SMD_L10.1-W3.1", LCSC_FUSE)
+    sh.hier(f1, "1", "VIN", "input", length=g(6))
+    sh.net(f1, "2", "VIN_F", length=g(4))
+    d1 = sh.place("jlc:S3M_C5204901", "D1", "S3M", (g(60), g(40)),
+                  "jlc:SMB_L4.3-W3.6-LS5.3-RD", LCSC_S3M)
+    sh.net(d1, "2", "VIN_F", length=g(4))       # anode
+    sh.net(d1, "1", "VIN_P", length=g(4))       # cathode -> protected node
+    d2 = sh.place("Device:D_TVS", "D2", "SMDJ100A", (g(74), g(50)),
+                  "Diode_SMD:D_SMC", LCSC_SMDJ100A)
+    sh.net(d2, "2", "VIN_P", length=g(3))
+    sh.gnd(d2, "1", length=g(3))
+    sh.series("Device:C", "C70", "2.2uF 100V", (g(86), g(50)), "VIN_P", None,
+              C1210, LCSC_C2U2_100V, gnd_b=True)
+    sh.series("Device:C", "C71", "2.2uF 100V", (g(96), g(50)), "VIN_P", None,
+              C1210, LCSC_C2U2_100V, gnd_b=True)
+    sh.series("Device:C", "C72", "100nF", (g(106), g(50)), "VIN_P", None,
+              C0603, LCSC_C100N, gnd_b=True)
+    # 10R series to the buck input (TASK A analysed topology)
+    sh.series("Device:R", "R80", "10R 2512", (g(118), g(40)), "VIN_P", "VIN_B",
+              "Resistor_SMD:R_2512_6332Metric", "TBD-F5-pulse")
+    sh.series("Device:C", "C73", "2.2uF 100V", (g(130), g(50)), "VIN_B", None,
+              C1210, LCSC_C2U2_100V, gnd_b=True)
+    sh.series("Device:C", "C74", "2.2uF 100V", (g(140), g(50)), "VIN_B", None,
+              C1210, LCSC_C2U2_100V, gnd_b=True)
+    sh.text("Front end: F1 (250 VDC interrupt) -> D1 S3M reverse block -> "
+            "D2 SMDJ100A 3kW -> 10R (2512 anti-surge, F-5: pulse rating to "
+            "verify) -> buck. Margin at 3.7A clamp: 34.9% (design-log).",
+            (g(30), g(28)))
+
+    # ---- U5 EG11752 buck ----------------------------------------------------
+    u5 = sh.place("jlc:EG11752_C53368402", "U5", "EG11752",
+                  (g(180), g(48)), "jlc:SOIC-8_L4.9-W3.9-P1.27-LS6.0-BL-EP3.3-1",
+                  LCSC_EG11752,
+                  fields={"Alternate": "EG11722 C53368437 (150V, derated emergency only)"})
+    sh.net(u5, "8", "VIN_B", length=g(4))
+    sh.net(u5, "9", "VIN_B", length=g(4))       # EP = VIN per datasheet
+    sh.gnd(u5, "3", length=g(3))
+    sh.net(u5, "1", "U5_VCC", length=g(4))
+    sh.series("Device:C", "C75", "1uF 25V", (g(200), g(28)), "U5_VCC", None,
+              C0603, LCSC_C1U, gnd_b=True)
+    sh.series("Device:R", "R81", "100k", (g(190), g(28)), "U5_VCC", "U5_EN",
+              R0805, LCSC_R100K)
+    sh.net(u5, "2", "U5_EN", length=g(4))
+    sh.net(u5, "5", "U5_VB", length=g(4))
+    sh.net(u5, "6", "SW_BUCK", length=g(4))
+    cb = sh.place("Device:C", "C76", "100nF 25V", (g(158), g(34)),
+                  C0603, LCSC_C100N)
+    sh.net(cb, "1", "U5_VB", length=g(3))
+    sh.net(cb, "2", "SW_BUCK", length=g(3))
+    # IS sense: F-12 - datasheet gives no R_IS formula; 0R fitted, tune at bench
+    sh.series("Device:R", "R82", "0R (F-12)", (g(158), g(60)), "U5_IS",
+              "SW_BUCK", R0805, LCSC_R0)
+    sh.net(u5, "7", "U5_IS", length=g(4))
+    sh.net(u5, "4", "U5_FB", length=g(4))
+    # freewheel + inductor + output
+    df = sh.place("Device:D_Schottky", "D16", "SS3200", (g(158), g(74)),
+                  "Diode_SMD:D_SMA", LCSC_SS3200)
+    sh.net(df, "1", "SW_BUCK", length=g(3))     # cathode to switch node
+    sh.gnd(df, "2", length=g(3))
+    l1 = sh.place("jlc:SMDRI127-151MT", "L1", "150uH 2.7A",
+                  (g(214), g(64)), "jlc:IND-SMD_L12.3-W12.3", LCSC_L150U)
+    sh.net(l1, "1", "SW_BUCK", length=g(4))
+    sh.net(l1, "2", "5V0", length=g(4))
+    # FB divider: 4.3k / 1.5k -> 5.03 V (datasheet 8.5 worked example)
+    sh.series("Device:R", "R83", "4.3k", (g(196), g(76)), "5V0", "U5_FB",
+              R0805, "TBD-F5")
+    sh.series("Device:R", "R84", "1.5k", (g(206), g(84)), "U5_FB", None,
+              R0805, "TBD-F5", gnd_b=True)
+    for i, x in enumerate((226, 236, 246)):
+        sh.series("Device:C", f"C{77 + i}", "10uF", (g(x), g(74)), "5V0", None,
+                  C0805, LCSC_C10U, gnd_b=True)
+    sh.series("Device:C", "C80", "100nF", (g(256), g(74)), "5V0", None,
+              C0603, LCSC_C100N, gnd_b=True)
+    tp5 = sh.place("Connector:TestPoint", "TP19", "5V0", (g(238), g(60)), TP)
+    sh.hier(tp5, "1", "5V0", "output", length=g(5))
+    sh.text("U5 EG11752: EN 100k from VCC (per fig 6-2); VB-VS 100nF boot; "
+            "IS via R82 0R - F-12: no R_IS formula in the V1.0 datasheet, "
+            "bench/FAE item; FB 4.3k/1.5k -> 5.03V; L 150uH (Isat 2.7A); "
+            "SS3200 freewheel. #1 bench test: 100V in, 0.7-1A out, Ton~455ns.",
+            (g(150), g(96)))
+
+    # ---- U6 BQ25606 charger -------------------------------------------------
+    u6 = sh.place("jlc:BQ25606RGER", "U6", "BQ25606RGER", (g(90), g(150)),
+                  "jlc:VQFN-24_L4.0-W4.0-P0.50-TL-EP2.8", LCSC_BQ25606)
+    sh.net(u6, "24", "5V0", length=g(4))
+    sh.net(u6, "1", "5V0", length=g(4))          # VAC shorted to VBUS (Table 7)
+    sh.series("Device:C", "C61", "1uF", (g(56), g(128)), "5V0", None,
+              C0603, LCSC_C1U, gnd_b=True)
+    sh.net(u6, "23", "PMID", length=g(4))
+    sh.series("Device:C", "C62", "10uF", (g(66), g(128)), "PMID", None,
+              C0805, LCSC_C10U, gnd_b=True)
+    sh.net(u6, "22", "REGN", length=g(4))
+    sh.series("Device:C", "C63", "4.7uF", (g(76), g(128)), "REGN", None,
+              C0805, LCSC_C4U7, gnd_b=True)
+    sh.net(u6, "21", "U6_BTST", length=g(4))
+    cbt = sh.place("Device:C", "C64", "47nF", (g(120), g(128)), C0603,
+                   "TBD-F5")
+    sh.net(cbt, "1", "U6_BTST", length=g(3))
+    sh.net(cbt, "2", "SW_CHG", length=g(3))
+    sh.net(u6, "19", "SW_CHG", length=g(4))
+    sh.net(u6, "20", "SW_CHG", length=g(4))
+    l3 = sh.place("jlc:DFE252012P-2R2M=P2", "L3", "2.2uH",
+                  (g(134), g(140)), "jlc:L1008", LCSC_L2R2)
+    sh.net(l3, "1", "SW_CHG", length=g(4))
+    sh.net(l3, "2", "SYS", length=g(4))
+    sh.net(u6, "15", "SYS", length=g(4))
+    sh.net(u6, "16", "SYS", length=g(4))
+    for i, x in enumerate((148, 158)):
+        sh.series("Device:C", f"C{65 + i}", "10uF", (g(x), g(148)), "SYS",
+                  None, C0805, LCSC_C10U, gnd_b=True)
+    tps = sh.place("Connector:TestPoint", "TP20", "SYS", (g(168), g(140)), TP)
+    sh.hier(tps, "1", "SYS", "output", length=g(5))
+    sh.net(u6, "13", "VBAT_BT", length=g(4))
+    sh.net(u6, "14", "VBAT_BT", length=g(4))
+    sh.series("Device:C", "C67", "10uF", (g(120), g(178)), "VBAT_BT", None,
+              C0805, LCSC_C10U, gnd_b=True)
+    for pin in ("17", "18", "25"):
+        sh.gnd(u6, pin, length=g(3))
+    # programming pins
+    sh.series("Device:R", "R85", "976R", (g(44), g(160)), "U6_ICHG", None,
+              R0805, "TBD-F5", gnd_b=True)
+    sh.net(u6, "10", "U6_ICHG", length=g(4))
+    sh.series("Device:R", "R86", "536R", (g(54), g(168)), "U6_ILIM", None,
+              R0805, "TBD-F5", gnd_b=True)
+    sh.net(u6, "8", "U6_ILIM", length=g(4))
+    sh.gnd(u6, "9", length=g(3))                 # /CE low = charge enabled
+    sh.series("Device:R", "R87", "10k", (g(64), g(176)), "U6_OTG", None,
+              R0805, LCSC_R10K, gnd_b=True)      # OTG low = no boost
+    sh.net(u6, "6", "U6_OTG", length=g(4))
+    sh.nc(u6, "3"); sh.nc(u6, "4")               # D+/D- float -> unknown adapter
+    sh.nc(u6, "12")                              # VSET float -> 4.208 V
+    sh.nc(u6, "2")
+    for i, (pin, net) in enumerate((("5", "U6_STAT"), ("7", "U6_PG"))):
+        sh.net(u6, pin, net, length=g(4))
+        tpx = sh.place("Connector:TestPoint", f"TP{21 + i}", net,
+                       (g(36 + 8 * i), g(186)), TP)
+        sh.net(tpx, "1", net, length=g(3))
+    # TS network: REGN -> 5.23k -> TS -> 30.1k -> GND, NTC (in battery) on TS
+    sh.series("Device:R", "R88", "5.23k", (g(90), g(186)), "REGN", "U6_TS",
+              R0805, "TBD-F5")
+    sh.series("Device:R", "R89", "30.1k", (g(100), g(194)), "U6_TS", None,
+              R0805, "TBD-F5", gnd_b=True)
+    sh.net(u6, "11", "U6_TS", length=g(4))
+    # battery connector
+    j2 = sh.place("Connector_Generic:Conn_01x03", "J2", "B3B-XH-A",
+                  (g(140), g(186)), "Connector_JST:JST_XH_B3B-XH-A_1x03_P2.50mm_Vertical",
+                  LCSC_JST_XH3)
+    sh.net(j2, "1", "VBAT_BT", length=g(4))
+    sh.net(j2, "2", "U6_TS", length=g(4))
+    sh.gnd(j2, "3", length=g(3))
+    sh.text("U6 BQ25606: ICHG 976R -> 0.69A; ILIM 536R -> IINDPM 0.89A; "
+            "VSET float -> 4.208V; D+/D- float -> unknown adapter (ILIM "
+            "governs); TS 5.23k/30.1k + battery 103AT NTC (JEITA; finalize "
+            "vs the actual battery NTC - F-5); /CE=GND, OTG low.",
+            (g(30), g(204)))
+
+    # ---- U9 3V3 LDO ---------------------------------------------------------
+    u9 = sh.place("jlc:ME6211C33M5G-N", "U9", "ME6211C33M5G",
+                  (g(220), g(150)), "jlc:SOT-23-5_L3.0-W1.7-P0.95-LS2.8-BL",
+                  LCSC_ME6211)
+    sh.net(u9, "1", "SYS", length=g(4))
+    sh.net(u9, "3", "SYS", length=g(4))          # CE tied high
+    sh.gnd(u9, "2", length=g(3))
+    sh.nc(u9, "4")
+    sh.hier(u9, "5", "3V3", "output", length=g(6))
+    sh.series("Device:C", "C68", "1uF", (g(206), g(162)), "SYS", None,
+              C0603, LCSC_C1U, gnd_b=True)
+    c69 = sh.place("Device:C", "C69", "1uF", (g(236), g(162)), C0603, LCSC_C1U)
+    sh.net(c69, "1", "3V3", length=g(3))
+    sh.gnd(c69, "2", length=g(3))
+    sh.text("U9 ME6211C33M5G: 500mA LDO, SYS -> 3V3 (load ~100mA worst; "
+            "dropout margin OK at SYS >= 3.5V).", (g(200), g(172)))
+
+    return sh
+
+
+BUILDERS = {"mcu": build_mcu, "storage": build_storage, "io": build_io,
+            "modem_rf": build_modem_rf, "power": build_power}
+
+RAILS = []
+NOTES = []
 
 
 def main(names):
@@ -558,4 +1069,4 @@ def main(names):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:] or ["mcu"])
+    main(sys.argv[1:] or ["mcu", "storage", "io", "modem_rf", "power"])

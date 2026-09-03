@@ -7759,8 +7759,8 @@
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
-		(uuid "d1774dd3-f69b-544e-bded-799aa23fdc8f")
-		(property "Reference" "D1"
+		(uuid "1a063b21-9683-5ed2-a386-0265bbaae2d9")
+		(property "Reference" "D20"
 			(at 320.04 198.12 0)
 			(effects
 				(font
@@ -7804,15 +7804,15 @@
 			)
 		)
 		(pin "1"
-			(uuid "d00156d6-c6a9-5c18-a704-5cb55fa3e9ca")
+			(uuid "1d79db13-07ec-5f7c-a196-b80764337c4d")
 		)
 		(pin "2"
-			(uuid "22d4cb40-6eb0-514b-b062-23d2d10a08b7")
+			(uuid "424de5a8-3005-5d4d-9ec8-ce1117356b6e")
 		)
 		(instances
 			(project "telematics-tracker"
 				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68/f6e9097b-45bc-5b1a-80f4-03a0e0f8043a"
-					(reference "D1")
+					(reference "D20")
 					(unit 1)
 				)
 			)
@@ -8005,8 +8005,8 @@
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
-		(uuid "65c354db-6311-5053-b24c-0049e284ea53")
-		(property "Reference" "D2"
+		(uuid "f52083e5-7b15-5a17-9436-61c95ff804e2")
+		(property "Reference" "D21"
 			(at 355.6 177.8 0)
 			(effects
 				(font
@@ -8050,15 +8050,15 @@
 			)
 		)
 		(pin "1"
-			(uuid "584c300c-03c6-5847-aa4e-3144f3913ab7")
+			(uuid "04d79c36-7d37-5514-893d-07e1336a7424")
 		)
 		(pin "2"
-			(uuid "fdacfda9-c35c-57f5-93f2-17e47129984c")
+			(uuid "d5147cd9-5a58-520d-9d5c-96dd83d71326")
 		)
 		(instances
 			(project "telematics-tracker"
 				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68/f6e9097b-45bc-5b1a-80f4-03a0e0f8043a"
-					(reference "D2")
+					(reference "D21")
 					(unit 1)
 				)
 			)
