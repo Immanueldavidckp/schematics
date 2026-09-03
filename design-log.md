@@ -749,4 +749,145 @@ retained as a permanent per-sheet step, per the user's process directive.
 - Open decisions: **F-10** (DO gate drive), **F-11** (SS3200 swap).
 
 ---
-*Next entry: pin-map review release / modem_rf, or F-10/F-11 decisions.*
+
+## 2026-09-02 — F-10 / F-11 applied; io re-committed (commit `9c973e7`)
+
+**F-10 (approved):** two-stage non-inverting NPN gate driver per DO channel
+(2x MMBT3904 C20526; 4.7 k base R, 10 k MCU-side base pulldown, 10 k first-stage
+collector pullup, 2.2 k driver pullup to 5V0; retained 100 R gate series + 10 k
+gate pulldown). Gate swing ~4.1 V, inside AM2390N's specified R_DS @ 4.5 V
+region. **Default-OFF is now a structural netlist-guard condition** (8/8
+assertions pass: gate pulldown to GND, MCU-side base pulldown, QnB base pullup
+to 5V0, QnB collector on the driver node — both channels): with the MCU pin
+open the gate is held low both passively (10 k) and actively (QnB clamps
+whenever 5V0 is present); with the board unpowered the 10 k holds it at GND.
+Static cost: ~0.5 mA (DO on) / ~2.5 mA (DO off, machine powered) per channel
+from 5V0. **Logged consequence: DO1/DO2 — like CAN — are inactive during
+battery-backup operation (5V0 absent).** handoff section 6 note updated.
+
+**F-11 (approved):** SS310 -> **SS3200 (MDD, C65001)**, both flyback channels.
+
+## 2026-09-02 — modem_rf drawn under F-9 CONDITIONAL RELEASE (commit `5bfc9cc`)
+
+Wired using **only Table-7-VERIFIED pins**; every one of the **76 NEEDS-HUMAN
+pins is a no-connect** with F9-REVIEW text markers on the sheet.
+
+**Review priority 1 — NEEDS-HUMAN rows that Table 7 or the symbol identify as
+GND (35 pins):** 51, 52, 53, 54, 56, 72, 76, 85–112.
+The symbol names all of these GND; the Table 7 comma-list rows defeated the
+parser, so they lack machine verification. **They are currently NC in the
+schematic. A modem with most of its GND paddle NC'd cannot go to layout —
+connecting them after review sign-off is a hard milestone-3 gate.** (9 GND pins
+that DID machine-verify are connected: 8, 9, 10, 19, 22, 36, 46, 48, 50.)
+**Review priority 1b — RESERVED conflicts (3 pins):** 81, 82 (symbol KEYIN4/5
+vs Table 7 RESERVED), 117 (symbol CLK26M_OUT vs RESERVED). All NC either way.
+
+**Observed anomalies, no design impact (per user instruction):** pins **64/65**
+— symbol RTS/CTS vs Table 7 MAIN_CTS/MAIN_RTS (apparently swapped; unused, no
+flow control in this design); pin **128** — symbol NC vs Table 7 USIM2_VDD
+(eSIM is wired parallel to USIM1 per handoff, USIM2 unused).
+
+Circuit notes (interpretations logged):
+- **STATUS** is a 1.8 V push-pull output; handoff said "via divider" but section
+  6 also says follow Quectel exactly, and Quectel Fig 28 specifies an NPN
+  stage. Implemented as Fig 28: STATUS -> 4.7 k -> Q11 + 47 k, collector pulled
+  47 k to 3V3 -> MODEM_STATUS. **Consequence: MODEM_STATUS at the MCU is
+  INVERTED (low = modem running) — firmware note.**
+- **Q3 power switch semantics:** DEFAULT ON via 100 k gate pulldown;
+  MODEM_PWR_EN HIGH = modem power CUT (Q14 NPN level stage + Q13 PNP pull the
+  AO3401A gate to SYS). Matches handoff section 4 "default ON via pulldown".
+- **TXB0104 OE** held low by 10 k until VDD_EXT rises (47 k pullup to VDD_EXT):
+  outputs stay Hi-Z while the modem is off/rebooting.
+- **MFF2 eSIM pads (X2)** are a schematic placeholder with footprint library
+  `TBD-MFF2` — the MFF2 land pattern must be drawn as a custom footprint at
+  milestone 4 (the one remaining footprint_link warning, justified).
+- SMF05C pin 2 = GND assumption carried to the footprint-verification list.
+
+## 2026-09-02 — power.kicad_sch drawn per approved U5 circuit (commit `13f160f`)
+
+`VIN -> F1 -> D1 S3M -> [D2 SMDJ100A + 2x2.2 uF/100 V + 100 nF] -> R80 10 R
+(2512) -> [2x2.2 uF/100 V] -> U5 EG11752` — exactly the TASK A analysed
+topology. U5 app circuit per datasheet fig 6-2 + section 8.5: EN 100 k from
+VCC, VCC 1 uF, VB–VS 100 nF boot, FB 4.3 k/1.5 k -> 5.03 V, SS3200 freewheel,
+L1 150 uH (SMDRI127-151MT, Isat 2.7 A > the IC's 2 A limit), 5V0 out on
+3x10 uF + 100 nF. **F-12 (open):** the V1.0 datasheet gives no R_IS formula —
+R82 fitted 0 R, value is a bench/FAE item alongside the 100 V min-on-time test.
+
+U6 BQ25606 per TI datasheet figs 17/18 (rendered and read): VAC short to VBUS
+= 5V0; 1 uF VBUS, 10 uF PMID, 4.7 uF REGN, 47 nF BTST, L3 2.2 uH (Murata
+DFE252012P) -> SYS (2x10 uF); **ICHG 976 R -> 0.694 A** (K=677 AxOhm, in the
+handoff's ~0.7 A spec); **ILIM 536 R -> IINDPM 0.89 A** (K=478, inside the
+buck's 1 A); VSET float -> 4.208 V; D+/D- float -> unknown adapter so the ILIM
+resistor governs; /CE = GND, OTG low; **TS = REGN -> 5.23 k -> TS -> 30.1 k ->
+GND with the battery's 103AT NTC on J2.2** (values = TI's 103AT example;
+re-check against the actual battery NTC — F-5). J2 = JST B3B-XH-A (C144394):
+1 BAT+, 2 NTC, 3 GND — the field-replaceable battery per design rule 2.
+U9 = ME6211C33M5G (C82942, 500 mA per BOM; ME6217 is out of stock) SYS -> 3V3.
+
+### M2 part selections, round 2 (all API/browser/datasheet-verified)
+
+| Ref | Part | LCSC | Stock | Note |
+|---|---|---|---|---|
+| U1 | EC200UCNAA-N05-SGNSA | **C2916205** | (BOM) | symbol source C2916206 (F-9) |
+| U8 | TI TXB0104PWR TSSOP-14 | C60708 | 8,041 | genuine TI; TSSOP for rework |
+| X1 | JXTCONN NANO SIM 7P PUSH | C53207808 | 845 | 6 contacts + CD; pinout to footprint-verify |
+| X2 | MFF2 eSIM pads | (custom fp) | — | DNP, 0R-selected |
+| AF1,AF2 | XYECONN XY-IPEX1 (U.FL) | C53133524 | 14,110 | gen-1 IPEX, 6 GHz, -40..+85 C |
+| D15 | ST USBLC6-2SC6 | C7519 | 37,925 | genuine ST |
+| D14 | onsemi SMF05CT1G | C15879 | 13,430 | pin2=GND to verify |
+| Q3 | AOS AO3401A | C15127 | 289,970 | -30 V 4 A P-FET |
+| Q13 | Nexperia MMBT3906,215 | C75549 | 141,320 | PNP for gate-kill stage |
+| D12 | MDD SMF5.0A | C193402 | 260,440 | VBAT_MODEM clamp |
+| U9 | MICRONE ME6211C33M5G | C82942 | 347,170 | ME6217 out of stock |
+| D1 | TWGMC S3M (SMB variant) | C5204901 | 19,940 | 1 kV 3 A; ~0.5 W at max input draw, SMB OK |
+| F1 | Littelfuse 0443001.DR | C95352 | 2,874 | **1 A, 250 VAC/VDC, 50 A interrupt** |
+| L1 | SMDRI127-151MT 150 uH | C21325 | 5,265 | Isat 2.7 A explicitly spec'd |
+| L3 | Murata DFE252012P-2R2M | C391305 | 13,990 | charger inductor |
+| C70-74 | CCTC 2.2 uF 100 V X7R 1210 | C5449052 | 81,960 | X7R explicit in MPN |
+| C40,C41 | Samsung CL32A107MQVNNNE 100 uF | C49066 | 82,639 | modem VBAT bulk |
+| 10 uF | Murata GRM21BR61H106KE43L 50 V | C440198 | 245,360 | PMID/SYS/BAT/5V0 |
+| J2 | JST B3B-XH-A(LF)(SN) | C144394 | 57,610 | genuine JST |
+
+F-5-provisional values placed with `TBD-F5` markers: 10 R 2512 anti-surge
+(**pulse rating must be verified** — it absorbs ~100 W x ~1 ms during clamp
+events), 33 R SIM series, 976 R / 536 R / 5.23 k / 30.1 k / 4.3 k / 1.5 k
+0805, 47 nF BTST.
+
+### Generator/root fault caught this round (the netlist-diff step earning
+its keep a fourth time)
+
+With a fifth sheet, `write_root`'s single-row column layout wrapped the power
+sheet onto column 0 — **on top of the mcu sheet** — and their pin stubs
+merged: 5V0/ADC_SPARE, CAN1_RX/SYS, CAN1_TX/VIN, again reported by ERC only as
+`multiple_net_names` warnings. Rows added (idx // 4). A label-bridge slip that
+**shorted out the USIM_VDD 0R eSIM select (R69)** was also caught in the same
+warning sweep and fixed: the SIM holder now sits on USIM_VDD_SIM only.
+
+### Full-design ERC + netlist-guard status (MILESTONE 2 GATE)
+
+- **ERC: 0 errors, 14 warnings**, each justified: 13x `same_local_global_label`
+  (the by-design hierarchy pattern, verified connected by netlist) + 1x
+  `footprint_link_issues` (X2's intentional TBD-MFF2 custom footprint).
+- **checkpins: 48/48 section-5 rows, far ends verified** — now including the
+  modem nets (MODEM_TX -> U8.13, MODEM_RX -> U8.12, MODEM_RI -> U8.11,
+  MODEM_DTR -> U8.10, MODEM_PWRKEY -> R55, MODEM_RESET -> R57,
+  MODEM_PWR_EN -> R53, MODEM_STATUS -> Q11.3). Full table in
+  `docs/section5-checklist.txt`.
+- **F-10 default-OFF: 8/8 structural assertions pass.**
+- 267 nets, 5 sheets, 353 placed symbols.
+
+### Milestone 2: COMPLETE, with two hard gates carried into milestone 3
+
+1. **F-9 human review** of all 76 NEEDS-HUMAN rows in
+   `docs/ec200u-pinmap-extracted.md` (priority 1: the 35 GND rows, which are
+   deliberately NC until sign-off; priority 1b: RESERVED rows 81/82/117).
+2. **F-12** R_IS value + the 100 V / 0.7–1 A / Ton~455 ns bench test on the
+   EG11752 before layout freeze.
+
+Open flags: F-5 (provisional passives -> milestone-5 BOM verify), F-12 (above),
+plus the milestone-4 footprint-verification list (J1 locating posts, SIM holder
+pad map, SMF05C pin 2, MFF2 custom footprint, X2916205-vs-206 footprint pad
+sweep already done).
+
+---
+*Next entry: milestone 3 (full-design review) after the F-9 human review.*
