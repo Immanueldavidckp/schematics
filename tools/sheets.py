@@ -289,7 +289,7 @@ LCSC_PESD1CAN = "C15771"       # Nexperia PESD1CAN,215
 LCSC_ACT45B = "C76584"         # TDK ACT45B-510-2P-TL003 (alt clone C48928226)
 LCSC_J1_MX3 = "C7588012"       # XUNPU WAFER-MX3.0-12PZZ (Micro-Fit 3.0 ref series)
 LCSC_BAV99 = "C2500"           # Nexperia BAV99,215
-LCSC_SS310 = "C15874"          # MDD SS310 100V (F-11 recommends SS3200 C65001)
+LCSC_SS3200 = "C65001"         # MDD SS3200 200V 3A SMA (F-11 approved swap from SS310)
 LCSC_R60R4 = "C228935"         # YAGEO AC0805FR-0760R4L 60.4R 1%
 LCSC_R12K_1206 = "C17912"      # UNI-ROYAL 1206W4F1202T5E 12k 1% 250mW
 LCSC_R47K = "C17713"           # UNI-ROYAL 0805W8F4702T5E 47k 1%
@@ -297,6 +297,7 @@ LCSC_R100K = "C17407"          # UNI-ROYAL 0805W8F1003T5E 100k 1%
 LCSC_R9K1 = "C17855"           # UNI-ROYAL 0805W8F9101T5E 9.1k 1%
 LCSC_R1M = "C17514"            # UNI-ROYAL 0805W8F1004T5E 1M 1%
 LCSC_C4N7 = "C1621"            # Samsung CL10B472KB8NNNC 4.7nF 50V X7R 0603
+LCSC_MMBT3904V = "C20526"      # MMBT3904 NPN 40V SOT-23 (API-verified, 21,350 stock)
 
 
 def build_io():
@@ -416,27 +417,60 @@ def build_io():
             "+ 100nF at the MCU side.  Valid input 10.5-100 V.", (g(64), g(124)))
 
     # ---------------- low-side digital outputs DO1/DO2 ----------------------
+    # F-10: two-stage NON-INVERTING NPN driver per channel, gate swing 0/~4.1 V
+    # from 5V0. Provably OFF with the MCU pin open: base pulldown holds QnA
+    # off -> R_c1 pulls QnB base high -> QnB clamps the gate low; with the
+    # whole board unpowered the retained 10k gate pulldown holds the gate at
+    # GND. Consequence (accepted): DO1/DO2, like CAN, are inactive during
+    # battery-backup operation because 5V0 is absent.
     for n, ybase in ((1, 210), (2, 246)):
-        # gate series resistor sits between the MCU signal and the gate
-        rg = sh.place("Device:R", f"R{22 + n}", "100R", (g(70), g(ybase)),
+        qa, qb = f"Q{3 + 2 * n}", f"Q{4 + 2 * n}"          # Q5/Q6, Q7/Q8
+        rb, rbpd, rc1, rpu = (f"R{38 + 4 * n}", f"R{39 + 4 * n}",
+                              f"R{40 + 4 * n}", f"R{41 + 4 * n}")
+        # stage A: MCU -> 4.7k -> QnA base, 10k base pulldown on the MCU side
+        r1 = sh.place("Device:R", rb, "4.7k", (g(56), g(ybase)),
+                      R0805, LCSC_R4K7)
+        sh.hier(r1, "1", f"DO{n}_GATE", "input", length=g(6))
+        sh.net(r1, "2", f"DO{n}_B", length=g(4))
+        sh.series("Device:R", rbpd, "10k", (g(46), g(ybase + 6)),
+                  f"DO{n}_GATE", None, R0805, LCSC_R10K, gnd_b=True)
+        qA = sh.place("Transistor_BJT:Q_NPN_BEC", qa, "MMBT3904",
+                      (g(68), g(ybase + 6)), SOT23, LCSC_MMBT3904V)
+        sh.net(qA, "1", f"DO{n}_B", length=g(3))
+        sh.gnd(qA, "2", length=g(3))
+        sh.net(qA, "3", f"DO{n}_X", length=g(3))
+        sh.series("Device:R", rc1, "10k", (g(76), g(ybase - 6)),
+                  "5V0", f"DO{n}_X", R0805, LCSC_R10K)
+        # stage B: inverts again -> non-inverting overall
+        qB = sh.place("Transistor_BJT:Q_NPN_BEC", qb, "MMBT3904",
+                      (g(88), g(ybase + 6)), SOT23, LCSC_MMBT3904V)
+        sh.net(qB, "1", f"DO{n}_X", length=g(3))
+        sh.gnd(qB, "2", length=g(3))
+        sh.net(qB, "3", f"DO{n}_DRV", length=g(3))
+        sh.series("Device:R", rpu, "2.2k", (g(96), g(ybase - 6)),
+                  "5V0", f"DO{n}_DRV", R0805, LCSC_R2K2)
+        # retained: 100R gate series and 10k gate pulldown
+        rg = sh.place("Device:R", f"R{22 + n}", "100R", (g(70 + 36), g(ybase)),
                       R0805, LCSC_R100)
-        sh.hier(rg, "1", f"DO{n}_GATE", "input", length=g(6))
+        sh.net(rg, "1", f"DO{n}_DRV", length=g(4))
         sh.net(rg, "2", f"Q{n}_G", length=g(4))
-        sh.series("Device:R", f"R{24 + n}", "10k", (g(82), g(ybase + 6)),
+        sh.series("Device:R", f"R{24 + n}", "10k", (g(82 + 36), g(ybase + 6)),
                   f"Q{n}_G", None, R0805, LCSC_R10K, gnd_b=True)
         q = sh.place("Transistor_FET:Q_NMOS_GSD", f"Q{n}", "AM2390N-TP",
-                     (g(104), g(ybase)),
+                     (g(104 + 36), g(ybase)),
                      "jlc:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR", LCSC_NMOS_150V)
         sh.net(q, "1", f"Q{n}_G", length=g(4))
         sh.gnd(q, "2", length=g(3))
         sh.net(q, "3", f"DO{n}_OUT", length=g(4))
-        # flyback: anode on the drain, cathode to VIN
-        d = sh.place("Device:D_Schottky", f"D{6 + n}", "SS310",
-                     (g(128), g(ybase - 8)), "Diode_SMD:D_SMA", LCSC_SS310)
+        # flyback: anode on the drain, cathode to VIN (SS3200 200V per F-11)
+        d = sh.place("Device:D_Schottky", f"D{6 + n}", "SS3200",
+                     (g(164), g(ybase - 8)), "Diode_SMD:D_SMA", LCSC_SS3200)
         sh.net(d, "2", f"DO{n}_OUT", length=g(4))
         sh.net(d, "1", "VIN", length=g(4))
-    sh.text("DO1/DO2 low-side: 100R gate series, 10k pulldown, SS310 flyback "
-            "from each drain to VIN.", (g(64), g(204)))
+    sh.text("DO1/DO2 (F-10): two-stage NPN driver from 5V0, non-inverting, "
+            "default OFF (base pulldown + QnB clamps gate; 10k gate pulldown "
+            "retained).  SS3200 200V flyback to VIN (F-11).  DO1/DO2 inactive "
+            "on battery backup (5V0 absent).", (g(44), g(204)))
 
     # ---------------- supply / ignition / battery sensing -------------------
     for tag, src, ysense in (("VIN", "VIN", 40), ("IGN", "IGN", 74)):

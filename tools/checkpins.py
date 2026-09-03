@@ -69,7 +69,7 @@ def load_nets(path):
 FAR_END = {
     "14": ("U7", "1"), "15": ("U7", "6"), "16": ("U7", "2"), "17": ("U7", "5"),
     "25": ("OK1", "4"), "26": ("OK2", "4"),
-    "27": ("R23", "1"), "28": ("R24", "1"),
+    "27": ("R42", "1"), "28": ("R46", "1"),
     "38": ("U4", "8"), "45": ("U4", "4"), "46": ("U4", "1"),
     "41": ("U3", "4"), "42": ("U3", "13"), "43": ("U3", "14"),
     "10": ("R35", "2"), "11": ("R32", "2"), "18": ("R38", "2"),
@@ -82,6 +82,44 @@ PENDING = {
     "39": "modem_rf (F-9)", "40": "modem_rf (F-9)",
     "22": "on-sheet LED via Q4", "19": "spare divider, fitted DNP",
 }
+
+
+def check_do_default_off(nets):
+    """F-10 requirement: prove each DO gate is pulled to GND with the MCU pin
+    open. Structural conditions asserted on the netlist:
+      1. FET gate net Qn_G has a resistor to GND (10k gate pulldown);
+      2. MCU-side net DOn_GATE has a resistor to GND (base pulldown, holds
+         QnA off when the pin floats);
+      3. QnB's base node DOn_X has a resistor to 5V0 (so QnB defaults ON and
+         actively clamps the gate low whenever 5V0 is present);
+      4. QnB's collector actually sits on the gate-driver node.
+    """
+    def has_r_between(net_a, net_b):
+        ra = {ref for ref, pin in nets.get(net_a, set()) if ref.startswith("R")}
+        rb = {ref for ref, pin in nets.get(net_b, set()) if ref.startswith("R")}
+        return sorted(ra & rb)
+
+    ok = True
+    for n in (1, 2):
+        checks = [
+            (f"Q{n}_G", "GND", "gate pulldown"),
+            (f"DO{n}_GATE", "GND", "MCU-side base pulldown"),
+            (f"DO{n}_X", "5V0", "QnB base pullup (defaults driver to clamp)"),
+        ]
+        for a, b, what in checks:
+            r = has_r_between(a, b)
+            if r:
+                print(f"  [x] DO{n}: {what}: {r[0]} between {a} and {b}")
+            else:
+                print(f"  [!] DO{n} default-OFF FAILED: no resistor between {a} and {b} ({what})")
+                ok = False
+        qb = f"Q{4 + 2 * n}"
+        if (qb, "3") in nets.get(f"DO{n}_DRV", set()):
+            print(f"  [x] DO{n}: {qb} collector clamps DO{n}_DRV")
+        else:
+            print(f"  [!] DO{n} default-OFF FAILED: {qb} collector not on DO{n}_DRV")
+            ok = False
+    return ok
 
 
 def main():
@@ -131,7 +169,9 @@ def main():
     if stray:
         print("\nU2 pins not covered by the checklist:", sorted(stray))
     print(f"\nnets in design: {len(nets)}")
-    return 1 if bad else 0
+    print("\nF-10 default-OFF structural check:")
+    do_ok = check_do_default_off(nets)
+    return 1 if (bad or not do_ok) else 0
 
 
 if __name__ == "__main__":

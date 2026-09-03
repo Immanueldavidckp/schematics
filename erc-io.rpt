@@ -1,4 +1,4 @@
-ERC report (2026-09-03T22:52:18, Encoding UTF8)
+ERC report (2026-09-03T23:23:01, Encoding UTF8)
 Report includes: Errors, Warnings
 
 ***** Sheet /
@@ -20,8 +20,16 @@ Report includes: Errors, Warnings
     @(170.18 mm, 220.98 mm): Label 'DI2'
 [same_local_global_label]: Local and global labels have same name
     ; warning
+    @(17.78 mm, 45.72 mm): Global Label 'DO1_GATE'
+    @(58.42 mm, 266.70 mm): Label 'DO1_GATE'
+[same_local_global_label]: Local and global labels have same name
+    ; warning
+    @(17.78 mm, 48.26 mm): Global Label 'DO2_GATE'
+    @(58.42 mm, 312.42 mm): Label 'DO2_GATE'
+[same_local_global_label]: Local and global labels have same name
+    ; warning
     @(17.78 mm, 53.34 mm): Global Label 'IGN_SENSE'
-    @(340.36 mm, 86.36 mm): Label 'IGN_SENSE'
+    @(353.06 mm, 86.36 mm): Label 'IGN_SENSE'
 [isolated_pin_label]: Label connected to only one pin
     ; warning
     @(17.78 mm, 55.88 mm): Global Label 'MODEM_DTR'
@@ -49,11 +57,11 @@ Report includes: Errors, Warnings
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 83.82 mm): Global Label 'VBAT_SENSE'
-    @(307.34 mm, 129.54 mm): Label 'VBAT_SENSE'
+    @(322.58 mm, 129.54 mm): Label 'VBAT_SENSE'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 86.36 mm): Global Label 'VIN_SENSE'
-    @(353.06 mm, 43.18 mm): Label 'VIN_SENSE'
+    @(322.58 mm, 58.42 mm): Label 'VIN_SENSE'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(220.98 mm, 30.48 mm): Global Label '5V0'
@@ -103,7 +111,7 @@ Report includes: Errors, Warnings
 
 ***** Sheet /io/
 
- ** ERC messages: 28  Errors 0  Warnings 28
+ ** ERC messages: 30  Errors 0  Warnings 30
 
  ** Ignored checks:
     - Global label only appears once in the schematic
