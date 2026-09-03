@@ -7,3 +7,4 @@ tools/__pycache__/
 *.bak
 nl.net
 erc-t*.rpt
+.history/
