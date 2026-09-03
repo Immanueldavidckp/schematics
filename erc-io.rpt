@@ -1,11 +1,15 @@
-ERC report (2026-09-02T00:02:07, Encoding UTF8)
+ERC report (2026-09-03T19:47:56, Encoding UTF8)
 Report includes: Errors, Warnings
 
 ***** Sheet /
 [same_local_global_label]: Local and global labels have same name
     ; warning
+    @(17.78 mm, 27.94 mm): Global Label '3V3'
+    @(86.36 mm, 274.32 mm): Label '3V3'
+[same_local_global_label]: Local and global labels have same name
+    ; warning
     @(17.78 mm, 30.48 mm): Global Label 'ADC_SPARE'
-    @(307.34 mm, 170.18 mm): Label 'ADC_SPARE'
+    @(292.10 mm, 185.42 mm): Label 'ADC_SPARE'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 40.64 mm): Global Label 'DI1'
@@ -13,11 +17,11 @@ Report includes: Errors, Warnings
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 43.18 mm): Global Label 'DI2'
-    @(170.18 mm, 220.98 mm): Label 'DI2'
+    @(185.42 mm, 213.36 mm): Label 'DI2'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 53.34 mm): Global Label 'IGN_SENSE'
-    @(353.06 mm, 86.36 mm): Label 'IGN_SENSE'
+    @(340.36 mm, 86.36 mm): Label 'IGN_SENSE'
 [isolated_pin_label]: Label connected to only one pin
     ; warning
     @(17.78 mm, 55.88 mm): Global Label 'MODEM_DTR'
@@ -45,15 +49,11 @@ Report includes: Errors, Warnings
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 83.82 mm): Global Label 'VBAT_SENSE'
-    @(322.58 mm, 129.54 mm): Label 'VBAT_SENSE'
+    @(292.10 mm, 144.78 mm): Label 'VBAT_SENSE'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 86.36 mm): Global Label 'VIN_SENSE'
-    @(353.06 mm, 43.18 mm): Label 'VIN_SENSE'
-[same_local_global_label]: Local and global labels have same name
-    ; warning
-    @(119.38 mm, 27.94 mm): Global Label '3V3'
-    @(86.36 mm, 274.32 mm): Label '3V3'
+    @(322.58 mm, 58.42 mm): Label 'VIN_SENSE'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(220.98 mm, 30.48 mm): Global Label '5V0'

@@ -368,10 +368,14 @@ def build_io():
 
     # ---------------- isolated digital inputs DI1/DI2 -----------------------
     for n, ybase in ((1, 130), (2, 168)):
-        sh.series("Device:R", f"R{12 + n * 2}", "12k",
-                  (g(70), g(ybase)), f"DI{n}_IN", f"DI{n}_M", R1206, TBD)
-        sh.series("Device:R", f"R{13 + n * 2}", "12k",
-                  (g(84), g(ybase)), f"DI{n}_M", f"DI{n}_LED", R1206, TBD)
+        # 3 x 12k in series (36k total) per F-7: two 1206 parts ran ~1.6x their
+        # 105 C derated rating at 100 V input; three share the dissipation.
+        base = 14 + (n - 1) * 3
+        chain = [f"DI{n}_IN", f"DI{n}_M1", f"DI{n}_M2", f"DI{n}_LED"]
+        for k in range(3):
+            sh.series("Device:R", f"R{base + k}", "12k",
+                      (g(58 + k * 12), g(ybase)), chain[k], chain[k + 1],
+                      R1206, TBD)
         ok = sh.place("jlc:EL357N", f"OK{n}", "EL357N(D)",
                       (g(112), g(ybase + 8)),
                       "jlc:OPTO-SMD-4_L4.4-W4.1-P2.54-LS7.0-BL", "C359074")
@@ -391,9 +395,8 @@ def build_io():
                   "3V3", f"DI{n}", R0805, TBD)
         sh.series("Device:C", f"C{24 + n}", "100nF", (g(146), g(ybase + 6)),
                   f"DI{n}", None, C0603, LCSC_C100N, gnd_b=True)
-    sh.text("DI1/DI2: 24k series (2x12k 1206) -> EL357N(D) opto, 47k pull-up "
-            "+ 100nF at the MCU side.  See design-log for the CTR/current-window "
-            "check and the 1206 power-derating flag.", (g(64), g(124)))
+    sh.text("DI1/DI2: 36k series (3x12k 1206, F-7) -> EL357N(D) opto, 47k pull-up "
+            "+ 100nF at the MCU side.  Valid input 10.5-100 V.", (g(64), g(124)))
 
     # ---------------- low-side digital outputs DO1/DO2 ----------------------
     for n, ybase in ((1, 210), (2, 246)):
