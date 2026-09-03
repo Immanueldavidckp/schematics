@@ -4753,7 +4753,7 @@
 				)
 			)
 		)
-		(property "LCSC" "TBD-F5-pulse"
+		(property "LCSC" "C3013385"
 			(at 149.86 50.8 0)
 			(hide yes)
 			(effects

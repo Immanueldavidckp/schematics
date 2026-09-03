@@ -311,7 +311,7 @@ def build_io():
     # ---------------- J1 machine harness, 12-pin Micro-Fit 3.0 class --------
     j1 = sh.place("Connector_Generic:Conn_01x12", "J1", "WAFER-MX3.0-12PZZ",
                   (g(46), g(80)),
-                  "Connector_Molex:Molex_Micro-Fit_3.0_43045-1212_2x06_P3.00mm_Vertical",
+                  "jlc:XUNPU_MX3.0-12PZZ_2x06_P3.00mm_Vertical",
                   LCSC_J1_MX3)
     J1MAP = {
         "1": ("VIN", "hier", "input"), "2": ("GND", "gnd", None),
@@ -769,15 +769,19 @@ def build_modem_rf():
     for pnum in ("8", "9", "10", "11"):
         sh.gnd(x1, pnum, length=g(3))              # shield/mount pads
     # MFF2 eSIM pads in parallel, VDD via 0R selects (eSIM path DNP)
-    es = sh.place("Connector_Generic:Conn_01x06", "X2", "MFF2-eSIM-pads",
-                  (g(282), g(100)), "TBD-MFF2:eSIM_MFF2_pads", "DNP-MFF2",
+    # X2 pin map per ETSI TS 102 671 R12 / ST VFDFPN8 (1GLOBAL MFF2 datasheet
+    # fig.1): 1 GND, 2 SWIO(nc), 3 I/O, 4 NC, 5 NC, 6 CLK, 7 /RESET, 8 VCC
+    es = sh.place("Connector_Generic:Conn_01x08", "X2", "MFF2-eSIM-pads",
+                  (g(282), g(100)), "TBD-MFF2:eSIM_MFF2_VFDFPN8", "DNP-MFF2",
                   dnp=True)
-    sh.net(es, "1", "USIM_VDD_ESIM", length=g(4))
-    sh.net(es, "2", "SIM_RST", length=g(4))
-    sh.net(es, "3", "SIM_CLK", length=g(4))
-    sh.net(es, "4", "SIM_DATA", length=g(4))
-    sh.gnd(es, "5", length=g(3))
-    sh.nc(es, "6")
+    sh.gnd(es, "1", length=g(3))
+    sh.nc(es, "2")
+    sh.net(es, "3", "SIM_DATA", length=g(4))
+    sh.nc(es, "4")
+    sh.nc(es, "5")
+    sh.net(es, "6", "SIM_CLK", length=g(4))
+    sh.net(es, "7", "SIM_RST", length=g(4))
+    sh.net(es, "8", "USIM_VDD_ESIM", length=g(4))
     sh.series("Device:R", "R69", "0R", (g(272), g(76)), "USIM_VDD",
               "USIM_VDD_SIM", R0805, LCSC_R0)
     sh.series("Device:R", "R70", "0R", (g(282), g(76)), "USIM_VDD",
@@ -887,8 +891,11 @@ def build_power():
     sh.series("Device:C", "C72", "100nF", (g(106), g(50)), "VIN_P", None,
               C0603, LCSC_C100N, gnd_b=True)
     # 10R series to the buck input (TASK A analysed topology)
+    # R80: FOJAN FRP2512 2W high-power series (C3013385). Pulse duty per event
+    # is ~8.5 mJ (see design-log F-15 math) - well inside 2512 capability -
+    # but the 10R VALUE starves the buck at low line: see flag F-15.
     sh.series("Device:R", "R80", "10R 2512", (g(118), g(40)), "VIN_P", "VIN_B",
-              "Resistor_SMD:R_2512_6332Metric", "TBD-F5-pulse")
+              "Resistor_SMD:R_2512_6332Metric", "C3013385")
     sh.series("Device:C", "C73", "2.2uF 100V", (g(130), g(50)), "VIN_B", None,
               C1210, LCSC_C2U2_100V, gnd_b=True)
     sh.series("Device:C", "C74", "2.2uF 100V", (g(140), g(50)), "VIN_B", None,

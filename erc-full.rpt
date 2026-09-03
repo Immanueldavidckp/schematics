@@ -1,7 +1,11 @@
-ERC report (2026-09-03T23:46:51, Encoding UTF8)
+ERC report (2026-09-04T00:19:08, Encoding UTF8)
 Report includes: Errors, Warnings
 
 ***** Sheet /
+[same_local_global_label]: Local and global labels have same name
+    ; warning
+    @(17.78 mm, 27.94 mm): Global Label '3V3'
+    @(217.17 mm, 120.65 mm): Label '3V3'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 30.48 mm): Global Label 'ADC_SPARE'
@@ -29,19 +33,15 @@ Report includes: Errors, Warnings
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 71.12 mm): Global Label 'MODEM_STATUS'
-    @(165.10 mm, 157.48 mm): Label 'MODEM_STATUS'
+    @(149.86 mm, 149.86 mm): Label 'MODEM_STATUS'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 83.82 mm): Global Label 'VBAT_SENSE'
-    @(307.34 mm, 129.54 mm): Label 'VBAT_SENSE'
+    @(292.10 mm, 144.78 mm): Label 'VBAT_SENSE'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 86.36 mm): Global Label 'VIN_SENSE'
-    @(322.58 mm, 58.42 mm): Label 'VIN_SENSE'
-[same_local_global_label]: Local and global labels have same name
-    ; warning
-    @(119.38 mm, 27.94 mm): Global Label '3V3'
-    @(163.83 mm, 179.07 mm): Label '3V3'
+    @(340.36 mm, 43.18 mm): Label 'VIN_SENSE'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(220.98 mm, 30.48 mm): Global Label '5V0'
@@ -56,7 +56,7 @@ Report includes: Errors, Warnings
     @(199.39 mm, 256.54 mm): Label 'VIN'
 [footprint_link_issues]: The current configuration does not include the footprint library 'TBD-MFF2'
     ; warning
-    @(358.14 mm, 127.00 mm): Symbol X2 [Conn_01x06]
+    @(358.14 mm, 127.00 mm): Symbol X2 [Conn_01x08]
 
 ***** Sheet /mcu/
 

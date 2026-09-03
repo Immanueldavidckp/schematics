@@ -890,4 +890,150 @@ pad map, SMF05C pin 2, MFF2 custom footprint, X2916205-vs-206 footprint pad
 sweep already done).
 
 ---
-*Next entry: milestone 3 (full-design review) after the F-9 human review.*
+
+## 2026-09-04 — MILESTONE 3: F-9 review package, rules audit, M4 prep
+
+### Task 1 — F-9 consolidated review table (docs/f9-review.md)
+
+All **76 NEEDS-HUMAN pins** tabulated with three sources per pin (Table 7 parse
+with PDF page ref, C2916206 symbol name, footprint position class) and a
+3-source verdict. **62 AGREE / 14 CONFLICT**, conflicts flagged prominently;
+nothing connected. The 35 priority-1 GND rows all classify as
+**central-LGA-grid or RF-fence positions with the symbol saying GND** —
+geometry supports GND on every one, pending your sign-off. RESERVED rows
+81/82/117: both readings imply NC either way. Pins 64/65 (RTS/CTS swap) and
+128 (NC vs USIM2_VDD): observed anomalies, **no design impact** (per
+instruction). Four SDIO-naming rows are flagged CONFLICT conservatively even
+though they read as transparent vendor renamings — reviewer's call.
+
+### Task 2 — docs/firmware-notes.md started
+
+16 firmware notes + 4 bench/bring-up items captured from the log (MODEM_STATUS
+inversion, JTAG/SWD, CAN remap, IWDG, >80 C write throttle, battery-backup
+behaviour, modem power-cycle sequence, EG11752 bench items). To be updated
+every milestone. Added this milestone: **FW-17 — SIM card-detect polarity:**
+the JXTCONN holder's CD switch is **shorted to GND with no card and OPEN with
+a card inserted** (drawing p.1 circuit) — configure AT+QSIMDET level
+accordingly and expect USIM_DET floating-high (module internal pull) = card
+present.
+
+### Task 3 — R80 pulse verification and selection
+
+**Pulse duty (per full-rated SMDJ100A 10/1000 us strike):** R80's transient
+duty is charging the node-B bank (2x2.2 uF = 4.4 uF) from 100 V up to the
+162 V clamp: for an RC charge the resistor dissipates exactly the energy
+delivered to the capacitor, **E_R = 1/2 x 4.4 uF x (62 V)^2 ~ 8.5 mJ —
+independent of R**. Peak P = ΔV²/R = 384 W decaying with τ = RC = 44 us.
+After the bank charges, R80 carries only the buck draw (~45 mA at clamp
+levels, ~20 mW). 8.5 mJ is far inside 2512 thick-film single-pulse capability
+(hundreds of mJ at the 100 us-1 ms class), even without a vendor curve.
+
+**Selection:** no LCSC-stocked 2512 in 5.1/10 ohm publishes a pulse curve
+(FOJAN FRC = general purpose, FH RPL = 2 W power series, Panasonic ERJ1T =
+0 stock; all checked). Chosen: **FOJAN FRP2512J100 TS, C3013385** — 10 ohm,
+**2 W** high-power 2512, 406,160 in stock — the largest-element in-stock 10R,
+comfortably adequate for the 8.5 mJ/384 W duty. The user-suggested 2x5R1
+fallback has no in-stock anti-surge candidates (FRC only) and does not
+change the energy per event, so the single 2 W part is preferred.
+
+**F-15 (NEW — the real problem is the VALUE, needs decision before layout):**
+at the guaranteed 10.5 V floor and full converter load (5 V x 1 A out, ~85 %
+eff -> 5.9 W in), the load line V_B^2 - 9.8 V_B + 58.8 = 0 has **no real
+solution — the buck cannot draw its power through 10 ohm at low line at all**
+(brown-out; VCC(OFF) = 7.8 V). Even at 24 V it burns 0.6 W continuously.
+TASK A already showed the resistor does NOT attenuate the clamp (node B sees
+the full clamp voltage; the margin comes from the 200 V part + SMDJ) — its
+only real jobs are inrush limiting and edge filtering. **Recommendation:
+R80 10R -> 1R, FOJAN FRS2512F1R00TS C55348540 (genuine Anti-Surge series,
+1 %, 4,000 stock):** at 10.5 V/full load V_B ~ 9.15 V, I = 0.64 A, P = 0.41 W
+continuous (inside a derated 2512); pulse energy unchanged at 8.5 mJ
+(R-independent); τ falls to 4.4 us (ns-class edges still filtered; the
+50-1000 us events are the TVS's job). Schematic keeps 10R (C3013385) per the
+approved topology until you decide.
+
+### Task 4 — Handoff §2 rules 1-9 and §6 audit (MET / NOT MET / N-A)
+
+| Rule | Verdict | Evidence / action |
+|---|---|---|
+| 1. No electrolytic/tantalum; X7R/X7S only; >=2:1 derating (100 V rail: 100 V-rated + TVS) | **NOT MET -> F-13** | Zero electrolytics/tantalums ✓; 100 V rail = 2.2 uF **X7R** 100 V + TVS ✓ (rule's own exception). Violations: C40/C41 modem bulk = CL32A107 **X5R 6.3 V on the 4.35 V charge rail (1.45:1)**; all 10 uF = GRM21BR61H **X5R** (voltage 50 V ✓ but dielectric ✗). |
+| 2. Battery field-replaceable, JST + NTC, never soldered | **MET** | J2 = JST B3B-XH-A 3-pin (BAT+/NTC/GND); battery is a plug-in harness part. |
+| 3. MCU can hard power-cycle modem via high-side P-FET | **MET** | Q3 AO3401A default-ON, MODEM_PWR_EN high = cut; structure netlist-verified. |
+| 4. IWDG always on; BOD enabled | **N-A (firmware)** | FW-3 in firmware-notes; no hardware element required. |
+| 5. OTA: modem DFOTA + MCU bootloader in ext flash | **MET (hw provisions)** | U7 8 MB staging + USB FOTA pads; FW-9. |
+| 6. Semis >=105 C where available; conformal coat | **MET with logged exceptions** | MCU 105 ✓, choke 150 ✓, SIM holder 85... exceptions all logged: U7 85 C (F-2 justification), J1 housing -25..+85, **EC200U itself: -35..+75 C normal / -40..+85 C extended operation (Quectel spec) — the modem, not the flash, is the tightest device on the board (new note)**; EG11752 covered by qualification condition (c). Conformal coat = production step, noted for milestone 6. |
+| 7. Second source / scaling provisions | **MET** | CAN: SIT1051AT/3 pinout = TJA1051T/3 = TCAN1042 (industry SOIC-8 map, VIO pin 5) — drop-in; IMU footprint fixed QMI8658 LGA-14; dual SIM = X1 + X2 MFF2 pads with 0R selects; U5 second source EG11722 (pin-identical, logged derated-emergency-only). |
+| 8. Test points: every rail, SWD, both UARTs, CAN, bed-of-nails layout | **NOT MET -> F-14** | Present: SWD, NRST, debug UART, 3V3, GND x2, 5V0, SYS x2, sense nets, MODEM_STATUS, USB, STAT/PG, spares. **Missing: VIN rail TP, VBAT_MODEM TP, CANH/CANL TPs, modem-UART pair** (currently reachable only through U8/USB). 6 TPs to add. Bed-of-nails single-side layout = milestone-4 placement rule. |
+| 9. LTE Cat-1, no 2G dependence | **MET** | EC200U-CN = Cat-1 bis. |
+
+**§6 block-by-block:** modem block MET (all elements per §6 incl. USIM 33R +
+100 nF + SMF05C, MFF2 parallel via 0R selects, USB 4 pads + ESD, ANT pi + 2x
+U.FL, NETLIGHT NPN, VDD_EXT decoupled; STATUS implemented as Quectel Fig 28
+NPN — logged interpretation); IMU MET (RESV corrected per datasheet; away-from-
+edge = placement note, IMU is centre-board in the study); CAN MET (split term
+default OPEN, choke+TVS at connector, 5V0-only-alive accepted); DI MET as
+amended (F-7 36k approved; window verified at 10.5 V); DO MET as amended
+(F-10/F-11 approved, default-OFF guard); storage MET (133 MHz >= 30 MHz);
+§4 power MET as amended (U5/D2 approved swaps, dividers exact, Q3 default-ON).
+
+**New flags from the audit:**
+- **F-13:** modem bulk caps X5R/6.3 V violate rule 1 (dielectric + 1.45:1).
+  Options: (a) 2x 47 uF **10 V X7S** 1210 if stocked; (b) 4x 22 uF 16 V X7R
+  1210 (2:1-compliant, more parts); (c) accept X5R 6.3 V with a written
+  waiver (Quectel's own reference uses low-voltage bulk here; DC bias derating
+  at 4.4 V on 6.3 V X5R is the real concern). Also replace the four X5R 10 uF
+  with X7R equivalents at milestone-5 BOM verify. **Decision needed.**
+- **F-14:** add 6 test points (VIN, VBAT_MODEM, CANH, CANL, MODEM_TX/RX at
+  1.8 V side or 3V3 side). Schematic change pending your go-ahead (trivial).
+- **F-15:** R80 value (above). **Blocker for layout.**
+
+### Task 5 — Milestone-4 prep
+
+**Stackup (defined):** JLC 1.6 mm standard 4-layer (JLC7628):
+L1 = signal + RF (50 ohm CPWG for the two ANT runs), L2 = **solid GND, no
+splits**, L3 = power pours (5V0 / SYS / 3V3 islands; VIN routed thick), L4 =
+signal/slow. Already reflected in the .kicad_pcb layer names (GND_L2/PWR_L3).
+
+**Placement study:** docs/placement-study.svg — **PROVISIONAL 80 x 60 mm**
+outline (final outline + M3 positions from the purchased housing):
+connector-end HV zone (J1, fuse/D1/D2/R80/HV caps, DI chains, DO FETs, CAN
+choke+TVS) behind a silk HV boundary at x = 20 with the 1.5 mm clearance rule;
+digital centre (MCU/IMU/flash/CAN/TXB + power block along the bottom edge);
+RF end with EC200U ANT pads (47/49) facing the right edge, **AF1 (LTE) and
+AF2 (GNSS) at opposite right corners — 51 mm apart (spec >= 15 mm)**; SIM
+group beside the module away from the RF edge; VBAT_MODEM bank <= 5 mm from
+pads 57-60; battery is an enclosure pocket (board contributes J2 at the
+centre-bottom edge); GND keepout under the lid's FPC-antenna region.
+
+**Milestone-4 footprint checks (completed / dispositioned):**
+- **J1 locating posts — RESOLVED:** XUNPU drawing shows 2x diag Ø1.00 posts at
+  (outer col + 3.00, row ± 0.95). Stock Molex 43045-1212 footprint has no
+  holes -> **derived footprint `jlc:XUNPU_MX3.0-12PZZ_2x06_P3.00mm_Vertical`**
+  created (= Molex pattern + 2x NPTH Ø1.1 at (18.0, -0.95) and (-3.0, 3.95));
+  J1 re-pointed at it; parses clean. Also confirmed from the drawing:
+  600 V / 5 A rating, Ø1.02 pin holes on a 3.00 grid.
+- **SIM holder pad map — VERIFIED:** imported footprint matches the JXTCONN
+  drawing (7 contacts C3-C7-C2-C6-C1-C5-CD at 1.27 pitch, CD +0.95; 4 shell
+  pads). **F-16 (NEW):** the drawing also shows **2x Ø0.75 locating posts**
+  missing from the footprint; x = -2.50 / +1.22 from centreline is explicit
+  but the y datum chain is ambiguous between two readings — **no copper
+  guessed**; resolve by measuring a physical sample or vendor query, then add
+  2x NPTH Ø0.85. Blocker for layout of X1 only.
+- **SMF05C pin 2 — VERIFIED:** onsemi pin assignment: pins 1/3/4/5/6 =
+  cathodes (I/O), **pin 2 = anode -> GND** — exactly as wired. Caveat closed.
+- **MFF2 — schematic corrected, footprint gated (F-17 NEW):** X2 remapped to
+  the authoritative ETSI TS 102 671 R12 / VFDFPN8 pinout from the 1GLOBAL
+  MFF2 datasheet (1 GND, 2 SWIO nc, 3 I/O, 4 NC, 5 NC, 6 CLK, 7 /RESET,
+  8 VCC) — the previous 6-pin placeholder mapping was wrong. Land pattern
+  still requires the chosen eSIM vendor's packaging spec (st.com unreachable;
+  1GLOBAL sheet has pinout but no land dims). X2 is DNP, so schematic is
+  complete; **the custom footprint is the one open milestone-4 copper item.**
+
+### Status
+
+Milestone 3 deliverables presented: docs/f9-review.md, the rules audit above,
+docs/placement-study.svg, docs/firmware-notes.md. **STOPPED per instruction:**
+GND connection (F-9 sign-off), routing, F-13/F-14/F-15 decisions await the
+user. Open flags: F-5, F-9 (review), F-12, F-13, F-14, F-15, F-16, F-17.
+
+---
+*Next entry: F-9 sign-off + F-13/14/15 decisions -> close milestone 3.*

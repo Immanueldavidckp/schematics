@@ -5848,7 +5848,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_Molex:Molex_Micro-Fit_3.0_43045-1212_2x06_P3.00mm_Vertical"
+		(property "Footprint" "jlc:XUNPU_MX3.0-12PZZ_2x06_P3.00mm_Vertical"
 			(at 58.42 101.6 0)
 			(hide yes)
 			(effects
