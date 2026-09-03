@@ -296,9 +296,28 @@ class Sheet:
         return p
 
     # -- connections -------------------------------------------------------
+    @staticmethod
+    def _pt_on_seg(px, py, x1, y1, x2, y2):
+        if abs(y1 - y2) < 1e-6:      # horizontal
+            return (abs(py - y1) < 1e-6
+                    and min(x1, x2) - 1e-6 < px < max(x1, x2) + 1e-6)
+        if abs(x1 - x2) < 1e-6:      # vertical
+            return (abs(px - x1) < 1e-6
+                    and min(y1, y2) - 1e-6 < py < max(y1, y2) + 1e-6)
+        return False
+
     def _register_seg(self, net, a, b):
-        """Flag a stub that overlaps another net's stub along the same line."""
+        """Flag a stub that overlaps another net's stub along the same line,
+        or that passes through a point already claimed by another net (a label
+        landing mid-span on a foreign wire merges the nets just as silently as
+        a collinear overlap does)."""
         ax, ay, bx, by = a[0], a[1], b[0], b[1]
+        for (px, py), onet in self._net_pts.items():
+            if onet != net and self._pt_on_seg(px, py, ax, ay, bx, by):
+                raise ValueError(
+                    f"{self.name}: stub for net '{net}' ({a} -> {b}) passes "
+                    f"through ({px},{py}) which belongs to net '{onet}'. "
+                    f"They would merge. Move the parts.")
         horiz = abs(ay - by) < 1e-6
         for (onet, ox1, oy1, ox2, oy2) in self._segs:
             if onet == net:
@@ -395,6 +414,12 @@ class Sheet:
                 f"{self.name}: nets '{prev}' and '{name}' both land on "
                 f"{key} -- they would silently merge into one net. "
                 f"Move one of the parts.")
+        for (onet, x1, y1, x2, y2) in self._segs:
+            if onet != name and self._pt_on_seg(key[0], key[1], x1, y1, x2, y2):
+                raise ValueError(
+                    f"{self.name}: point {key} of net '{name}' lies ON the "
+                    f"stub of net '{onet}' (({x1},{y1}) -> ({x2},{y2})). "
+                    f"They would merge. Move the parts.")
         self._net_pts[key] = name
 
     def label(self, name, at, rot=0):

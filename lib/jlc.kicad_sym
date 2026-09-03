@@ -4993,4 +4993,494 @@
 			)
 		)
 	)
+
+	(symbol "AM2390N-TP"
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(property
+			"Reference"
+			"Q"
+			(at 0 10.16 0)
+			(effects (font (size 1.27 1.27) ))
+		)
+		(property
+			"Value"
+			"AM2390N-TP"
+			(at 0 -10.16 0)
+			(effects (font (size 1.27 1.27) ))
+		)
+		(property
+			"Footprint"
+			"jlc:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR"
+			(at 0 -12.70 0)
+			(hide yes)
+			(effects (font (size 1.27 1.27) ))
+		)
+		(property
+			"Datasheet"
+			"https://www.lcsc.com/datasheet/C51886143.pdf"
+			(at 0 -15.24 0)
+			(hide yes)
+			(effects (font (size 1.27 1.27) ))
+		)
+		(property
+			"Manufacturer"
+			"TECH PUBLIC(台舟)"
+			(at 0 -17.78 0)
+			(hide yes)
+			(effects (font (size 1.27 1.27) ))
+		)
+		(property
+			"MPN"
+			"AM2390N-TP"
+			(at 0 -20.32 0)
+			(hide yes)
+			(effects (font (size 1.27 1.27) ))
+		)
+		(property
+			"LCSC Part"
+			"C51886143"
+			(at 0 -22.86 0)
+			(hide yes)
+			(effects (font (size 1.27 1.27) ))
+		)
+		(symbol "AM2390N-TP_0_1"
+			(polyline
+				(pts
+					(xy 6.10 0.51) (xy 5.59 0.51) (xy 4.57 0.51) (xy 4.06 0.51)
+				)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy -2.54 -0.00) (xy -0.51 -0.00)
+				)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 0.00 -2.29) (xy 0.00 -1.27)
+				)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 0.00 -0.51) (xy 0.00 0.51)
+				)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 0.00 2.29) (xy 0.00 1.27)
+				)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy -0.51 2.29) (xy -0.51 -2.29)
+				)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 2.54 -1.78) (xy 0.00 -1.78)
+				)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 0.00 -0.00) (xy 2.54 -0.00) (xy 2.54 -2.54) (xy 5.08 -2.54) (xy 5.08 -2.54) (xy 5.08 -0.00)
+				)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 0.00 1.78) (xy 2.54 1.78) (xy 2.54 2.54) (xy 5.08 2.54) (xy 5.08 2.54) (xy 5.08 0.51)
+				)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 5.08 0.51) (xy 4.32 -0.76) (xy 5.84 -0.76) (xy 5.08 0.51)
+				)
+				(stroke (width 0) (type default))
+				(fill (type background))
+			)
+			(polyline
+				(pts
+					(xy 0.00 -0.00) (xy 1.52 -0.51) (xy 1.52 0.51) (xy 0.00 -0.00)
+				)
+				(stroke (width 0) (type default))
+				(fill (type background))
+			)
+			(pin unspecified line
+				(at 2.54 -5.08 90)
+				(length 2.54)
+				(name "S" (effects (font (size 1.27 1.27))))
+				(number "2" (effects (font (size 1.27 1.27))))
+			)
+			(pin unspecified line
+				(at -5.08 -0.00 0)
+				(length 2.54)
+				(name "G" (effects (font (size 1.27 1.27))))
+				(number "1" (effects (font (size 1.27 1.27))))
+			)
+			(pin unspecified line
+				(at 2.54 5.08 270)
+				(length 2.54)
+				(name "D" (effects (font (size 1.27 1.27))))
+				(number "3" (effects (font (size 1.27 1.27))))
+			)
+		)
+	)
+
+	(symbol "PESD1CAN,215"
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(property
+			"Reference"
+			"D"
+			(at 0 15.24 0)
+			(effects (font (size 1.27 1.27) ))
+		)
+		(property
+			"Value"
+			"PESD1CAN,215"
+			(at 0 -15.24 0)
+			(effects (font (size 1.27 1.27) ))
+		)
+		(property
+			"Footprint"
+			"jlc:SOT-23_L2.9-W1.3-P1.90-LS2.4-BR"
+			(at 0 -17.78 0)
+			(hide yes)
+			(effects (font (size 1.27 1.27) ))
+		)
+		(property
+			"Datasheet"
+			"https://lcsc.com/product-detail/Diodes-ESD_NXP_PESD1CAN_PESD1CAN_C15771.html"
+			(at 0 -20.32 0)
+			(hide yes)
+			(effects (font (size 1.27 1.27) ))
+		)
+		(property
+			"Manufacturer"
+			"Nexperia(安世)"
+			(at 0 -22.86 0)
+			(hide yes)
+			(effects (font (size 1.27 1.27) ))
+		)
+		(property
+			"MPN"
+			"PESD1CAN,215"
+			(at 0 -25.40 0)
+			(hide yes)
+			(effects (font (size 1.27 1.27) ))
+		)
+		(property
+			"LCSC Part"
+			"C15771"
+			(at 0 -27.94 0)
+			(hide yes)
+			(effects (font (size 1.27 1.27) ))
+		)
+		(property
+			"ki_keywords"
+			"ESD Protection Devices"
+			(at 0 -30.48 0)
+			(hide yes)
+			(effects (font (size 1.27 1.27) ))
+		)
+		(property
+			"Description"
+			"PESD1CAN"
+			(at 0 -33.02 0)
+			(hide yes)
+			(effects (font (size 1.27 1.27) ))
+		)
+		(symbol "PESD1CAN,215_0_1"
+			(rectangle
+				(start -10.16 5.08)
+				(end 10.41 -5.33)
+				(stroke (width 0) (type default))
+				(fill (type background))
+			)
+			(polyline
+				(pts
+					(xy -2.54 -3.81) (xy -7.62 -3.81)
+				)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy -7.62 -3.81) (xy -7.62 -3.05)
+				)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy -5.08 -5.08) (xy -5.08 3.05) (xy 5.08 3.05)
+				)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 5.08 3.05) (xy 5.08 -5.08)
+				)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 0.00 5.33) (xy 0.00 3.05)
+				)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy -2.54 2.54) (xy -2.54 1.78)
+				)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy -7.62 2.54) (xy -2.54 2.54)
+				)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 2.54 2.54) (xy 7.62 2.54)
+				)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 7.62 2.54) (xy 7.62 1.78)
+				)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 2.54 -3.81) (xy 2.54 -3.05)
+				)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 7.62 -3.81) (xy 2.54 -3.81)
+				)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy -7.62 -1.27) (xy -5.08 -3.81) (xy -2.54 -1.27) (xy -7.62 -1.27)
+				)
+				(stroke (width 0) (type default))
+				(fill (type background))
+			)
+			(polyline
+				(pts
+					(xy -2.54 -0.00) (xy -5.08 2.54) (xy -7.62 -0.00) (xy -2.54 -0.00)
+				)
+				(stroke (width 0) (type default))
+				(fill (type background))
+			)
+			(polyline
+				(pts
+					(xy 7.62 -0.00) (xy 5.08 2.54) (xy 2.54 -0.00) (xy 7.62 -0.00)
+				)
+				(stroke (width 0) (type default))
+				(fill (type background))
+			)
+			(polyline
+				(pts
+					(xy 2.54 -1.27) (xy 5.08 -3.81) (xy 7.62 -1.27) (xy 2.54 -1.27)
+				)
+				(stroke (width 0) (type default))
+				(fill (type background))
+			)
+			(pin input line
+				(at -5.08 -10.16 90)
+				(length 5.08)
+				(name "1" (effects (font (size 1.27 1.27))))
+				(number "1" (effects (font (size 1.27 1.27))))
+			)
+			(pin input line
+				(at 5.08 -10.16 90)
+				(length 5.08)
+				(name "2" (effects (font (size 1.27 1.27))))
+				(number "2" (effects (font (size 1.27 1.27))))
+			)
+			(pin input line
+				(at 0.00 10.16 270)
+				(length 5.08)
+				(name "3" (effects (font (size 1.27 1.27))))
+				(number "3" (effects (font (size 1.27 1.27))))
+			)
+		)
+	)
+
+	(symbol "ACT45B-510-2P-TL003"
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(property
+			"Reference"
+			"L"
+			(at 0 7.62 0)
+			(effects (font (size 1.27 1.27) ))
+		)
+		(property
+			"Value"
+			"ACT45B-510-2P-TL003"
+			(at 0 -10.16 0)
+			(effects (font (size 1.27 1.27) ))
+		)
+		(property
+			"Footprint"
+			"jlc:IND-SMD_4P-L4.5-W3.2-TL"
+			(at 0 -12.70 0)
+			(hide yes)
+			(effects (font (size 1.27 1.27) ))
+		)
+		(property
+			"Datasheet"
+			"https://lcsc.com/product-detail/Filters_TDK_ACT45B-510-2P-TL003_ACT45B-510-2P-TL003_C76584.html"
+			(at 0 -15.24 0)
+			(hide yes)
+			(effects (font (size 1.27 1.27) ))
+		)
+		(property
+			"Manufacturer"
+			"TDK"
+			(at 0 -17.78 0)
+			(hide yes)
+			(effects (font (size 1.27 1.27) ))
+		)
+		(property
+			"MPN"
+			"ACT45B-510-2P-TL003"
+			(at 0 -20.32 0)
+			(hide yes)
+			(effects (font (size 1.27 1.27) ))
+		)
+		(property
+			"LCSC Part"
+			"C76584"
+			(at 0 -22.86 0)
+			(hide yes)
+			(effects (font (size 1.27 1.27) ))
+		)
+		(property
+			"ki_keywords"
+			"Common Mode Filters"
+			(at 0 -25.40 0)
+			(hide yes)
+			(effects (font (size 1.27 1.27) ))
+		)
+		(symbol "ACT45B-510-2P-TL003_0_1"
+			(arc
+				(start -1.27 2.54)
+				(mid -2.54 1.27)
+				(end -3.81 2.54)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(arc
+				(start 1.27 2.54)
+				(mid 0.00 1.27)
+				(end -1.27 2.54)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(arc
+				(start 3.81 2.54)
+				(mid 2.54 1.27)
+				(end 1.27 2.54)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(arc
+				(start 1.27 -5.08)
+				(mid 2.54 -3.81)
+				(end 3.81 -5.08)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(arc
+				(start -1.27 -5.08)
+				(mid 0.00 -3.81)
+				(end 1.27 -5.08)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(arc
+				(start -3.81 -5.08)
+				(mid -2.54 -3.81)
+				(end -1.27 -5.08)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy -3.81 -0.00) (xy 3.81 -0.00)
+				)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy -3.81 -2.54) (xy 3.81 -2.54)
+				)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(pin unspecified line
+				(at -8.89 2.54 0)
+				(length 5.08)
+				(name "1" (effects (font (size 1.27 1.27))))
+				(number "1" (effects (font (size 1.27 1.27))))
+			)
+			(pin unspecified line
+				(at -8.89 -5.08 0)
+				(length 5.08)
+				(name "2" (effects (font (size 1.27 1.27))))
+				(number "2" (effects (font (size 1.27 1.27))))
+			)
+			(pin unspecified line
+				(at 8.89 -5.08 180)
+				(length 5.08)
+				(name "3" (effects (font (size 1.27 1.27))))
+				(number "3" (effects (font (size 1.27 1.27))))
+			)
+			(pin unspecified line
+				(at 8.89 2.54 180)
+				(length 5.08)
+				(name "4" (effects (font (size 1.27 1.27))))
+				(number "4" (effects (font (size 1.27 1.27))))
+			)
+		)
+	)
 )

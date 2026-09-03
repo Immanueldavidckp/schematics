@@ -1,4 +1,4 @@
-ERC report (2026-09-03T19:47:56, Encoding UTF8)
+ERC report (2026-09-03T22:52:18, Encoding UTF8)
 Report includes: Errors, Warnings
 
 ***** Sheet /
@@ -17,7 +17,7 @@ Report includes: Errors, Warnings
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 43.18 mm): Global Label 'DI2'
-    @(185.42 mm, 213.36 mm): Label 'DI2'
+    @(170.18 mm, 220.98 mm): Label 'DI2'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 53.34 mm): Global Label 'IGN_SENSE'
@@ -49,11 +49,11 @@ Report includes: Errors, Warnings
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 83.82 mm): Global Label 'VBAT_SENSE'
-    @(292.10 mm, 144.78 mm): Label 'VBAT_SENSE'
+    @(307.34 mm, 129.54 mm): Label 'VBAT_SENSE'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 86.36 mm): Global Label 'VIN_SENSE'
-    @(322.58 mm, 58.42 mm): Label 'VIN_SENSE'
+    @(353.06 mm, 43.18 mm): Label 'VIN_SENSE'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(220.98 mm, 30.48 mm): Global Label '5V0'
@@ -96,18 +96,6 @@ Report includes: Errors, Warnings
 [isolated_pin_label]: Label connected to only one pin
     ; warning
     @(222.25 mm, 168.91 mm): Hierarchical Label 'MODEM_PWRKEY'
-[footprint_link_issues]: The current configuration does not include the footprint library 'TBD'
-    ; warning
-    @(83.82 mm, 45.72 mm): Symbol D3 [D_TVS]
-[footprint_link_issues]: The current configuration does not include the footprint library 'TBD'
-    ; warning
-    @(104.14 mm, 45.72 mm): Symbol D4 [D_TVS]
-[footprint_link_issues]: The current configuration does not include the footprint library 'TBD'
-    ; warning
-    @(58.42 mm, 101.60 mm): Symbol J1 [Conn_01x12]
-[footprint_link_issues]: The current configuration does not include the footprint library 'TBD'
-    ; warning
-    @(106.68 mm, 66.04 mm): Symbol L2 [L_Ferrite_Coupled]
 
 ***** Sheet /mcu/
 
@@ -115,7 +103,7 @@ Report includes: Errors, Warnings
 
 ***** Sheet /io/
 
- ** ERC messages: 32  Errors 0  Warnings 32
+ ** ERC messages: 28  Errors 0  Warnings 28
 
  ** Ignored checks:
     - Global label only appears once in the schematic

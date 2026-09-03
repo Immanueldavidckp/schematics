@@ -283,8 +283,20 @@ def build_storage():
 
 # ----------------------------------------------------------------------- IO
 
-# Parts still awaiting the in-stock selection sweep (design-log flag F-8).
-TBD = "TBD-F8"
+# F-8 in-stock selections (2026-09-02 sweep; see design-log for rationale)
+LCSC_NMOS_150V = "C51886143"   # AM2390N-TP 150V 4A SOT-23-3L (see F-10 gate drive)
+LCSC_PESD1CAN = "C15771"       # Nexperia PESD1CAN,215
+LCSC_ACT45B = "C76584"         # TDK ACT45B-510-2P-TL003 (alt clone C48928226)
+LCSC_J1_MX3 = "C7588012"       # XUNPU WAFER-MX3.0-12PZZ (Micro-Fit 3.0 ref series)
+LCSC_BAV99 = "C2500"           # Nexperia BAV99,215
+LCSC_SS310 = "C15874"          # MDD SS310 100V (F-11 recommends SS3200 C65001)
+LCSC_R60R4 = "C228935"         # YAGEO AC0805FR-0760R4L 60.4R 1%
+LCSC_R12K_1206 = "C17912"      # UNI-ROYAL 1206W4F1202T5E 12k 1% 250mW
+LCSC_R47K = "C17713"           # UNI-ROYAL 0805W8F4702T5E 47k 1%
+LCSC_R100K = "C17407"          # UNI-ROYAL 0805W8F1003T5E 100k 1%
+LCSC_R9K1 = "C17855"           # UNI-ROYAL 0805W8F9101T5E 9.1k 1%
+LCSC_R1M = "C17514"            # UNI-ROYAL 0805W8F1004T5E 1M 1%
+LCSC_C4N7 = "C1621"            # Samsung CL10B472KB8NNNC 4.7nF 50V X7R 0603
 
 
 def build_io():
@@ -296,8 +308,10 @@ def build_io():
             "<= 0.5 A at 12/24 V.", (g(20), g(20)))
 
     # ---------------- J1 machine harness, 12-pin Micro-Fit 3.0 class --------
-    j1 = sh.place("Connector_Generic:Conn_01x12", "J1", "Micro-Fit-12",
-                  (g(46), g(80)), "TBD:MicroFit3_12pin", TBD)
+    j1 = sh.place("Connector_Generic:Conn_01x12", "J1", "WAFER-MX3.0-12PZZ",
+                  (g(46), g(80)),
+                  "Connector_Molex:Molex_Micro-Fit_3.0_43045-1212_2x06_P3.00mm_Vertical",
+                  LCSC_J1_MX3)
     J1MAP = {
         "1": ("VIN", "hier", "input"), "2": ("GND", "gnd", None),
         "3": ("IGN", "net", None), "4": ("CANH", "net", None),
@@ -321,19 +335,22 @@ def build_io():
         sh.net(tp, "1", net, length=g(3))
 
     # ---------------- CAN: choke + TVS at connector, transceiver, split term
-    ch = sh.place("Device:L_Ferrite_Coupled", "L2", "51uH CM choke",
-                  (g(84), g(52)), "TBD:CM_choke_4pin", TBD)
+    # TDK ACT45B circuit diagram: winding A = pins 1->4, winding B = pins 2->3
+    ch = sh.place("jlc:ACT45B-510-2P-TL003", "L2", "ACT45B-510-2P",
+                  (g(84), g(52)), "jlc:IND-SMD_4P-L4.5-W3.2-TL", LCSC_ACT45B,
+                  fields={"Alternate": "MetalLions ACT45B-510-2P-TF C48928226"})
     sh.net(ch, "1", "CANH", length=g(4))
-    sh.net(ch, "2", "CANH_T", length=g(4))
-    sh.net(ch, "3", "CANL", length=g(4))
-    sh.net(ch, "4", "CANL_T", length=g(4))
-    sh.series("Device:D_TVS", "D3", "CAN TVS", (g(66), g(36)), "CANH", None,
-              "TBD:CAN_TVS", TBD, gnd_b=True)
-    sh.series("Device:D_TVS", "D4", "CAN TVS", (g(82), g(36)), "CANL", None,
-              "TBD:CAN_TVS", TBD, gnd_b=True)
-    sh.text("D3/D4 model the CAN-line TVS (PESD1CAN class) at the connector; "
-            "if a single 3-pin dual-line part is chosen, merge at layout.",
-            (g(56), g(28)))
+    sh.net(ch, "4", "CANH_T", length=g(4))
+    sh.net(ch, "2", "CANL", length=g(4))
+    sh.net(ch, "3", "CANL_T", length=g(4))
+    d3 = sh.place("jlc:PESD1CAN,215", "D3", "PESD1CAN",
+                  (g(64), g(34)),
+                  "jlc:SOT-23_L2.9-W1.3-P1.90-LS2.4-BR", LCSC_PESD1CAN)
+    sh.net(d3, "1", "CANH", length=g(4))
+    sh.net(d3, "2", "CANL", length=g(4))
+    sh.gnd(d3, "3", length=g(3))
+    sh.text("D3 Nexperia PESD1CAN: dual-line bidirectional CAN TVS at the "
+            "connector (24 V standoff).", (g(56), g(28)))
 
     u4 = sh.place("jlc:SIT1051AT_3", "U4", "SIT1051AT/3",
                   (g(140), g(48)), "jlc:SOP-8_L4.9-W3.9-P1.27-LS6.0-BL",
@@ -353,16 +370,16 @@ def build_io():
 
     # split termination, jumper-selectable, DEFAULT OPEN (machine bus is
     # already terminated at both physical ends)
-    sh.series("Device:R", "R11", "60R", (g(108), g(64)), "CANH_T", "CAN_MID",
-              R0805, TBD)
-    sh.series("Device:R", "R12", "60R", (g(118), g(64)), "CANL_T", "CAN_MID",
-              R0805, TBD)
+    sh.series("Device:R", "R11", "60.4R", (g(108), g(64)), "CANH_T", "CAN_MID",
+              R0805, LCSC_R60R4)
+    sh.series("Device:R", "R12", "60.4R", (g(118), g(64)), "CANL_T", "CAN_MID",
+              R0805, LCSC_R60R4)
     jp2 = sh.place("Jumper:SolderJumper_2_Open", "JP2", "CAN_TERM",
                    (g(130), g(72)), SJ_OPEN)
     sh.net(jp2, "1", "CAN_MID", length=g(4))
     sh.net(jp2, "2", "CAN_SPLIT", length=g(4))
     sh.series("Device:C", "C22", "4.7nF", (g(140), g(78)), "CAN_SPLIT", None,
-              C0603, TBD, gnd_b=True)
+              C0603, LCSC_C4N7, gnd_b=True)
     sh.text("Split termination 2x60R + 4.7nF behind JP2, DEFAULT OPEN.",
             (g(104), g(58)))
 
@@ -375,7 +392,7 @@ def build_io():
         for k in range(3):
             sh.series("Device:R", f"R{base + k}", "12k",
                       (g(58 + k * 12), g(ybase)), chain[k], chain[k + 1],
-                      R1206, TBD)
+                      R1206, LCSC_R12K_1206)
         ok = sh.place("jlc:EL357N", f"OK{n}", "EL357N(D)",
                       (g(112), g(ybase + 8)),
                       "jlc:OPTO-SMD-4_L4.4-W4.1-P2.54-LS7.0-BL", "C359074")
@@ -387,12 +404,12 @@ def build_io():
         # Series pair: D2 conducts GND->LED anode on reverse input; pin 1 is
         # tied to pin 3 so the unused half carries no current.
         bav = sh.place("Diode:BAV99", f"D{4 + n}", "BAV99",
-                       (g(96), g(ybase + 20)), SOT23, TBD)
+                       (g(96), g(ybase + 20)), SOT23, LCSC_BAV99)
         sh.net(bav, "3", f"DI{n}_LED", length=g(4))
         sh.net(bav, "1", f"DI{n}_LED", length=g(4))
         sh.gnd(bav, "2", length=g(3))
         sh.series("Device:R", f"R{20 + n}", "47k", (g(134), g(ybase)),
-                  "3V3", f"DI{n}", R0805, TBD)
+                  "3V3", f"DI{n}", R0805, LCSC_R47K)
         sh.series("Device:C", f"C{24 + n}", "100nF", (g(146), g(ybase + 6)),
                   f"DI{n}", None, C0603, LCSC_C100N, gnd_b=True)
     sh.text("DI1/DI2: 36k series (3x12k 1206, F-7) -> EL357N(D) opto, 47k pull-up "
@@ -402,19 +419,20 @@ def build_io():
     for n, ybase in ((1, 210), (2, 246)):
         # gate series resistor sits between the MCU signal and the gate
         rg = sh.place("Device:R", f"R{22 + n}", "100R", (g(70), g(ybase)),
-                      R0805, TBD)
+                      R0805, LCSC_R100)
         sh.hier(rg, "1", f"DO{n}_GATE", "input", length=g(6))
         sh.net(rg, "2", f"Q{n}_G", length=g(4))
         sh.series("Device:R", f"R{24 + n}", "10k", (g(82), g(ybase + 6)),
                   f"Q{n}_G", None, R0805, LCSC_R10K, gnd_b=True)
-        q = sh.place("Transistor_FET:Q_NMOS_GSD", f"Q{n}", "NMOS 150V TBD",
-                     (g(104), g(ybase)), SOT23, TBD)
+        q = sh.place("Transistor_FET:Q_NMOS_GSD", f"Q{n}", "AM2390N-TP",
+                     (g(104), g(ybase)),
+                     "jlc:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR", LCSC_NMOS_150V)
         sh.net(q, "1", f"Q{n}_G", length=g(4))
         sh.gnd(q, "2", length=g(3))
         sh.net(q, "3", f"DO{n}_OUT", length=g(4))
         # flyback: anode on the drain, cathode to VIN
         d = sh.place("Device:D_Schottky", f"D{6 + n}", "SS310",
-                     (g(128), g(ybase - 8)), "Diode_SMD:D_SMA", TBD)
+                     (g(128), g(ybase - 8)), "Diode_SMD:D_SMA", LCSC_SS310)
         sh.net(d, "2", f"DO{n}_OUT", length=g(4))
         sh.net(d, "1", "VIN", length=g(4))
     sh.text("DO1/DO2 low-side: 100R gate series, 10k pulldown, SS310 flyback "
@@ -427,17 +445,17 @@ def build_io():
             nxt = f"{tag}_D{k}" if k < 2 else f"{tag}_SENSE"
             sh.series("Device:R", f"R{30 + (0 if tag == 'VIN' else 3) + k}",
                       "100k", (g(230 + k * 12), g(ysense)), prev, nxt,
-                      R0805, TBD)
+                      R0805, LCSC_R100K)
             prev = nxt
         sh.series("Device:R", f"R{36 + (0 if tag == 'VIN' else 1)}", "9.1k",
-                  (g(268), g(ysense)), f"{tag}_SENSE", None, R0805, TBD,
+                  (g(268), g(ysense)), f"{tag}_SENSE", None, R0805, LCSC_R9K1,
                   gnd_b=True)
         sh.series("Device:C", f"C{27 + (0 if tag == 'VIN' else 1)}", "100nF",
                   (g(278), g(ysense)), f"{tag}_SENSE", None, C0603,
                   LCSC_C100N, gnd_b=True)
         # BAV99 rail clamp: signal on pin 3, pin 1 to 3V3, pin 2 to GND
         bav = sh.place("Diode:BAV99", f"D{10 if tag == 'VIN' else 11}", "BAV99",
-                       (g(292), g(ysense + 10)), SOT23, TBD)
+                       (g(292), g(ysense + 10)), SOT23, LCSC_BAV99)
         sh.net(bav, "3", f"{tag}_SENSE", length=g(4))
         sh.net(bav, "1", "3V3", length=g(4))
         sh.gnd(bav, "2", length=g(3))
@@ -451,9 +469,9 @@ def build_io():
 
     # battery sense from the SYS power-path node
     sh.series("Device:R", "R38", "1M", (g(230), g(108)), "SYS", "VBAT_SENSE",
-              R0805, TBD)
+              R0805, LCSC_R1M)
     sh.series("Device:R", "R39", "1M", (g(242), g(108)), "VBAT_SENSE", None,
-              R0805, TBD, gnd_b=True)
+              R0805, LCSC_R1M, gnd_b=True)
     sh.series("Device:C", "C29", "100nF", (g(254), g(108)), "VBAT_SENSE", None,
               C0603, LCSC_C100N, gnd_b=True)
     bs = sh.place("Connector:TestPoint", "TP12", "VBAT_SENSE",
@@ -466,9 +484,9 @@ def build_io():
 
     # spare ADC divider footprint, fitted DNP
     sh.series("Device:R", "R40", "100k", (g(230), g(140)), "VIN", "ADC_SPARE",
-              R0805, TBD, dnp=True)
+              R0805, LCSC_R100K, dnp=True)
     sh.series("Device:R", "R41", "9.1k", (g(242), g(140)), "ADC_SPARE", None,
-              R0805, TBD, dnp=True, gnd_b=True)
+              R0805, LCSC_R9K1, dnp=True, gnd_b=True)
     sp = sh.place("Device:C", "C30", "100nF", (g(254), g(140)), C0603,
                   LCSC_C100N, dnp=True)
     sh.hier(sp, "1", "ADC_SPARE", "output", length=g(5))

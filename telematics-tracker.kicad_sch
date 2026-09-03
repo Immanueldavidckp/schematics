@@ -1678,8 +1678,8 @@
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
-		(uuid "a0840569-eace-5e1c-a071-7c1a1fe34b3d")
-		(property "Reference" "#PWR061"
+		(uuid "b6ebde79-1b93-5903-ae3b-8a2b093e7393")
+		(property "Reference" "#PWR060"
 			(at 25.4 261.62 0)
 			(effects
 				(font
@@ -1689,6 +1689,45 @@
 		)
 		(property "Value" "PWR_FLAG"
 			(at 25.4 269.24 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "e7885c5c-0d80-5f61-9af2-35a51e7b0149")
+		)
+		(instances
+			(project "telematics-tracker"
+				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68"
+					(reference "#PWR060")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 45.72 269.24 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "a0840569-eace-5e1c-a071-7c1a1fe34b3d")
+		(property "Reference" "#PWR061"
+			(at 45.72 261.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 45.72 269.24 0)
 			(hide yes)
 			(effects
 				(font
@@ -1710,7 +1749,7 @@
 	)
 	(symbol
 		(lib_id "power:PWR_FLAG")
-		(at 45.72 269.24 0)
+		(at 66.04 269.24 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -1719,7 +1758,7 @@
 		(fields_autoplaced yes)
 		(uuid "c8e14865-4321-5e73-b321-a32216fe3efb")
 		(property "Reference" "#PWR062"
-			(at 45.72 261.62 0)
+			(at 66.04 261.62 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1727,7 +1766,7 @@
 			)
 		)
 		(property "Value" "PWR_FLAG"
-			(at 45.72 269.24 0)
+			(at 66.04 269.24 0)
 			(hide yes)
 			(effects
 				(font
@@ -1749,7 +1788,7 @@
 	)
 	(symbol
 		(lib_id "power:PWR_FLAG")
-		(at 66.04 269.24 0)
+		(at 86.36 269.24 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -1758,7 +1797,7 @@
 		(fields_autoplaced yes)
 		(uuid "fd7d43b8-f6ce-5165-8ba4-32ee31c1fc08")
 		(property "Reference" "#PWR063"
-			(at 66.04 261.62 0)
+			(at 86.36 261.62 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1766,7 +1805,7 @@
 			)
 		)
 		(property "Value" "PWR_FLAG"
-			(at 66.04 269.24 0)
+			(at 86.36 269.24 0)
 			(hide yes)
 			(effects
 				(font
@@ -1788,7 +1827,7 @@
 	)
 	(symbol
 		(lib_id "power:PWR_FLAG")
-		(at 86.36 269.24 0)
+		(at 106.68 269.24 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -1797,7 +1836,7 @@
 		(fields_autoplaced yes)
 		(uuid "e69ae4dd-e088-5bd9-a561-20cb4d63368a")
 		(property "Reference" "#PWR064"
-			(at 86.36 261.62 0)
+			(at 106.68 261.62 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1805,7 +1844,7 @@
 			)
 		)
 		(property "Value" "PWR_FLAG"
-			(at 86.36 269.24 0)
+			(at 106.68 269.24 0)
 			(hide yes)
 			(effects
 				(font
@@ -1827,7 +1866,7 @@
 	)
 	(symbol
 		(lib_id "power:PWR_FLAG")
-		(at 106.68 269.24 0)
+		(at 127 269.24 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -1836,45 +1875,6 @@
 		(fields_autoplaced yes)
 		(uuid "551015be-cb4e-59da-bd33-405e32fed6c6")
 		(property "Reference" "#PWR065"
-			(at 106.68 261.62 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "PWR_FLAG"
-			(at 106.68 269.24 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "800ffa47-4121-5769-acac-c44c0a04b49e")
-		)
-		(instances
-			(project "telematics-tracker"
-				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68"
-					(reference "#PWR065")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:PWR_FLAG")
-		(at 127 269.24 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "612b5afd-aa86-5bc5-9452-4cd028be9f54")
-		(property "Reference" "#PWR066"
 			(at 127 261.62 0)
 			(effects
 				(font
@@ -1892,12 +1892,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "4b2c27e6-e625-5f22-99db-601c8b96ae75")
+			(uuid "800ffa47-4121-5769-acac-c44c0a04b49e")
 		)
 		(instances
 			(project "telematics-tracker"
 				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68"
-					(reference "#PWR066")
+					(reference "#PWR065")
 					(unit 1)
 				)
 			)
