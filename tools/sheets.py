@@ -562,8 +562,15 @@ LCSC_SMF05C = "C15879"         # onsemi SMF05CT1G SOT-363
 LCSC_AO3401A = "C15127"        # AOS AO3401A -30V 4A SOT-23
 LCSC_MMBT3906 = "C75549"       # Nexperia MMBT3906,215
 LCSC_SMF50A = "C193402"        # MDD SMF5.0A (modem VBAT clamp)
-LCSC_C100U = "C49066"          # Samsung CL32A107MQVNNNE 100uF 6.3V X5R 1210
-LCSC_C10U = "C440198"          # Murata GRM21BR61H106KE43L 10uF 50V X5R 0805
+# F-13 APPROVED 2026-09-04, no waiver. The old bulk was 2x 100uF 6.3V *X5R*
+# (C49066), which broke rule 1 twice: X5R dielectric, and 6.3V on a 4.35V rail
+# is 1.45:1 not >=2:1. Replaced by 4x 47uF 10V X7R: 10/4.35 = 2.30:1, X7R, and
+# 111.9uF EFFECTIVE at 4.35V bias and 85C from Murata's own curves. Four 1210s
+# = 32 mm^2, which is less board area than two 2220s would have been.
+LCSC_C47U_X7R = "C84494"       # Murata GRM32ER71A476KE15L 47uF 10V X7R 1210
+# second source for the same position: Taiyo Yuden C20486249 (renamed C778723)
+LCSC_C10U = "C109040"          # 10uF 25V X7S 0805 (was C440198 X5R; X7S here
+                               # is also +125C rated vs the old part's +85C)
 C1210 = "Capacitor_SMD:C_1210_3225Metric"
 
 
@@ -642,10 +649,11 @@ def build_modem_rf():
             "52/53/54/56/72 get >=1 via each.", (g(20), g(238)))
 
     # ---- VBAT_MODEM decoupling + clamp, <=5mm from U1 at layout -----------
-    sh.series("Device:C", "C40", "100uF", (g(60), g(40)), "VBAT_MODEM", None,
-              C1210, LCSC_C100U, gnd_b=True)
-    sh.series("Device:C", "C41", "100uF", (g(70), g(40)), "VBAT_MODEM", None,
-              C1210, LCSC_C100U, gnd_b=True)
+    # F-13: 4x 47uF 10V X7R -> 111.9uF effective at 4.35V/85C (see design-log).
+    # All four must sit within 5 mm of U1 pads 57-60.
+    for _i, _ref in enumerate(("C40", "C41", "C81", "C82")):
+        sh.series("Device:C", _ref, "47uF X7R", (g(50 + 10 * _i), g(40)),
+                  "VBAT_MODEM", None, C1210, LCSC_C47U_X7R, gnd_b=True)
     sh.series("Device:C", "C42", "1uF", (g(80), g(40)), "VBAT_MODEM", None,
               C0603, LCSC_C1U, gnd_b=True)
     sh.series("Device:C", "C43", "100nF", (g(90), g(40)), "VBAT_MODEM", None,
@@ -808,7 +816,7 @@ def build_modem_rf():
     # X2 pin map per ETSI TS 102 671 R12 / ST VFDFPN8 (1GLOBAL MFF2 datasheet
     # fig.1): 1 GND, 2 SWIO(nc), 3 I/O, 4 NC, 5 NC, 6 CLK, 7 /RESET, 8 VCC
     es = sh.place("Connector_Generic:Conn_01x08", "X2", "MFF2-eSIM-pads",
-                  (g(282), g(100)), "TBD-MFF2:eSIM_MFF2_VFDFPN8", "DNP-MFF2",
+                  (g(282), g(100)), "jlc:eSIM_MFF2_VFDFPN8", "DNP-MFF2",
                   dnp=True)
     sh.gnd(es, "1", length=g(3))
     sh.nc(es, "2")

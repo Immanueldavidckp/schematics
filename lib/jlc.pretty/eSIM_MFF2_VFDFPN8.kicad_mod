@@ -1,0 +1,61 @@
+(footprint "eSIM_MFF2_VFDFPN8"
+	(version 20260206)
+	(generator "derived-F17")
+	(layer "F.Cu")
+	(descr "MFF2 soldered eSIM, VFDFPN-8 5.0 x 6.0 x 0.9 mm. DERIVED FOOTPRINT (F-17) - not from easyeda2kicad, because MFF2 is a standard package site rather than one LCSC part. Land pattern is the vendor-consensus land published IDENTICALLY by four independent documents covering three silicon vendors: Infineon OPTIGA Connect IoT datasheet rev 3.0 2022-02-18 fig 6 p.22 (md5 eed84276d38b692e2fcfe740b4a94b29); Velocity IoT VIoT-Flex MFF2 p.4; 1NCE IoT SIM Chip Industrial footprint drawing; ConnectedYou CY SIM MFF2 Packaging v1.1/v1.2 section 4 p.5. Pin mapping cross-checked against the normative ETSI TS 102 671 V12.0.0 2018-07 table 6.1 p.13 (md5 b6c0feffce862e5cb98aacb20a67d5a3): pin 1-8 = contacts C5,C6,C7,C8,C4,C3,C2,C1. Pitch axis runs along the 5.0 mm body axis. Pin 1 = bottom-left viewed from top. Exposed pad tied to GND per Infineon table 10 note p.24; numbered 1 so it merges with the GND pin without needing a 9-pin symbol. ETSI annex A publishes a DIFFERENT, socket-compatible land (0.50 x 0.96 at +/-2.675, insulated centre anchors) - deliberately NOT used, see design-log F-17.")
+	(tags "eSIM MFF2 VFDFPN-8 VQFN-8 M2M UICC")
+	(attr smd)
+	(property "Reference" "X**"
+		(at 0 -4.6 0)
+		(layer "F.SilkS")
+		(effects (font (size 1 1) (thickness 0.15)))
+	)
+	(property "Value" "eSIM_MFF2_VFDFPN8"
+		(at 0 4.6 0)
+		(layer "F.Fab")
+		(effects (font (size 1 1) (thickness 0.15)))
+	)
+
+	(fp_text user "${REFERENCE}"
+		(at 0 0 0)
+		(layer "F.Fab")
+		(effects (font (size 0.8 0.8) (thickness 0.12)))
+	)
+
+	(fp_rect (start -2.5 -3) (end 2.5 3)
+		(stroke (width 0.1) (type solid)) (fill none) (layer "F.Fab"))
+
+	(fp_line (start -2.5 -2.2) (end -2.5 -3) (stroke (width 0.12) (type solid)) (layer "F.SilkS"))
+	(fp_line (start -2.5 -3) (end 2.5 -3) (stroke (width 0.12) (type solid)) (layer "F.SilkS"))
+	(fp_line (start 2.5 -3) (end 2.5 -2.2) (stroke (width 0.12) (type solid)) (layer "F.SilkS"))
+	(fp_line (start -2.5 2.2) (end -2.5 3) (stroke (width 0.12) (type solid)) (layer "F.SilkS"))
+	(fp_line (start -2.5 3) (end 2.5 3) (stroke (width 0.12) (type solid)) (layer "F.SilkS"))
+	(fp_line (start 2.5 2.2) (end 2.5 3) (stroke (width 0.12) (type solid)) (layer "F.SilkS"))
+	(fp_circle (center -2.9 2.85) (end -2.75 2.85)
+		(stroke (width 0.25) (type solid)) (fill solid) (layer "F.SilkS"))
+
+	(fp_rect (start -2.825 -3.5) (end 2.825 3.5)
+		(stroke (width 0.05) (type solid)) (fill none) (layer "F.CrtYd"))
+
+	(pad "1" smd rect (at -1.905 2.85) (size 0.4 0.8) (layers "F.Cu" "F.Paste" "F.Mask"))
+	(pad "2" smd rect (at -0.635 2.85) (size 0.4 0.8) (layers "F.Cu" "F.Paste" "F.Mask"))
+	(pad "3" smd rect (at 0.635 2.85) (size 0.4 0.8) (layers "F.Cu" "F.Paste" "F.Mask"))
+	(pad "4" smd rect (at 1.905 2.85) (size 0.4 0.8) (layers "F.Cu" "F.Paste" "F.Mask"))
+	(pad "5" smd rect (at 1.905 -2.85) (size 0.4 0.8) (layers "F.Cu" "F.Paste" "F.Mask"))
+	(pad "6" smd rect (at 0.635 -2.85) (size 0.4 0.8) (layers "F.Cu" "F.Paste" "F.Mask"))
+	(pad "7" smd rect (at -0.635 -2.85) (size 0.4 0.8) (layers "F.Cu" "F.Paste" "F.Mask"))
+	(pad "8" smd rect (at -1.905 -2.85) (size 0.4 0.8) (layers "F.Cu" "F.Paste" "F.Mask"))
+
+	(pad "1" smd rect (at 0 0) (size 4.2 3.4) (layers "F.Cu" "F.Mask"))
+
+	(pad "" smd rect (at -1.45 -1.25) (size 1.2 0.8) (layers "F.Paste"))
+	(pad "" smd rect (at 0 -1.25) (size 1.2 0.8) (layers "F.Paste"))
+	(pad "" smd rect (at 1.45 -1.25) (size 1.2 0.8) (layers "F.Paste"))
+	(pad "" smd rect (at -1.45 0) (size 1.2 1.2) (layers "F.Paste"))
+	(pad "" smd rect (at 0 0) (size 1.2 1.2) (layers "F.Paste"))
+	(pad "" smd rect (at 1.45 0) (size 1.2 1.2) (layers "F.Paste"))
+	(pad "" smd rect (at -1.45 1.25) (size 1.2 0.8) (layers "F.Paste"))
+	(pad "" smd rect (at 0 1.25) (size 1.2 0.8) (layers "F.Paste"))
+	(pad "" smd rect (at 1.45 1.25) (size 1.2 0.8) (layers "F.Paste"))
+
+)

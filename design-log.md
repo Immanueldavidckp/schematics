@@ -1444,3 +1444,385 @@ an open item (handoff §9)** — so the fifth hole is provisional exactly like t
 outline. *Decision needed:* confirm a 5-standoff housing is acceptable, or
 accept U3 at the stiffest available interior point with 4 corner screws only.
 Not a routing blocker either way — the hole position is a keepout, not copper.
+
+## F-16 — SIM holder: X ambiguity resolved, Y still open, no copper guessed
+
+Searched LCSC and the JLCPCB parts library for an in-stock nano-SIM push-push
+holder whose drawing dimensions the locating posts unambiguously. Both sites
+were reachable; every dimension below came off a drawing that was opened, and
+the GCT numbers were re-extracted and re-read locally rather than taken on
+trust.
+
+**Correction to the earlier F-16 entry.** The reading that the incumbent's
+`2.50` and `1.22` are the post X positions was **wrong**. On the JXTCONN
+drawing those two figures are the **bottom-pad-row chain** (2.50 = bottom pad
+pitch, 1.22 = middle bottom-pad centreline to product centreline). The post
+dimension is `8.50`, and it is **post centre to post centre**. So the
+incumbent's post **X is actually determined**, not ambiguous:
+8.50 apart, sitting at −5.00 and +3.50 from the product centreline given the
+GND-pad centrelines at ±6.50.
+
+**Only Y is genuinely ambiguous** — and it is ambiguous for the reason
+originally flagged: the posts' only Y reference is `0.06` to the bottom-pad-row
+centreline, and that row's own Y is chained off an unnamed "PRODUCT CONTOUR
+LINE" via 13.48 / 2×12.00 / 6.92. The datum feature is never identified.
+HMTCONN C53121332 and Megastar C7419851 reuse the identical drawing with the
+identical gap. **Not resolved, and not inferred.**
+
+**A corroborated Y candidate now exists.** Three independent vendors publish
+what is evidently the same standardised layout, all at ±0.05:
+
+| | GCT SIM8066 | HRO SIM-13A | Megastar ZX-NSIM-481.37J-Z |
+|---|---|---|---|
+| posts | 2 × Ø0.75 | 2 × Ø0.75 | 2 × Ø0.75 |
+| post-to-post | 8.50 | 8.50 | 8.50 |
+| lower-left GND-pad C/L to left post | 1.50 | 1.50 | 1.50 |
+| lower GND-pad C/L to post (Y, post above) | **1.25** | **1.25** | **1.25** |
+| GND-pad C/L frame | 13.00 × 12.00 | 13.00 × 12.00 | 13.00 × 12.00 |
+
+Verified locally on the GCT sheet: its "Recommended PCB Layout (Viewed from
+Component Side — Tolerance: ±0.05mm)" block does carry 0.75, 8.50, 1.50, 1.25,
+13.00 and 12.00. The Megastar, HRO and JXTCONN PDFs carry their dimensions as
+outlined vectors with no extractable text, so those were read visually by the
+research pass and not re-verified locally — flagged as such.
+
+Relative to a frame centre with GND-pad centrelines at ±6.50 X and the lower
+GND-pad centreline at Y = 0, that scheme puts the post centres at
+**(−5.00, +1.25)** and **(+3.50, +1.25)**.
+
+### Candidates found
+
+| LCSC | Part | Posts dimensioned? | Stock | $@250 | vs incumbent |
+|---|---|---|---|---|---|
+| C53207808 | JXTCONN NANO SIM 7P 1.37H PUSH *(incumbent)* | X yes, **Y no** | 845 | 0.181 | — |
+| **C7419882** | **Megastar ZX-NSIM-481.37J-Z** | **fully** | 1422 | 0.205 | **+13 %** |
+| C3020889 | HRO SIM-13A | fully | 569 | 0.330 | +83 %; also **−20 °C only** |
+| C3032925 | GCT SIM8066-6-1-14-01-A | fully | 2856 | 1.069 | +491 % |
+| C2977286 | JAE SF72S006VBDR2500 | **no posts at all** (pure SMT) | 1188 | 0.458 | +154 %; CD polarity **inverted** |
+| C5148297 | Hirose KP13B-SF-PEJ(800) | **no posts at all** | 11680 | 0.930 | +415 %; CD polarity **inverted** |
+
+Ruled out: Amphenol ICC stock no nano push-push; Attend nano parts all stock 0;
+Molex 78724/105163/104168 and Würth 693071010811 are not carried at all. Molex
+1042240820 and Würth 693043020611 are push-**pull**, not push-push.
+
+### Why the switch was NOT applied
+
+C7419882 satisfies the stated rule — well documented, similar cost (+$0.03/unit,
++$6 on a 250-piece buy), same class (4FF, push-push, 1.37 mm, 6+CD, 1.27 pitch,
+−40…+85 °C), and its card-detect keeps the incumbent's normally-closed polarity
+so no firmware change. **But `easyeda2kicad --lcsc_id=C7419882` fails: the
+EasyEDA API has no data for that part.** Switching therefore means hand-drawing
+the land pattern, which is exactly what skill golden rule 1 forbids
+("NEVER invent a footprint... every component comes from easyeda2kicad using
+its verified C-number"). Trading a documented-but-hand-drawn footprint for an
+imported-and-already-verified one is not obviously a win, and the posts are
+moulded bosses — get the holes wrong and the part will not seat, so this is not
+a low-consequence guess.
+
+**Held for the user, two ways forward:**
+1. **Switch to C7419882** and accept a hand-drawn footprint from its fully
+   dimensioned drawing — a logged deviation from golden rule 1. Lowest
+   dimensional risk, highest process risk.
+2. **Keep C53207808** and either (a) apply the 3-vendor corroborated
+   Y = +1.25 to the incumbent, accepting cross-vendor inference on a moulded
+   feature, or (b) order 5 samples (min buy 1, no reel penalty) and measure —
+   the original plan.
+
+**For this layout iteration the SIM area is reserved with the incumbent's
+already-verified pad map and NO post holes**, so no copper is guessed and the
+decision stays open. The holes are NPTH mechanical features: adding them later
+does not disturb routing.
+
+## F-13 applied — VBAT_MODEM bulk to X7R, 111.9 uF effective
+
+**APPROVED, no waiver.** The old bulk was `2x 100 uF 6.3 V X5R 1210` (C49066),
+which broke rule 1 twice over: X5R dielectric, and 6.3 V on a 4.35 V rail is
+**1.45:1**, not the required >=2:1.
+
+**Applied: 4x Murata GRM32ER71A476KE15L, LCSC C84494** — 47 uF 10 V **X7R**
+1210. Refs C40, C41, C81, C82 on VBAT_MODEM, all inside 5 mm of U1 pads 57-60.
+
+| | old | new |
+|---|---|---|
+| dielectric | X5R (rule violation) | **X7R** |
+| derating | 6.3 / 4.35 = **1.45:1** | 10 / 4.35 = **2.30:1** |
+| effective at 4.35 V, 85 C | not qualified | **111.9 uF** |
+| count / area | 2 x 1210 = 16 mm^2 | 4 x 1210 = **32 mm^2** |
+| cost/board | — | $1.75 |
+
+Curve figures, read at exact 4.35 V / 85.0 C grid points from Murata's own
+simulation backend (not interpolated from a printed graph):
+**27.97 uF per part** at 4.35 V bias and 85 C, x4 = **111.9 uF**.
+Second source for the same position: Taiyo Yuden **C20486249** (renamed
+C778723), whose published curve gives -37 % at 4.35 V/25 C and TCC -3.3 % at
+85 C -> ~26 uF, **within ~7 % of the Murata figure** — an independent
+cross-validation of the recommended part.
+
+The 10 uF X5R 0805 (C440198, used for C77-C79 and others) is replaced by
+**C109040**, Murata GRM21BC71E106KE11L, 10 uF 25 V **X7S** — same footprint,
+better at 85 C than the incumbent, and rated **+125 C** against the old part's
++85 C ceiling.
+
+### Four findings worth keeping beyond the part numbers
+
+1. **All three options previously logged under F-13 fail the target.** They
+   deliver **63 uF, 76 uF and ~92 uF** effective, not >=100 uF. Four 47 uF
+   parts is the minimum that works in 1210.
+2. **No 100 uF X7R/X7S at >=10 V exists in 1210 or 1812 from anyone** —
+   checked against Murata's and TDK's own catalogues, not just a distributor
+   search. TDK's 100 uF 16 V X7S is the flattest part found (only -4.0 % at
+   4.35 V) but it is 2220, lands at ~88 uF at 85 C so one part still misses,
+   and had 493 in stock against the 500 needed for 250 boards.
+3. **Do not derive effective capacitance by multiplying a 25 C DC-bias curve
+   by a 0 V temperature curve.** That over-predicts by **9-12 %** on
+   high-density parts. Only Murata publishes the combined bias-plus-temperature
+   surface; Samsung, TDK and others need that extra margin applied.
+4. **Samwha (C5440143), CCTC, Chinocera and HRE publish no DC-bias curve at
+   all** — both Samwha catalogues were read and contain only a series-level
+   temperature graph. Those parts are **unqualifiable** against this rule, not
+   merely unattractive. Also two TDK MPNs that LCSC lists do not exist in TDK's
+   own database — distributor MPN drift, the same failure mode as the JLC
+   dielectric mislabelling.
+
+**Rule 1 (no electrolytic or tantalum; ceramic X7R/X7S only; voltage derated
+>=2:1) is now MET** across the design.
+
+## F-17 closed — MFF2 land pattern derived and built
+
+`lib/jlc.pretty/eSIM_MFF2_VFDFPN8.kicad_mod` created. X2 re-pointed from the
+placeholder `TBD-MFF2:eSIM_MFF2_VFDFPN8` to `jlc:eSIM_MFF2_VFDFPN8`; that
+placeholder was the **last unresolved footprint in the netlist** and was also
+the single `footprint_link_issues` ERC warning, so **ERC is now 0 errors /
+13 warnings** — one better than the 14 carried since milestone 2.
+
+**Deviation from skill golden rule 1, logged deliberately.** The rule requires
+every footprint to come from easyeda2kicad against a verified C-number. MFF2 is
+a **standard package site**, not one LCSC part — the whole point of X2 is that
+any vendor's MFF2 can be fitted — so there is no C-number to import. The land
+is therefore derived from cited primary documents rather than invented.
+
+**Sources (all opened and hashed):**
+- **ETSI TS 102 671 V12.0.0 (2018-07)** — normative package spec.
+  md5 `b6c0feffce862e5cb98aacb20a67d5a3`
+- **Infineon OPTIGA Connect IoT** datasheet rev 3.0, 2022-02-18, fig 6 p.22.
+  md5 `eed84276d38b692e2fcfe740b4a94b29`
+- Velocity IoT VIoT-Flex MFF2 p.4; 1NCE IoT SIM Chip Industrial (vector
+  drawing, pixel-verified); ConnectedYou CY SIM MFF2 Packaging §4 p.5.
+- ST ST4SIM-200M DB4082 rev 5 via mirror — **st.com is hard-blocked from this
+  environment**, so no ST-authored land pattern was ever seen. ST's own
+  "PCB integration recommendations" is an application schematic, not a land.
+
+**All four vendor documents publish the identical land**, covering three
+different silicon vendors. Built to that consensus:
+
+| pad | signal | X | Y (KiCad, Y down) | size |
+|---|---|---|---|---|
+| 1 | GND | -1.905 | +2.85 | 0.40 x 0.80 |
+| 2 | SWIO (nc) | -0.635 | +2.85 | 0.40 x 0.80 |
+| 3 | I/O | +0.635 | +2.85 | 0.40 x 0.80 |
+| 4 | NC | +1.905 | +2.85 | 0.40 x 0.80 |
+| 5 | NC | +1.905 | -2.85 | 0.40 x 0.80 |
+| 6 | CLK | +0.635 | -2.85 | 0.40 x 0.80 |
+| 7 | /RESET | -0.635 | -2.85 | 0.40 x 0.80 |
+| 8 | VCC | -1.905 | -2.85 | 0.40 x 0.80 |
+| EP | **GND** | 0 | 0 | 4.20 x 3.40 |
+
+Body 5.00 x 6.00; **the pitch axis runs along the 5.0 mm axis** (3 x 1.27 =
+3.81 span); pin 1 = bottom-left viewed from top; numbering counter-clockwise.
+Courtyard **5.65 x 7.00** (derived: max body/copper extent + IPC-7351B
+nominal-density QFN excess 0.25 mm — no vendor publishes a courtyard).
+Stencil: pads 1:1 with copper; EP gets a **3 x 3 aperture array** at
+X = -1.45/0/+1.45, Y = -1.25/0/+1.25 (1.2 wide; 0.8/1.2/0.8 tall), ~71 % paste
+coverage. Solder-mask expansion is **UNVERIFIED** — no vendor prints a number —
+so the KiCad house default applies.
+
+**ETSI cross-check: the schematic pinout is CONFIRMED CORRECT.** TS 102 671
+Table 6.1 maps package pins 1-8 to UICC contacts C5, C6, C7, C8, C4, C3, C2,
+C1, which yields exactly the assignment already in `modem_rf`. Confirmed
+independently by four vendor pin tables. §7.0 also explains why pins 4 and 5
+are NC: *"In the case where the MFF does not support the functionality as
+defined in ETSI TS 102 600 then contacts C4 and C8 shall not be bonded."*
+
+Three traps recorded so nobody re-derives this wrongly:
+- **Letter trap.** ETSI-style documents call E = 6.00 and D = 5.00; JEDEC-style
+  ones swap them, and swap `D2`/`E2` with them. Physically identical. Fix the
+  axes physically, never by letter.
+- **Do not take geometry from logical pinout diagrams.** ST's and 1GLOBAL's
+  pin diagrams draw the body taller than wide with pins in vertical columns,
+  which would put the pitch on the 6 mm axis. Every *dimensioned* outline says
+  the 5 mm axis.
+- **`5.7` is centre-to-centre between pad rows, not outer-to-outer.** Confirmed
+  three ways, including ConnectedYou dimensioning the same feature as `4.9`
+  inner-edge to inner-edge (4.9 + 2 x 0.8 = 5.7).
+
+**Exposed pad tied to GND**, per the only affirmative vendor statement found
+(Infineon p.24 note: *"must be connected to the common ground reference (GND)
+for heat distribution"*). Note the apparent conflict: ETSI **Annex A
+(informative)** says the central pads *"are not electrically connected (i.e.
+they are insulated) and may serve as anchors"* — but Annex A describes a
+**socket-compatible** layout where those are socket anchors, not a soldered
+MFF2 thermal land. Vendor guidance wins for a soldered part. The EP pad is
+**numbered "1"** so it merges with the GND pin without needing a 9-pin symbol.
+
+**ETSI Annex A publishes a different land** (0.50 x 0.96 pads at +/-2.675,
+segmented insulated centre) and was deliberately **not** used: the vendor
+consensus land is what the silicon vendors qualified their reflow to, it
+accommodates the full cross-vendor tolerance envelope (contact length
+0.40-0.75, width 0.30-0.50), it gives 0.25 mm toe extension for an inspectable
+fillet against Annex A's 0.155, and it comes with a defined stencil. Build
+Annex A **only** if an MFF socket might ever be fitted in the X2 site, which
+needs a 10.50 x 11.10 mm clearance zone — wasted area on a soldered-only DNP
+site.
+
+*Implementation note for anyone editing a `.kicad_mod` by hand: KiCad's
+S-expression parser has **no comment syntax**. `;;` comment lines made the
+whole `jlc` library fail to load, which surfaced as 28 spurious
+`footprint_link_issues` ERC warnings ("configuration does not include the
+footprint library 'jlc'") rather than as a footprint error.*
+
+---
+
+# MILESTONE 4 — stage 1 and 2 (placement + planes). NOT ROUTED.
+
+**Routing has not started, and this is not a clean DRC.** The board is a
+first-pass floorplan for review. Reporting it as anything else would be false.
+
+## Why routing stopped here
+
+No autorouter is available in this environment: KiCad ships none, and
+freerouting is not installed. Routing 234 nets across a board with a 100 V
+zone, two 50 ohm CPWG runs, a 2 mm VBAT_MODEM rail and a switching loop that
+must be minimised is not work to hand to an autorouter unreviewed, and
+downloading a third-party jar to do it is a decision for the user.
+
+## Generators
+
+Consistent with `tools/sheets.py`, the board is **generated, not hand-drawn**:
+- `tools/pcbgen.py` — outline, mounting holes, HV silk boundary. Builds from
+  `tools/pcb-template.kicad_pcb` (layers/setup only) every run.
+- `tools/pcbplace.py` — footprints, net binding, L2 GND plane, L3 power pours,
+  F-9 stitching vias.
+
+Regeneration is **byte-identical across runs** (verified 3x), so the
+MIGRATION.md "regenerate, then git diff must be empty" check still proves the
+design has not changed. Getting there needed two pcbnew workarounds, both
+documented in the code:
+- **`board.Remove()` segfaults the interpreter.** It hands ownership back to
+  Python, which double-frees on the next GC (exit 139, no traceback). The
+  generators never delete; they rebuild from the template.
+- **KIIDs are random with no Python setter, and footprints are saved from an
+  unordered container**, so plain regeneration reordered blocks and reminted
+  every uuid. `canonicalise()` sorts top-level forms by a stable key and
+  restamps uuids by position.
+
+And one real bug worth remembering: **pcbnew returns one C++ FOOTPRINT per
+library id, so caching and reusing it collapses every component that shares a
+footprint onto a single instance.** `board.Add()` is a no-op after the first
+call and the next `SetPosition()` just moves it. That silently produced **45
+footprints instead of 219 and left 349 pads unbound to nets** — a board that
+looked plausible and was electrically hollow. Always load a fresh instance.
+
+## Density — the finding that shapes everything
+
+**Total courtyard area is 3315 mm^2 against 4800 mm^2 of board: 69 % of one
+side.** U1 alone is 873 mm^2, 18 % of the board.
+
+| sheet | parts | courtyard |
+|---|---|---|
+| modem_rf | 57 | 1439 mm^2 |
+| io | 70 | 837 mm^2 |
+| power | 44 | 694 mm^2 |
+| mcu | 40 | 306 mm^2 |
+| storage | 3 | 38 mm^2 |
+
+With L2 a solid GND plane and L3 the power pours, **only L1 and L4 carry
+signal**. 69 % single-sided occupancy will not route on two signal layers, so
+the placement is **double-sided: 171 top, 47 bottom.** That has a cost
+consequence — double-sided SMT assembly at JLCPCB — which the user should
+confirm. The alternatives are shrinking passives to 0402 or growing the board,
+and the board is housing-constrained.
+
+## Floorplan
+
+Zones, x in mm: **HV 1-19.25** (left of the silk boundary at x = 20),
+**power 20.75-45 / y 1-16.5**, **digital 20.75-45 / y 17-59**,
+**RF 45.5-79**. The power sheet needs 694 mm^2 against a 372 mm^2 power zone,
+so it spills into the digital zone; **HV deliberately spills nowhere** — a
+100 V part must not wander out of the zone the 1.5 mm rule and the silk
+boundary are drawn around.
+
+Placement amendments applied:
+- **(a) switching loop** — U5 at (35.5, 4.5), D16 SS3200 at (35.5, 9.5),
+  C73/C74 at (31.0, 3.0)/(31.0, 5.5): the discontinuous-current loop packed
+  tight.
+- **(b) inductor away from ANT_GNSS** — L1 at (27.5, 8.5), the left end of the
+  power block; **GNSS U.FL moved to the bottom-right corner** and LTE to the
+  top-right, putting L1 ~62 mm from the GNSS feed instead of ~45 mm.
+- **(c) IMU by a mounting hole** — U3 at (31.5, 51.5), hard against the
+  provisional 5th M3 at (27, 52). See **F-18**.
+
+## Planes and vias
+
+- **L2: solid GND**, full board inset 0.35 mm, **pad connection FULL (no
+  thermal reliefs)**. Not a preference — EC200U HW Design V1.2 §4.3 requires
+  *"The GND pins adjacent to RF pins should not be designed as thermal relief
+  pads, and should be fully connected to ground."*
+- **L3: power pours** — 5V0, SYS, 3V3 across the digital/power zones.
+- **43 F-9 stitching vias**: 28 in the 85-112 lattice (pads are 2.0 x 3.0 mm at
+  3.2 mm spacing, so via-in-pad is comfortable), 4 in the RF fence
+  (46/48/50/51), 11 on the perimeter grounds and pad 76.
+  Via 0.60/0.30 in the lattice, 0.50/0.30 elsewhere — **0.45/0.30 gives only a
+  0.075 mm annulus and fails the 0.100 mm board minimum**, which is what the
+  first 17 `annular_width` errors were.
+
+## Quectel RF layout rules — two of these change earlier decisions
+
+Read from the committed PDF, §4.3 p.69-70:
+1. Impedance controlled to 50 ohm with a simulation tool — done, see the CPWG
+   entry above.
+2. **"The GND pins adjacent to RF pins should not be designed as thermal relief
+   pads, and should be fully connected to ground."** — confirms the F-9 relief
+   plan; implemented as ZONE_CONNECTION_FULL.
+3. **"All the right-angle traces should be changed to curved ones. The
+   recommended trace angle is 135 degrees."** — no right angles on RF.
+4. **"There should be clearance area under the signal pin of the antenna
+   connector or solder joint."** — a GND void under each U.FL signal pin.
+   **NOT YET IMPLEMENTED** — routing-stage item.
+5. **"The distance between the ground vias and RF traces should be not less
+   than twice the width of RF signal traces (2 x W)."** With W = 0.40 mm that
+   is **>= 0.80 mm**, which **supersedes the earlier fence note**: fence vias
+   must stand off 0.80 mm from the trace, so with the 0.30 mm coplanar gap the
+   via centre sits >= 1.30 mm from the trace centreline. The 2.0 mm *pitch*
+   along the run is unchanged.
+6. Keep RF away from interference sources; avoid paralleling on adjacent layers.
+
+Note Quectel's figures 34/35 show CPWG referenced to **L3 or L4**. This design
+references **L2** deliberately (handoff: L2 = solid GND), which is the tighter
+and better-controlled choice, and is what h = 0.2104 mm was computed for.
+
+## Deliverables
+
+- `drc-placement.rpt` — full DRC
+- `docs/drc-exceptions.md` — every violation classified: expected vs defect
+- `out/renders/top.png`, `bottom.png`, `iso.png`
+
+**896 violations: 443 unconnected (nothing routed), 169 silk-over-copper
+(inherent to the vendor footprints, normally waived), and ~137 genuine
+placement defects** — 51 shorting items, 58 clearance, 22 courtyard overlaps —
+that need placement iteration before routing is worth starting.
+
+The 3D render already earned its keep: it caught **J2, the battery
+wire-to-board JST, sitting mid-board next to U2** where its lead could not
+leave the board. Moved to the bottom edge at (40, 55).
+
+## Open before routing
+
+- **F-18** 5th mounting hole — needs a housing with a matching boss.
+- **F-19** BT1 vs the +70 C ceiling.
+- **F-16** SIM locating-post holes — deliberately absent, decision open.
+- **Double-sided assembly** — confirm the cost is acceptable.
+- **~137 placement defects** to clear.
+- **AF1/AF2 sit at x = 72 but U1's ANT pads are at x = 76.55**, so the RF run
+  currently doubles back inboard. Short (~4.5 mm) but wrong-way; the U.FL
+  should move outboard of the ANT pads, which collides with the H2/H4 corner
+  holes. Resolve with the final outline.
