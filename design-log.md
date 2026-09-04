@@ -1368,3 +1368,79 @@ Etch sensitivity ±25 µm (W and G moving oppositely) gives roughly ±4.5 %.
 λ_guided at 2.7 GHz ≈ 61 mm, so λ/20 ≈ 3.1 mm. **Fence via pitch specified at
 2.0 mm** (≈λ/33 at 2.7 GHz, ≈λ/56 at GNSS L1 1575 MHz) — comfortable margin,
 placed along the gap edge either side of both ANT runs.
+
+## Placement amendments (approved 2026-09-04) — layout directives
+
+These are recorded as directives for the real layout;
+`docs/placement-study.svg` was milestone-3 prep and is superseded by the
+actual board once placement lands.
+
+**(a) Minimise the U5–L1–SS3200–Cin switching loop.** The hot loop is
+`C73/C74 (+) -> U5 pin 8/9 VIN -> U5 pin 6 SW -> L1 -> 5V0` with the return
+`D16 SS3200 anode -> GND -> C73/C74 (-)`, i.e. the current that commutates
+between the high-side switch and the freewheel diode every cycle. The loop to
+minimise in *area* is the one carrying the discontinuous current: **C73/C74,
+U5, and D16**. Directives:
+- C73/C74 sit hard against U5 pins 8/9 and pin 3 (GND) — shortest possible
+  path, ideally sharing a pad-adjacent copper island rather than a trace.
+- D16 cathode hard against the U5 SW pin; D16 anode to GND with its own via
+  field straight down to L2, not via a long trace.
+- L1 placed so the SW node copper is a short, wide, compact pour — SW is the
+  dV/dt aggressor, so keep its *area* small even though it needs current
+  capability.
+- No L2 GND plane interruption under the loop; the return path must mirror
+  directly beneath it.
+
+**(b) Inductor at maximum distance from the ANT_GNSS trace.** The constraint
+that makes this awkward: U5 must stay adjacent to the HV front end (it is fed
+from VIN_B through R80, on the connector side), so the power block cannot move
+far from the left/HV end. The available degree of freedom is **which corner
+each antenna occupies**.
+
+Resolution: **swap the two U.FL corners — GNSS to the bottom-right, LTE to the
+top-right.** The power block sits top-middle, so this puts the inductor
+diagonally opposite the GNSS connector and its feed:
+
+| | L1 to GNSS U.FL | L1 to LTE U.FL |
+|---|---|---|
+| Before (GNSS top-right) | ~48 mm | ~49 mm |
+| After (GNSS bottom-right) | **~67 mm** | ~48 mm |
+
+The trade is deliberate and one-directional: GNSS is a receive-only system at
+roughly −130 dBm sensitivity with no ability to out-shout interference, so
+broadband buck switching noise costs fixes directly. LTE runs 200–300 mW
+transmit with AGC and closed-loop power control, and its receiver sits near
+−100 dBm; giving it the noisier corner costs far less. Handoff §7 only requires
+the two U.FL to be ≥15 mm apart and both at the antenna end — the corner
+assignment was never constrained, so this costs nothing.
+Also: keep L1 at the **left** end of the power block (nearest the HV boundary,
+furthest from the RF edge), and route ANT_GNSS on the shortest path to the
+bottom-right corner without passing under or beside the power block.
+
+**(c) U3 IMU adjacent to a mounting hole — CONFLICT, raised as F-18.**
+The intent is sound: a mounting screw is the stiffest point on the board, so an
+IMU beside one sees least flex, and impact energy arrives through the mount
+rather than as board bending. The problem is that **none of the four M3 holes
+is in a zone the IMU can occupy.** On the provisional 80 × 60 outline with
+holes 3.5 mm in from each corner:
+
+| Hole | Position | Zone | Usable for U3? |
+|---|---|---|---|
+| top-left | (3.5, 3.5) | inside the HV strip (x < 20 mm) | **no** — I2C sensor in the 100 V zone |
+| bottom-left | (3.5, 56.5) | inside the HV strip | **no** |
+| top-right | (76.5, 3.5) | RF corner, beside a U.FL | **no** — and I2C would run the length of the board past the module |
+| bottom-right | (76.5, 56.5) | RF corner, beside a U.FL | **no** |
+
+**NEW FLAG F-18 — proposal: add a fifth M3 hole in the digital zone and place
+U3 beside it.** This is not just a workaround for the IMU; an 80 × 60 × 1.6 mm
+FR4 board screwed only at its corners has real centre compliance, and this
+board carries a **31 × 28 mm LCC module** whose solder joints must survive five
+years of MEWP vibration. A centre standoff stiffens the panel for both reasons.
+Provisional position: digital zone, lower-middle, clear of U2/U7 and the
+SWD test-point cluster; U3 placed immediately adjacent with its axes on silk.
+
+**This needs the housing to provide a matching boss, and the housing is still
+an open item (handoff §9)** — so the fifth hole is provisional exactly like the
+outline. *Decision needed:* confirm a 5-standoff housing is acceptable, or
+accept U3 at the stiffest available interior point with 4 corner screws only.
+Not a routing blocker either way — the hole position is a keepout, not copper.

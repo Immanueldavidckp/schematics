@@ -1,0 +1,58 @@
+# MEWP telematics tracker — custom design rules
+# Milestone 4. Written 2026-09-04.
+#
+# Netclass clearances live in telematics-tracker.kicad_pro. These rules cover
+# the things a netclass clearance cannot express, chiefly the HV-to-signal
+# separation, which is directional: HV must stand off low-voltage signals, but
+# an HV part's own ground return (TVS, bulk caps) is necessarily close to its
+# HV pad and must not be flagged.
+
+(version 1)
+
+# --- HV zone -------------------------------------------------------------
+# handoff section 7: "HV zone (VIN up to 100 V) physically separated;
+# >= 1.5 mm clearance HV-to-LV, marked keepout."
+# GND is excepted by design: D2 SMDJ100A, C70/C71/C72/C73/C74 and R80 all
+# return to GND right beside their HV pads. The electrical minimum still
+# applies there via the HV netclass clearance (0.6 mm, IPC-2221 Table 6-1
+# external uncoated at 100 V).
+(rule "HV to signal 1.5mm"
+	(constraint clearance (min 1.5mm))
+	(condition "A.NetClass == 'HV' && B.NetClass != 'HV' && B.NetClass != 'GND'"))
+
+# Board-edge standoff for HV nets: creepage to a cut edge, and to whatever the
+# housing presents beyond it.
+(rule "HV to board edge"
+	(constraint edge_clearance (min 1.0mm))
+	(condition "A.NetClass == 'HV'"))
+
+# --- RF ------------------------------------------------------------------
+# 50 ohm CPWG on L1 over the L2 GND plane, JLC7628 h = 0.2104 mm:
+# W = 0.40 mm, G = 0.30 mm (48.9-50.4 ohm across Dk 4.3-4.6).
+# The gap is held by the RF netclass clearance; this pins the width so a
+# stray narrower segment cannot pass DRC unnoticed.
+(rule "RF trace width"
+	(constraint track_width (min 0.4mm) (opt 0.4mm) (max 0.4mm))
+	(condition "A.NetClass == 'RF'"))
+
+# --- JLCPCB process floor ------------------------------------------------
+# Skill file section PCB: 0.15 mm track/space is the safe figure for the
+# standard 4-layer process.
+(rule "JLCPCB min track"
+	(constraint track_width (min 0.15mm))
+	(condition "A.Type == 'track'"))
+
+(rule "JLCPCB min via"
+	(constraint hole_size (min 0.3mm))
+	(constraint via_diameter (min 0.45mm))
+	(condition "A.Type == 'via'"))
+
+(rule "JLCPCB hole to hole"
+	(constraint hole_to_hole (min 0.5mm)))
+
+# --- thermal / current ---------------------------------------------------
+# handoff section 4: VBAT_MODEM carries the modem's 2 A transmit burst and is
+# specified >= 2 mm wide. Enforced so a narrow neck cannot slip through.
+(rule "VBAT_MODEM width"
+	(constraint track_width (min 2.0mm))
+	(condition "A.NetClass == 'MODEM_BULK' && A.Type == 'track'"))
