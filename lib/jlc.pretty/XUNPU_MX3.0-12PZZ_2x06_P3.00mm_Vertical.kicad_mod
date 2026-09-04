@@ -308,18 +308,6 @@
 			)
 		)
 	)
-	(pad "" np_thru_hole circle
-		(at -3 3.94)
-		(size 1.02 1.02)
-		(drill 1.02)
-		(layers "*.Cu" "*.Mask")
-	)
-	(pad "" np_thru_hole circle
-		(at 18 3.94)
-		(size 1.02 1.02)
-		(drill 1.02)
-		(layers "*.Cu" "*.Mask")
-	)
 	(pad "1" thru_hole roundrect
 		(at 0 0)
 		(size 1.5 1.5)

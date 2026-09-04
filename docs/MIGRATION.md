@@ -13,7 +13,7 @@ started and is intentionally blocked.
 
 | Tool | Version | Notes |
 |---|---|---|
-| **KiCad** | **10.0.0** | `C:\Program Files\KiCad\10.0`. The skill file asks for KiCad 9; 10 was already installed and reads/writes these files natively (logged deviation, milestone 1). |
+| **KiCad** | **10.0.5** (Linux; was 10.0.0 on Windows pre-migration) | `C:\Program Files\KiCad\10.0`. The skill file asks for KiCad 9; 10 was already installed and reads/writes these files natively (logged deviation, milestone 1). |
 | Python | 3.10.0 | `%LOCALAPPDATA%\Programs\Python\Python310` |
 | easyeda2kicad | 1.0.1 | LCSC part import |
 | Git Credential Manager | `credential.helper=manager` | how the GitHub push authenticated |
@@ -35,6 +35,27 @@ shadows a downgrade, so if imports still fail after pinning, delete
 pip install "fastmcp==2.12.5"            # pulls the matching mcp 1.16.0
 python -c "import kicad_mcp; print('ok')"
 ```
+
+### FreeRouting — pending tool dependency (milestone 4 routing)
+
+**Not installed yet.** Recorded here now because the routing plan depends on
+it: the critical nets (RF CPWG + fence vias, HV front end, VBAT_MODEM, the U5
+switching loop) are hand-routed, and FreeRouting handles only the remaining
+low-speed nets, after which its output is reviewed to DRC-clean.
+
+| | |
+|---|---|
+| Upstream | https://github.com/freerouting/freerouting |
+| Artefact | `freerouting-<version>.jar` from the GitHub Releases page |
+| Version | **TO BE RECORDED** — pin the exact release tag, jar filename and SHA-256 here before it is run against the board |
+| Runtime | `java` (present: /usr/bin/java) |
+| Interface | KiCad exports Specctra `.dsn`; FreeRouting returns `.ses` which KiCad imports |
+
+Rules for using it, so an autorouted result never silently becomes the design:
+- it runs **only after** the critical nets are hand-routed and locked;
+- its `.ses` import is reviewed and DRC-checked before commit;
+- the exact jar version goes in this table, because routing output is not
+  reproducible across FreeRouting versions.
 
 ### kicad-mcp
 
@@ -160,6 +181,37 @@ C-numbers, to be verified at the milestone-5 BOM stage).
 **Do not start routing until F-9 is signed off and F-15 is decided.**
 
 ---
+
+## 6a. Build order (milestone 4 onwards)
+
+The board is generated, like the sheets. **Use `python3 tools/build.py`** — do
+not run the stages by hand. The order is load-bearing and every failure mode in
+it is silent:
+
+| step | why the order matters |
+|---|---|
+| `tools/sheets.py` | — |
+| `kicad-cli sch export netlist` | `pcbplace.py` reads `nl.net`, not the schematic |
+| `tools/pcbgen.py` | outline, mounting holes, HV silk boundary |
+| `tools/pcbplace.py` | footprints, nets, HV keepout, planes, stitching vias |
+| `tools/netclasses.py` | **after** the two above: `pcbnew.SaveBoard()` rewrites the project and wipes `net_settings`, so net classes applied earlier are gone |
+| `kicad-cli pcb drc --refill-zones --save-board` | **after** net classes: the zones were filled while only Default existed, so the fill used 0.2 mm where HV needs 0.6 mm |
+| canonicalise | the refill rewrote the board; re-stabilise it |
+
+`tools/netclasses.py` verifies the classes survive a KiCad round trip and exits
+non-zero if they do not. That check exists because all five classes had
+silently reverted to just "Default" — any class missing `bus_width`,
+`priority` or `tuning_profile`, or written with the wrong `meta.version`, is
+discarded on the next load-and-save.
+
+Two pcbnew traps worth knowing before editing the generators:
+- **`board.Remove()` segfaults the interpreter** (exit 139, no traceback) — it
+  hands ownership back to Python, which double-frees on the next GC. The
+  generators never delete; they rebuild from `tools/pcb-template.kicad_pcb`.
+- **`pcbnew.FootprintLoad()` returns one C++ object per library id.** Caching
+  and reusing it collapses every component sharing a footprint onto a single
+  instance, because `board.Add()` is a no-op after the first call. That
+  produced 45 footprints instead of 219 and left 349 pads unbound to nets.
 
 ## 6. Working practice to carry over
 

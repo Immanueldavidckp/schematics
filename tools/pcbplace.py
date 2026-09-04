@@ -31,7 +31,7 @@ from pcbgen import (PROJ, PCB, SYSFP, BW, BH, HV_X, canonicalise, get_net,
 JLCFP = os.path.join(PROJ, "lib", "jlc.pretty")
 NETLIST = os.path.join(PROJ, "nl.net")
 
-GAP = 0.60          # mm between courtyards when packing
+GAP = 0.70          # mm between courtyards when packing
 EDGE = 1.0          # mm keep-in from the board edge
 
 # ---------------------------------------------------------------- floorplan
@@ -39,13 +39,12 @@ EDGE = 1.0          # mm keep-in from the board edge
 ZONES = {
     # HV: connector end. Everything at up to 100 V lives left of HV_X.
     "hv":      (EDGE, EDGE, HV_X - 0.75, BH - EDGE),
-    # digital centre
-    "dig":     (HV_X + 0.75, 17.0, 45.0, BH - EDGE),
-    # power block, top of the digital end, adjacent to the HV boundary so the
-    # VIN_B feed stays short
-    "pwr":     (HV_X + 0.75, EDGE, 45.0, 16.5),
-    # modem / RF end
-    "rf":      (45.5, EDGE, BW - EDGE, BH - EDGE),
+    # Power gets 23 mm of height, not 15.5. L1 alone is 13.8 x 12.4 mm, and at
+    # the smaller size the relaxation had nowhere to put C73/C74 and stacked
+    # them on L1. x stops at 43.0 because U1's keepout reaches x = 44.2.
+    "pwr":     (HV_X + 0.75, EDGE, 43.0, 27.0),
+    "dig":     (HV_X + 0.75, 27.5, 43.0, BH - EDGE),
+    "rf":      (44.0, EDGE, BW - EDGE, BH - EDGE),
 }
 
 # Explicit positions: (x, y, rotation_deg, side) - side 0 = top, 1 = bottom.
@@ -93,11 +92,66 @@ ANCHORS = {
     # --- digital --------------------------------------------------------
     "U2":  (29.0, 25.0, 0, 0),
     # Amendment (c) / F-18: U3 hard against the provisional 5th M3 at (27,52).
-    "U3":  (31.5, 51.5, 0, 0),
+    "U3":  (29.5, 55.0, 0, 0),
     "U7":  (24.0, 33.0, 0, 0),
     "U4":  (24.5, 43.5, 0, 0),
     "U8":  (41.0, 24.0, 0, 0),
 }
+
+def relax_anchors(anchor_boxes, bounds, min_gap=1.10, iters=1500):
+    """Nudge overlapping anchors apart, keeping each inside its bounds.
+
+    The anchor coordinates encode engineering intent - which zone a part is in
+    and what it sits next to - but hand-picked millimetres do not converge on a
+    legal layout: L1 alone is 13.8 mm wide in a 22.75 mm power zone, and the
+    first pass left 16 overlapping anchor pairs which produced every remaining
+    courtyard overlap and short. This preserves the intent and fixes the
+    arithmetic: push each overlapping pair apart along its axis of least
+    overlap, clamp to bounds, repeat.
+    """
+    pos = {r: [v["x"], v["y"]] for r, v in anchor_boxes.items()}
+    for it in range(iters):
+        moved = False
+        refs = sorted(pos)
+        for i, a in enumerate(refs):
+            for b in refs[i + 1:]:
+                A, B = anchor_boxes[a], anchor_boxes[b]
+                if A["side"] != B["side"]:
+                    continue
+                dx = (pos[a][0] - pos[b][0])
+                dy = (pos[a][1] - pos[b][1])
+                needx = (A["w"] + B["w"]) / 2 + min_gap
+                needy = (A["h"] + B["h"]) / 2 + min_gap
+                ox, oy = needx - abs(dx), needy - abs(dy)
+                if ox <= 0 or oy <= 0:
+                    continue
+                moved = True
+                if dx == 0 and dy == 0:
+                    # exactly coincident: bounds clamping can collapse two
+                    # boxes onto one point, and then dx/dy give no direction.
+                    # Nudge deterministically by reference order.
+                    dx = 1.0 if a < b else -1.0
+                # alternate the preferred axis so a pair that cannot separate
+                # on its narrower axis eventually tries the other one
+                prefer_x = (ox <= oy) if (it % 2 == 0) else (ox < oy * 0.6)
+                if prefer_x:                      # separate along x
+                    push = ox / 2 + 1e-3
+                    sgn = 1.0 if dx >= 0 else -1.0
+                    pos[a][0] += sgn * push
+                    pos[b][0] -= sgn * push
+                else:
+                    push = oy / 2 + 1e-3
+                    sgn = 1.0 if dy >= 0 else -1.0
+                    pos[a][1] += sgn * push
+                    pos[b][1] -= sgn * push
+        for r, (x0, y0, x1, y1) in bounds.items():
+            A = anchor_boxes[r]
+            pos[r][0] = min(max(pos[r][0], x0 + A["w"] / 2), x1 - A["w"] / 2)
+            pos[r][1] = min(max(pos[r][1], y0 + A["h"] / 2), y1 - A["h"] / 2)
+        if not moved:
+            break
+    return {r: (round(v[0], 2), round(v[1], 2)) for r, v in pos.items()}
+
 
 # sheet -> zone for everything not anchored
 SHEET_ZONE = {"power": "pwr", "mcu": "dig", "storage": "dig",
@@ -111,21 +165,47 @@ SHEET_ZONE = {"power": "pwr", "mcu": "dig", "storage": "dig",
 SPILL = {"pwr": ["dig", "rf"], "dig": ["pwr", "rf"],
          "rf": ["dig"], "hv": []}
 
-# Refs that belong in a different zone than their sheet implies. The io sheet
-# is a mix: the CAN transceiver side and the DO gate drive are low voltage and
-# belong in the digital zone, while the DI/DO/divider front ends are HV.
+# The io sheet is a mix of HV and LV, so sheet name alone cannot place it:
+# the DI/DO/divider front ends sit at up to 100 V while the gate drive, the
+# opto collectors and the CAN transceiver side are 3V3/5V logic. Assigning the
+# whole sheet to "hv" pushed the eight DO gate-drive resistors R42-R49 into the
+# HV zone, filled it, and left 13 parts unplaced.
+#
+# Instead, an io part goes in the HV zone if and only if it actually touches an
+# HV-class net. That is also what the HV keepout means in practice: nothing
+# low-voltage should be sitting inside the zone the 1.5 mm rule is drawn
+# around. HV net membership is read from the netclass patterns in the .kicad_pro
+# so there is one source of truth.
 ZONE_OVERRIDE = {
-    "U4": "dig", "L2": "hv", "D3": "hv",
-    "TP25": "hv", "TP26": "hv", "TP23": "hv",
     "TP27": "dig", "TP28": "dig", "TP24": "rf",
 }
 
+
+def hv_nets():
+    """The HV net list, taken from tools/netclasses.py rather than from the
+    generated .kicad_pro.
+
+    It cannot be read from the project file here: pcbnew.SaveBoard() rewrites
+    the project and wipes net_settings, so by the time pcbgen.py has run there
+    are no netclass patterns left to read. netclasses.py is re-applied as the
+    last build step for the same reason.
+    """
+    import netclasses
+    return set(netclasses.HV)
+
 POWER_POURS = [
-    # (net, layer, x0, y0, x1, y1) on L3
-    ("5V0", "In2.Cu", HV_X + 0.75, EDGE, 45.0, 17.0),
-    ("SYS", "In2.Cu", HV_X + 0.75, 17.0, 45.0, 34.0),
-    ("3V3", "In2.Cu", HV_X + 0.75, 34.0, 45.0, BH - EDGE),
+    # (net, layer, x0, y0, x1, y1) on L3. The 5V0 pour starts below the U5
+    # island and keeps the HV netclass clearance from it.
+    ("5V0", "In2.Cu", HV_X + 0.75, 27.5, 43.0, 39.0),
+    ("SYS", "In2.Cu", HV_X + 0.75, 39.5, 43.0, 48.0),
+    ("3V3", "In2.Cu", HV_X + 0.75, 48.5, 43.0, BH - EDGE),
 ]
+
+# The EG11752 exposed pad is VIN_B (F-20), and the skill file requires the
+# buck's thermal pad stitched down with >= 9 vias. Those vias need copper to
+# land on, so L3 carries a small VIN_B island under U5 - which is also what
+# spreads the heat. Sized and placed from U5's actual position at build time.
+U5_ISLAND_MARGIN = 1.6
 
 
 # ------------------------------------------------------------------ netlist
@@ -173,19 +253,86 @@ def load_fp(fpid):
         return None
 
 
+def keepout_abs(fp):
+    """(cx, cy, w, h) of a POSITIONED footprint's keepout, in board mm.
+
+    Returns the box's own centre, not the footprint's origin. Those are not the
+    same thing: J1's derived Molex courtyard is centred 7.50 mm in x and
+    1.92 mm in y away from its origin, because the origin sits on pin 1. The
+    first version blocked a correctly-sized box in the wrong place, which is
+    what let D2, D6, F1, TP8 and TP9 be packed on top of J1.
+    """
+    boxes = []
+    cy = fp.GetCourtyard(pcbnew.F_CrtYd).BBox()
+    if cy.GetWidth() > 0:
+        boxes.append(cy)
+    for pd in fp.Pads():
+        boxes.append(pd.GetBoundingBox())
+    if not boxes:
+        boxes.append(fp.GetBoundingBox(False, False))
+    x0 = min(b.GetLeft() for b in boxes)
+    x1 = max(b.GetRight() for b in boxes)
+    y0 = min(b.GetTop() for b in boxes)
+    y1 = max(b.GetBottom() for b in boxes)
+    return (pcbnew.ToMM((x0 + x1) // 2), pcbnew.ToMM((y0 + y1) // 2),
+            pcbnew.ToMM(x1 - x0), pcbnew.ToMM(y1 - y0))
+
+
 _sizecache = {}
 
 
 def size_of(fp, fpid=None):
+    """Keepout size = max(courtyard, pad extent) per axis.
+
+    The courtyard alone is not safe to pack against: on several of these
+    footprints F.CrtYd encloses only the BODY, not the leads. U2's LQFP-48
+    courtyard measures 7.1 x 7.1 while its pads reach 9.0 mm, so packing to the
+    courtyard dropped 0603s straight onto its leads - that single mistake
+    produced most of the U1/U2 clearance and shorting violations.
+    """
     if fpid is not None and fpid in _sizecache:
         return _sizecache[fpid]
-    bb = fp.GetCourtyard(pcbnew.F_CrtYd).BBox()
-    if bb.GetWidth() == 0:
+    cy = fp.GetCourtyard(pcbnew.F_CrtYd).BBox()
+    w, h = pcbnew.ToMM(cy.GetWidth()), pcbnew.ToMM(cy.GetHeight())
+    pads = list(fp.Pads())
+    if pads:
+        x0 = min(pcbnew.ToMM(pd.GetBoundingBox().GetLeft()) for pd in pads)
+        x1 = max(pcbnew.ToMM(pd.GetBoundingBox().GetRight()) for pd in pads)
+        y0 = min(pcbnew.ToMM(pd.GetBoundingBox().GetTop()) for pd in pads)
+        y1 = max(pcbnew.ToMM(pd.GetBoundingBox().GetBottom()) for pd in pads)
+        w, h = max(w, x1 - x0), max(h, y1 - y0)
+    if w == 0 or h == 0:
         bb = fp.GetBoundingBox(False, False)
-    wh = (pcbnew.ToMM(bb.GetWidth()), pcbnew.ToMM(bb.GetHeight()))
+        w = w or pcbnew.ToMM(bb.GetWidth())
+        h = h or pcbnew.ToMM(bb.GetHeight())
+    wh = (w, h)
     if fpid is not None:
         _sizecache[fpid] = wh
     return wh
+
+
+def through_obstacles(fp):
+    """Positions/sizes of features that occupy BOTH sides of the board.
+
+    A bottom-side part may sit under a top-side SMD part quite happily, but not
+    under a through-hole pad, an unplated hole or a via. Those have to be
+    blocked on both shelves.
+    """
+    out = []
+    for pd in fp.Pads():
+        ls = pd.GetLayerSet()
+        if ls.Contains(pcbnew.F_Cu) and ls.Contains(pcbnew.B_Cu):
+            bb = pd.GetBoundingBox()
+            out.append((pcbnew.ToMM(bb.GetCenter().x),
+                        pcbnew.ToMM(bb.GetCenter().y),
+                        pcbnew.ToMM(bb.GetWidth()),
+                        pcbnew.ToMM(bb.GetHeight())))
+        elif pd.GetDrillSizeX() > 0:
+            out.append((pcbnew.ToMM(pd.GetPosition().x),
+                        pcbnew.ToMM(pd.GetPosition().y),
+                        pcbnew.ToMM(pd.GetDrillSizeX()),
+                        pcbnew.ToMM(pd.GetDrillSizeY() or pd.GetDrillSizeX())))
+    return out
 
 
 # ------------------------------------------------------------------ packing
@@ -238,6 +385,34 @@ def add_zone(board, layer, net, rect, name=""):
     return z
 
 
+def hv_rule_area(board):
+    """The HV keepout, as a named rule area the .kicad_dru can reference.
+
+    This is what makes the 1.5 mm HV-to-signal rule expressible. That rule is a
+    BOARD-LEVEL zone separation requirement, and it cannot be applied blindly:
+    U5's exposed pad carries VIN_B at up to 100 V and its own signal pins sit
+    0.55 mm away inside the SOIC-8 package, so no layout can achieve 1.5 mm
+    there. Scoping the rule to items inside this area keeps it satisfiable and
+    stops it masking genuine violations elsewhere. See design-log F-20.
+    """
+    z = pcbnew.ZONE(board)
+    z.SetIsRuleArea(True)
+    z.SetZoneName("HV_ZONE")
+    z.SetLayerSet(pcbnew.LSET.AllCuMask())
+    for setter in ("SetDoNotAllowTracks", "SetDoNotAllowVias",
+                   "SetDoNotAllowPads", "SetDoNotAllowZoneFills",
+                   "SetDoNotAllowFootprints"):
+        if hasattr(z, setter):
+            getattr(z, setter)(False)
+    pts = pcbnew.VECTOR_VECTOR2I()
+    for x, y in ((0.5, 0.5), (HV_X, 0.5), (HV_X, BH - 0.5), (0.5, BH - 0.5)):
+        pts.append(pcbnew.VECTOR2I(mm(x), mm(y)))
+    z.AddPolygon(pts)
+    board.Add(z)
+    print(f"HV keepout: named rule area 'HV_ZONE' over x = 0.5 to {HV_X} mm, "
+          f"all copper layers")
+
+
 def planes(board):
     """L2 solid GND, L3 power pours.
 
@@ -251,6 +426,20 @@ def planes(board):
     add_zone(board, board.GetLayerID("In1.Cu"), gnd,
              (inset, inset, BW - inset, BH - inset), "L2_GND_solid")
     print("L2: solid GND pour, full-board, no thermal reliefs")
+    # HV island on L3 under U5, for the exposed-pad thermal vias
+    u5 = _fp(board, "U5")
+    vinb = board.FindNet("/power/VIN_B")
+    if u5 is not None and vinb is not None:
+        uw, uh = size_of(u5)
+        ux = pcbnew.ToMM(u5.GetPosition().x)
+        uy = pcbnew.ToMM(u5.GetPosition().y)
+        m = U5_ISLAND_MARGIN
+        add_zone(board, board.GetLayerID("In2.Cu"), vinb,
+                 (ux - uw / 2 - m, uy - uh / 2 - m,
+                  ux + uw / 2 + m, uy + uh / 2 + m), "L3_VIN_B_U5_thermal")
+        print(f"  L3: VIN_B thermal island under U5 "
+              f"({uw + 2*m:.1f} x {uh + 2*m:.1f} mm) - F-20, EP is at line voltage")
+
     for netname, layer, x0, y0, x1, y1 in POWER_POURS:
         n = board.FindNet(netname)
         if n is None:
@@ -269,43 +458,82 @@ FENCE = ["46", "48", "50", "51"]
 PERIM = ["8", "9", "19", "22", "36", "52", "53", "54", "56", "72", "76"]
 
 
-def stitch_vias(board):
-    gnd = get_net(board, "GND")
-    u1 = None
+def _fp(board, ref):
     for f in board.GetFootprints():
-        if f.GetReference() == "U1":
-            u1 = f
-            break
-    if u1 is None:
-        print("U1 not placed - no stitching vias")
-        return
-    made = 0
+        if f.GetReference() == ref:
+            return f
+    return None
 
-    def via(pos, dia, drill):
-        nonlocal made
+
+def planned_vias(board):
+    """(x, y, diameter) for every stitching via, computed from the anchors.
+
+    Split out from placement so the sites can be reserved before packing.
+    """
+    spots = []
+    u1 = _fp(board, "U1")
+    if u1 is not None:
+        for group, dia in ((LATTICE, 0.60), (FENCE, 0.50), (PERIM, 0.50)):
+            for num in group:
+                for pd in u1.Pads():
+                    if pd.GetNumber() == num:
+                        spots.append((pcbnew.ToMM(pd.GetPosition().x),
+                                      pcbnew.ToMM(pd.GetPosition().y), dia))
+                        break
+    # U5 exposed pad: the skill file requires the buck's thermal pad stitched
+    # to L2/L3 with at least 9 vias. EG11752 pin 9 is the EP (and is VIN_B on
+    # this part, per the datasheet - so these vias carry VIN_B, not GND).
+    u5 = _fp(board, "U5")
+    if u5 is not None:
+        for pd in u5.Pads():
+            if pd.GetNumber() != "9":
+                continue
+            bb = pd.GetBoundingBox()
+            cx = pcbnew.ToMM(bb.GetCenter().x)
+            cy = pcbnew.ToMM(bb.GetCenter().y)
+            w = pcbnew.ToMM(bb.GetWidth())
+            h = pcbnew.ToMM(bb.GetHeight())
+            # 3 x 3 grid at a pitch that guarantees the 0.5 mm minimum
+            # hole-to-hole. The earlier scaling formula produced 0.72 mm pitch
+            # on this 3.30 x 2.40 pad -> 0.42 mm hole-to-hole, which failed.
+            # 0.85 mm pitch with a 0.30 mm drill gives 0.55 mm.
+            PITCH, VIA = 0.85, 0.50
+            for i in (-1, 0, 1):
+                for j in (-1, 0, 1):
+                    x, y = cx + i * PITCH, cy + j * PITCH
+                    if (abs(x - cx) + VIA / 2 <= w / 2 - 0.2 and
+                            abs(y - cy) + VIA / 2 <= h / 2 - 0.2):
+                        spots.append((x, y, VIA))
+            break
+    return spots
+
+
+def stitch_vias(board, spots):
+    """Place the vias reserved by planned_vias(), on the net of the pad each
+    one sits in, so a via in the U5 exposed pad does not short VIN_B to GND."""
+    gnd = get_net(board, "GND")
+    made = 0
+    for vx, vy, vd in spots:
+        net = gnd
+        for f in board.GetFootprints():
+            hit = False
+            for pd in f.Pads():
+                if pd.HitTest(pcbnew.VECTOR2I(mm(vx), mm(vy))):
+                    if pd.GetNet() is not None and pd.GetNetname():
+                        net = pd.GetNet()
+                    hit = True
+                    break
+            if hit:
+                break
         v = pcbnew.PCB_VIA(board)
-        v.SetPosition(pos)
-        v.SetWidth(mm(dia))
-        v.SetDrill(mm(drill))
-        v.SetNet(gnd)
+        v.SetPosition(pt(vx, vy))
+        v.SetWidth(mm(vd))
+        v.SetDrill(mm(0.30))
+        v.SetNet(net)
         v.SetLayerPair(pcbnew.F_Cu, pcbnew.B_Cu)
         board.Add(v)
         made += 1
-
-    # 0.50/0.30 gives exactly the 0.100 mm minimum annular ring; 0.45 gave
-    # 0.075 and failed board setup. The fence pads are 0.8 mm tall, so 0.50 is
-    # also the largest via that keeps copper either side of the barrel.
-    for group, dia, drill in ((LATTICE, 0.60, 0.30),
-                              (FENCE, 0.50, 0.30),
-                              (PERIM, 0.50, 0.30)):
-        for num in group:
-            p = u1.FindPadByNumber(num)
-            if p is None:
-                continue
-            via(p.GetPosition(), dia, drill)
-    print(f"F-9 stitching vias placed: {made} "
-          f"({len(LATTICE)} lattice, {len(FENCE)} RF fence, "
-          f"{len(PERIM)} perimeter/audio)")
+    print(f"stitching vias placed: {made}")
 
 
 def main():
@@ -314,6 +542,10 @@ def main():
                  f"--format kicadsexpr --output nl.net telematics-tracker.kicad_sch")
     comps, nets = parse_netlist(NETLIST)
     print(f"netlist: {len(comps)} components, {len(nets)} named nets")
+
+    HV = hv_nets()
+    hv_refs = {ref for n, nodes in nets.items() if n in HV for ref, _ in nodes}
+    print(f"HV-class nets: {len(HV)}; parts touching HV: {len(hv_refs)}")
 
     board = pcbnew.LoadBoard(PCB)
     placed, unplaced = {}, []
@@ -345,8 +577,7 @@ def main():
         # assembly drawing and the CPL, off the silkscreen); the ICs,
         # connectors and semiconductors keep theirs so the board is still
         # readable on the bench. Values are fab-layer only throughout.
-        if re.match(r"^(R|C|L|TP|JP)\d+$", ref):
-            fp.Reference().SetLayer(pcbnew.F_Fab)
+        fp.Reference().SetLayer(pcbnew.F_Fab)
         fp.Value().SetLayer(pcbnew.F_Fab)
         board.Add(fp)
         fp.SetPosition(pt(x, y))
@@ -357,11 +588,52 @@ def main():
         placed[ref] = (x, y, rot, side)
         return fp
 
+    # --- measure the anchors, then relax them into a legal arrangement ---
+    abox, bounds = {}, {}
+    for ref, (ax, ay, arot, aside) in ANCHORS.items():
+        c = comps.get(ref)
+        if c is None:
+            continue
+        probe = load_fp(c["fp"])
+        if probe is None:
+            continue
+        probe.SetPosition(pt(ax, ay))
+        if arot:
+            probe.SetOrientationDegrees(arot)
+        bcx, bcy, aw, ah = keepout_abs(probe)
+        abox[ref] = dict(x=bcx, y=bcy, w=aw, h=ah, side=aside,
+                         ox=bcx - ax, oy=bcy - ay)
+        # each anchor is confined to the zone it was authored into, so relaxing
+        # cannot move an HV part out of the HV zone or a part off the board
+        home = None
+        for zn, (zx0, zy0, zx1, zy1) in ZONES.items():
+            if zx0 - 1.5 <= ax <= zx1 + 1.5 and zy0 - 1.5 <= ay <= zy1 + 1.5:
+                home = (zx0, zy0, zx1, zy1)
+                break
+        bounds[ref] = home or (EDGE, EDGE, BW - EDGE, BH - EDGE)
+    # mounting holes take part but cannot move
+    for f in board.GetFootprints():
+        r = f.GetReference()
+        if not r.startswith("H"):
+            continue
+        hcx, hcy, hw, hh = keepout_abs(f)
+        abox[r] = dict(x=hcx, y=hcy, w=hw, h=hh, side=0, ox=0.0, oy=0.0)
+        bounds[r] = (hcx, hcy, hcx, hcy)
+    relaxed_box = relax_anchors(abox, bounds)
+    relaxed = {r: (round(bx - abox[r]["ox"], 3), round(by - abox[r]["oy"], 3))
+               for r, (bx, by) in relaxed_box.items() if r in ANCHORS}
+    nudged = [r for r in ANCHORS if r in relaxed
+              and (abs(relaxed[r][0] - ANCHORS[r][0]) > 0.02
+                   or abs(relaxed[r][1] - ANCHORS[r][1]) > 0.02)]
+    print(f"anchor relaxation moved {len(nudged)}: {sorted(nudged)}")
+
     order = sorted(comps, key=lambda r: (r not in ANCHORS, r))
     for ref in order:
         c = comps[ref]
         if ref in ANCHORS:
             x, y, rot, side = ANCHORS[ref]
+            if ref in relaxed:
+                x, y = relaxed[ref]
             fp = add(ref, c, x, y, rot, side)
             if fp is not None:
                 # Measure AFTER add() has applied the rotation, so the
@@ -369,16 +641,25 @@ def main():
                 # that double-swap mis-registered every 90-degree anchor's
                 # keepout (J1 blocked a 23x10 box where the part is 10x23, so
                 # the packer dropped D7 straight on top of it).
-                w, h = size_of(fp)
+                bcx, bcy, w, h = keepout_abs(fp)
                 for z in zones.values():
-                    z.block(x, y, w, h)
+                    z.block(bcx, bcy, w, h)
+                # through-hole pads / unplated holes pierce both sides
+                for ox, oy, ow, oh in through_obstacles(fp):
+                    for z in zones.values():
+                        z.block(ox, oy, ow + 0.4, oh + 0.4)
             continue
         probe = load_fp(c["fp"])
         if probe is None:
             unplaced.append(ref)
             continue
-        w, h = size_of(probe, c["fp"])
-        zname = ZONE_OVERRIDE.get(ref) or SHEET_ZONE.get(c["sheet"], "dig")
+        probe.SetPosition(pt(0, 0))
+        pox, poy, w, h = keepout_abs(probe)
+        zname = ZONE_OVERRIDE.get(ref)
+        if zname is None:
+            zname = SHEET_ZONE.get(c["sheet"], "dig")
+            if c["sheet"] == "io":
+                zname = "hv" if (ref in hv_refs) else "dig"
         # own zone top, own zone bottom, then the spill chain top then bottom
         spot, side = None, 0
         for cand in [zname] + SPILL.get(zname, []):
@@ -393,7 +674,17 @@ def main():
         if spot is None:
             unplaced.append(ref)
             continue
-        add(ref, c, spot[0], spot[1], 0, side)
+        add(ref, c, spot[0] - pox, spot[1] - poy, 0, side)
+
+    # --- reserve the stitching vias before packing anything else --------
+    # They derive from U1 and U5, which are anchors, so their positions are
+    # known now. Placing the vias later without reserving the space here let
+    # packed parts sit on top of them.
+    via_spots = planned_vias(board)
+    for vx, vy, vd in via_spots:
+        for z in zones.values():
+            z.block(vx, vy, vd + 0.5, vd + 0.5)
+    print(f"reserved {len(via_spots)} stitching-via sites before packing")
 
     # --- bind pads to nets ----------------------------------------------
     bound = 0
@@ -403,14 +694,15 @@ def main():
             f = byref.get(ref)
             if f is None:
                 continue
-            p = f.FindPadByNumber(pin)
-            if p is not None:
-                p.SetNet(netobj[name])
-                bound += 1
+            for p in f.Pads():
+                if p.GetNumber() == pin:
+                    p.SetNet(netobj[name])
+                    bound += 1
     print(f"pads bound to nets: {bound}")
 
+    hv_rule_area(board)
     planes(board)
-    stitch_vias(board)
+    stitch_vias(board, via_spots)
 
     board.BuildListOfNets()
     try:
@@ -420,6 +712,13 @@ def main():
         print(f"zone fill skipped ({e}) - fill in the GUI or via kicad-cli")
     pcbnew.SaveBoard(PCB, board)
     canonicalise(PCB)
+
+    # LAST: pcbnew.SaveBoard() above wiped net_settings out of the project,
+    # so the net classes have to be re-applied after it, not before.
+    import netclasses
+    netclasses.apply()
+    if netclasses.verify() != 0:
+        sys.exit("net classes did not survive - aborting")
 
     top = sum(1 for v in placed.values() if v[3] == 0)
     bot = len(placed) - top

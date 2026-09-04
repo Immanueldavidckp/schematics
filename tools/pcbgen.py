@@ -39,7 +39,7 @@ HOLE_INSET = 3.5             # mm, M3 hole centre from each edge
 # F-18: fifth M3 in the digital zone, for the IMU anchor and to stiffen the
 # panel under the 31 x 28 mm LCC module. Provisional exactly like the outline
 # - it needs a matching boss in the purchased housing.
-FIFTH_HOLE = (27.0, 52.0)
+FIFTH_HOLE = (23.5, 55.0)
 
 # The HV boundary from the placement study: everything left of x = 20 mm is
 # the HV zone (handoff section 7). Marked on silk, not copper.

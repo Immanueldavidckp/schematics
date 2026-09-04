@@ -1,160 +1,61 @@
-# DRC violations — placement pass (Milestone 4 stage 2)
+# DRC exceptions — Milestone 4 floorplan pass
 
-Generated from `drc-placement.rpt`. **This is not a routed board and
-this is not a clean DRC.** The list below is the honest accounting of
-what the placement pass leaves open, split into what is expected at
-this stage and what is a genuine defect still to fix.
+Generated from `drc-placement.rpt` by `tools/build.py`.
+**Routing has not started.** Every item below is either expected at this
+stage or a justified exception; the ones that are neither are called out
+as OPEN.
 
-**Total: 896 violations.**
+**518 violations total** (down from 896 on the first placement pass).
 
-| count | type | status |
+| count | type | classification |
 |---|---|---|
-| 443 | `unconnected_items` | EXPECTED — nothing is routed yet. Clears with routing. |
-| 169 | `silk_over_copper` | EXPECTED/WAIVABLE — footprint silk touching its own pads; inherent to the vendor footprints. Normally waived or trimmed at release. |
-| 71 | `solder_mask_bridge` | TO FIX — mask slivers between close pads. Some are intra-footprint and waivable; the rest need spacing. |
-| 58 | `clearance` | **DEFECT** — packed parts too close. Needs placement iteration. |
-| 58 | `silk_overlap` | TO FIX — remaining reference-designator collisions on ICs/connectors that kept silk refs. |
-| 51 | `shorting_items` | **DEFECT** — pads/vias of different nets touching. Needs placement iteration. |
-| 22 | `courtyards_overlap` | **DEFECT** — overlapping courtyards. Needs placement iteration. |
-| 6 | `hole_clearance` | **DEFECT** — hole too near copper. |
-| 5 | `pth_inside_courtyard` | TO REVIEW — mounting-hole pads inside a part courtyard. |
-| 4 | `npth_inside_courtyard` | TO REVIEW — as above, unplated. |
-| 3 | `isolated_copper` | TO FIX — orphaned zone islands; resolves once routing gives the pours something to connect to. |
-| 2 | `annular_width` | TO FIX — 2 vias still below the 0.1 mm annular minimum. |
-| 2 | `padstack` | TO REVIEW — padstack definition warning. |
-| 1 | `hole_to_hole` | TO FIX — two holes too close. |
-| 1 | `silk_edge_clearance` | TO FIX — silk over the board edge. |
+| 450 | `unconnected_items` | **EXPECTED** — nothing is routed. Clears with routing. |
+| 30 | `silk_over_copper` | **WAIVED** — vendor footprint silk graphics touching their own pads. Inherent to the imported footprints; trimmed or waived at release. |
+| 24 | `clearance` | see the breakdown below |
+| 8 | `silk_overlap` | **WAIVED** — residual silk graphic overlaps. All reference designators were moved to F.Fab, so nothing here affects assembly or the CPL. |
+| 3 | `courtyards_overlap` | **OPEN** — 3 remaining, all in the buck cluster. See below. |
+| 3 | `isolated_copper` | **EXPECTED** — the three L3 pours have no vias landing in them yet. Clears with routing. |
 
-## Genuine defects, by location
+## Clearance breakdown
 
-### `shorting_items` (51)
+| count | rule | classification |
+|---|---|---|
+| 17 | `HV to signal 1.5mm` | **WAIVED — the HV/LV transition boundary itself.** See below. |
+| 5 | `U5 package internal HV spacing` | **WAIVED — F-20.** EG11752's exposed pad is VIN_B at up to 100 V and the SOIC-8 puts its own signal pins 0.55 mm away. Not fixable by layout. Conditional on conformal coating (handoff rule 6): the coated B4 requirement at 100 V is ~0.25 mm. |
+| 1 | `netclass 'Default'` | **OPEN** — 1 item (X1 internal pad spacing, vendor footprint). |
+| 1 | `netclass 'HV'` | **OPEN** — 1 item. |
 
-- Items shorting two nets (nets /modem_rf/ANT_GNSS_C and /modem_rf/USB_DM_TP)
-- Items shorting two nets (nets 3V3 and MODEM_RX)
-- Items shorting two nets (nets 3V3 and MODEM_RI)
-- Items shorting two nets (nets GND and )
-- Items shorting two nets (nets GND and DO2_GATE)
-- Items shorting two nets (nets GND and /modem_rf/VBAT_MODEM)
-- Items shorting two nets (nets GND and MODEM_PWRKEY)
-- Items shorting two nets (nets /mcu/VBAT_MCU and SPI1_MOSI)
-- Items shorting two nets (nets /modem_rf/USIM_VDD and GND)
-- Items shorting two nets (nets 3V3 and /io/CANL_T)
-- Items shorting two nets (nets /mcu/I2C1_SCL and /io/CANH_T)
-- Items shorting two nets (nets MODEM_PWR_EN and /modem_rf/PWRKEY_MOD)
-- Items shorting two nets (nets /modem_rf/Q14_B and GND)
-- Items shorting two nets (nets /modem_rf/Q13_B and GND)
-- Items shorting two nets (nets /modem_rf/Q13_B and /modem_rf/RESETN_MOD)
-- Items shorting two nets (nets /mcu/BOOT1 and GND)
-- Items shorting two nets (nets /mcu/BOOT0 and FLASH_CS)
-- Items shorting two nets (nets GND and SPI1_MISO)
-- Items shorting two nets (nets /modem_rf/Q3_G and GND)
-- Items shorting two nets (nets /io/CANL and DI1)
-- Items shorting two nets (nets /power/SW_CHG and SYS)
-- Items shorting two nets (nets 5V0 and /power/U5_VCC)
-- Items shorting two nets (nets /io/DI2_LED and GND)
-- Items shorting two nets (nets VIN and DI2)
-- Items shorting two nets (nets /io/DI2_LED and GND)
-- Items shorting two nets (nets /power/VIN_F and VIN)
-- Items shorting two nets (nets /mcu/3V3A and GND)
-- Items shorting two nets (nets GND and /power/VIN_B)
-- Items shorting two nets (nets GND and 5V0)
-- Items shorting two nets (nets /power/U5_VB and /modem_rf/VDD_EXT_1V8)
-- Items shorting two nets (nets /power/VIN_P and /mcu/DBG_RX)
-- Items shorting two nets (nets /power/VIN_P and SPI1_MOSI)
-- Items shorting two nets (nets /power/VIN_P and VBAT_SENSE)
-- Items shorting two nets (nets /power/VIN_P and FLASH_CS)
-- Items shorting two nets (nets /power/VIN_P and ADC_SPARE)
-- Items shorting two nets (nets /power/VIN_P and /mcu/BOOT1)
-- Items shorting two nets (nets /power/VIN_P and MODEM_PWR_EN)
-- Items shorting two nets (nets /power/VIN_P and /mcu/NET_STATUS_LED)
-- Items shorting two nets (nets /power/SW_BUCK and /modem_rf/MTXD_1V8)
-- Items shorting two nets (nets /power/SW_BUCK and /modem_rf/MRI_1V8)
-- …and 11 more (see `drc-placement.rpt`)
+### Why the 1.5 mm HV-to-signal hits are waived
 
-### `courtyards_overlap` (22)
+The 1.5 mm figure is a **zone separation** requirement (handoff §7). The
+parts below *are* the high-voltage-to-low-voltage transition, so they
+necessarily have an HV pad and an LV pad close together:
 
-- Courtyards overlap
-- Courtyards overlap
-- Courtyards overlap
-- Courtyards overlap
-- Courtyards overlap
-- Courtyards overlap
-- Courtyards overlap
-- Courtyards overlap
-- Courtyards overlap
-- Courtyards overlap
-- Courtyards overlap
-- Courtyards overlap
-- Courtyards overlap
-- Courtyards overlap
-- Courtyards overlap
-- Courtyards overlap
-- Courtyards overlap
-- Courtyards overlap
-- Courtyards overlap
-- Courtyards overlap
-- Courtyards overlap
-- Courtyards overlap
+**Within a single component (5):** `R35`, `R40`, `R32`, `Q2`, `Q1` — divider resistors and the DO low-side FETs. A divider's tap is by
+definition low voltage while its top end is at line voltage, and the
+FETs have an LV gate against an HV drain. The mitigation is already in
+the design: the sense dividers are 3x100k in series so no single
+resistor carries the full 100 V (R40 is the DNP spare and is single).
 
-### `clearance` (58)
+**Between adjacent boundary components (12):** `R34+R40`, `Q2+R31`, `Q1+R30`, `R32+R33`, `R19+R35`, `R17+R32`, `F1+Q1`, `D8+OK1`, `D7+OK2`.
+These are the opto isolators with their series chains, the DO FETs with
+their gate resistors, and the divider chains. The isolation barrier is
+the opto's own certified creepage, not board spacing.
 
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1639 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1639 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1145 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0000 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0000 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1900 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0287 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0000 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0000 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0000 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0000 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0050 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0000 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1250 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0062 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0000 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0000 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0000 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1155 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0000 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1550 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0000 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0450 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0000 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0422 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1159 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0000 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0546 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0546 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1690 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0000 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1000 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1900 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0450 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0000 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0000 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0950 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0950 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0000 mm)
-- Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0500 mm)
-- …and 18 more (see `drc-placement.rpt`)
+**These are waivers, not fixes.** They should be reviewed against the
+conformal-coating requirement before release, and the silkscreen HV
+boundary must remain on the board as the installer-visible marking.
 
-### `annular_width` (2)
+## OPEN items to resolve before routing
 
-- Annular width (board setup constraints min annular width 0.1000 mm; actual 0.0000 mm)
-- Annular width (board setup constraints min annular width 0.1000 mm; actual 0.0000 mm)
+- `courtyards_overlap` — @(35.7300 mm, 4.6900 mm): Footprint U5 / @(27.6500 mm, 11.3900 mm): Footprint L1
+- `courtyards_overlap` — @(27.6500 mm, 11.3900 mm): Footprint L1 / @(29.7900 mm, 3.9800 mm): Footprint C74
+- `courtyards_overlap` — @(29.7900 mm, 3.9800 mm): Footprint C74 / @(29.7700 mm, 2.6500 mm): Footprint C73
 
-### `hole_to_hole` (1)
-
-- Drilled hole too close to other hole (rule 'JLCPCB hole to hole' min 0.4995 mm; actual 0.0000 mm)
-
-### `hole_clearance` (6)
-
-- Hole clearance violation (board setup constraints hole clearance 0.2500 mm; actual 0.0268 mm)
-- Hole clearance violation (board setup constraints hole clearance 0.2500 mm; actual 0.0000 mm)
-- Hole clearance violation (board setup constraints hole clearance 0.2500 mm; actual 0.0000 mm)
-- Hole clearance violation (board setup constraints hole clearance 0.2500 mm; actual 0.0000 mm)
-- Hole clearance violation (board setup constraints hole clearance 0.2500 mm; actual 0.0000 mm)
-- Hole clearance violation (board setup constraints hole clearance 0.2500 mm; actual 0.0000 mm)
-
+All three are the **buck cluster**: L1 is a 12.3 x 12.3 mm shielded
+inductor and U5 / D16 / C73 / C74 have to sit tight around it to keep the
+switching loop small (placement amendment (a)). The power zone is
+22.25 x 26 mm and the anchors alone need ~380 mm2 with gaps. This is a
+genuine density limit, not a packing bug: it needs either a physically
+smaller inductor, or a larger board, or accepting the overlap where the
+courtyards touch but the copper does not. **Decision needed.**

@@ -1,11 +1,11 @@
-ERC report (2026-09-05T00:28:28, Encoding UTF8)
+ERC report (2026-09-05T01:05:22, Encoding UTF8)
 Report includes: Errors, Warnings
 
 ***** Sheet /
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 27.94 mm): Global Label '3V3'
-    @(431.80 mm, 125.73 mm): Label '3V3'
+    @(71.12 mm, 73.66 mm): Label '3V3'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 30.48 mm): Global Label 'ADC_SPARE'
@@ -17,7 +17,7 @@ Report includes: Errors, Warnings
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 43.18 mm): Global Label 'DI2'
-    @(170.18 mm, 220.98 mm): Label 'DI2'
+    @(185.42 mm, 213.36 mm): Label 'DI2'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 45.72 mm): Global Label 'DO1_GATE'
@@ -37,11 +37,11 @@ Report includes: Errors, Warnings
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 83.82 mm): Global Label 'VBAT_SENSE'
-    @(307.34 mm, 129.54 mm): Label 'VBAT_SENSE'
+    @(322.58 mm, 129.54 mm): Label 'VBAT_SENSE'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 86.36 mm): Global Label 'VIN_SENSE'
-    @(340.36 mm, 43.18 mm): Label 'VIN_SENSE'
+    @(370.84 mm, 73.66 mm): Label 'VIN_SENSE'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(220.98 mm, 30.48 mm): Global Label '5V0'
@@ -53,7 +53,7 @@ Report includes: Errors, Warnings
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(220.98 mm, 60.96 mm): Global Label 'VIN'
-    @(292.10 mm, 170.18 mm): Label 'VIN'
+    @(199.39 mm, 256.54 mm): Label 'VIN'
 
 ***** Sheet /mcu/
 

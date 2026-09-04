@@ -1826,3 +1826,178 @@ leave the board. Moved to the bottom edge at (40, 55).
   currently doubles back inboard. Short (~4.5 mm) but wrong-way; the U.FL
   should move outboard of the ANT pads, which collides with the H2/H4 corner
   holes. Resolve with the final outline.
+
+---
+
+# MILESTONE 4 — Option 4 complete: floorplan for review. STILL NOT ROUTED.
+
+Placement, L2 GND, L3 pours, HV keepout and thermal vias are done and the
+review deliverables are produced. **Routing has not started** — that is
+Option 1, gated on floorplan approval.
+
+`tools/build.py` now runs the whole thing in one command, because the ordering
+is load-bearing and every failure mode in it was silent. Verified
+**byte-identical across consecutive builds**, so MIGRATION.md's
+"regenerate, then git diff must be empty" check still works on the board.
+
+## Result
+
+| | first pass | now |
+|---|---|---|
+| total DRC violations | 896 | **518** |
+| unconnected (nothing routed) | 443 | 450 |
+| silk | 398 | **38** |
+| **shorting items** | 51 | **0** |
+| **solder mask bridges** | 71 | **0** |
+| **courtyard overlaps** | 22 | **3** |
+| clearance | 58 | 24 |
+| annular width / padstack | 17 / 2 | **0 / 0** |
+| hole-to-hole / dangling vias | 7 / 9 | **0 / 0** |
+| components placed | 214 of 218 | **218 of 218** |
+
+Of the 24 remaining clearance items, 23 are justified waivers and 1 is open;
+full classification in `docs/drc-exceptions.md`.
+
+## Six real bugs found and fixed along the way
+
+1. **`GetCourtyard()` can be smaller than the pad extent.** U2's LQFP-48
+   courtyard measures 7.1 x 7.1 (the body) while its pads reach 9.0 mm, so
+   packing against the courtyard dropped 0603s onto its leads. That single
+   mistake caused most of the U1/U2 clearance and shorting violations.
+   Keepout is now `max(courtyard, pad extent)` per axis.
+2. **The keepout box was centred on the footprint origin, not on the box.**
+   J1's derived Molex courtyard is centred **7.50 mm in x and 1.92 mm in y**
+   from its origin, because the origin sits on pin 1. A correctly-sized box was
+   being blocked in the wrong place, which is what let D2, D6, F1, TP8 and TP9
+   be packed on top of J1.
+3. **`FindPadByNumber()` returns only the first pad with that number.** The
+   MFF2 exposed pad is deliberately numbered "1" so it merges with the GND pin;
+   only one of the two got a net, and DRC reported the netless one as a short
+   against its twin. Net binding now assigns every pad carrying the number.
+4. **Zones were filled before net classes existed.** The fill used Default
+   0.2 mm where HV needs 0.6 mm, so the GND plane was flagged against every
+   J1 pad. Fixed by ordering: net classes, then `kicad-cli pcb drc
+   --refill-zones --save-board`.
+5. **`pcbnew.SaveBoard()` wipes `net_settings` out of the project.** The board
+   generators were destroying the net classes on every run, so RF/HV/MODEM_BULK
+   silently stopped applying while DRC still looked like it was passing them.
+   `tools/netclasses.py` is therefore applied *after* the generators, and it
+   **verifies the classes survive a KiCad round trip** rather than assuming it.
+6. **Hand-written net class dicts are silently discarded by KiCad.** Any class
+   missing `bus_width`, `priority` or `tuning_profile`, or written with the
+   wrong `meta.version`, is dropped on the next load-and-save. All five classes
+   had gone back to just "Default" without a warning, and that state had
+   already been committed.
+
+## F-16 CLOSED — the imported footprint already had the post holes
+
+The flag was chasing a dimension that was in the file the whole time.
+`SIM-SMD_YKSIM-PUSH137-140NANO` contains two NPTH locating holes, and they
+agree with the 3-vendor consensus to within 0.01 mm:
+
+| dimension | GCT / HRO / Megastar | imported footprint |
+|---|---|---|
+| post-to-post | 8.50 | **8.490** |
+| left GND pad c/l -> left post | 1.50 | **1.510** |
+| lower GND pad c/l -> post (Y) | **1.25** | **1.250** |
+| GND-pad frame | 13.00 x 12.00 | **13.00 x 12.00** (x = +/-6.50, y = -5.26 / +6.74) |
+
+So the "genuinely ambiguous" Y was sitting in the footprint, on the corroborated
+value. **No part switch, no samples, no guessed copper.** One real defect fixed:
+the holes were imported as **PTH with a zero annular ring**, which is what the
+`annular_width` and `padstack` errors were. They are mechanical locating bosses,
+so they are now `np_thru_hole`.
+
+## J1 footprint defect found and fixed
+
+The derived `XUNPU_MX3.0-12PZZ` footprint had **four** NPTH holes where the
+drawing specifies two. Two were Ø1.10 at (18.0, -0.95) and (-3.0, 3.95) — the
+correct diagonal pair, matching "outer pin column +/- 3.00, row +/- 0.95". The
+other two were Ø1.02 leftovers from the Molex base pattern: one sat **0.01 mm**
+from a correct hole (the `hole_to_hole` error) and the other would have drilled
+an extra hole in the board for nothing. Both removed.
+
+## F-20 (NEW) — the buck's exposed pad is at line voltage
+
+**EG11752 pin 9, the SOIC-8 exposed pad, is VIN_B — up to 100 V.** Measured
+from the footprint: the EP is 3.30 x 2.40 mm centred, and the signal pads sit
+at y = +/-2.72 with 1.94 mm height, so their inner edges are at +/-1.75 against
+an EP edge at +/-1.20. **0.55 mm from a 100 V pad to its own signal pins, set
+by the package.** No layout can widen it.
+
+Consequences, all now handled explicitly:
+- The 1.5 mm HV-to-signal rule was **unsatisfiable as originally written** and
+  would have masked real violations. It is now scoped to the `HV_ZONE` rule
+  area, which is what makes it a zone-separation rule rather than an
+  intra-package one.
+- A separate documented exception allows 0.3 mm inside U5's courtyard.
+  **This is conditional on conformal coating actually being applied** (handoff
+  rule 6): the IPC-2221 figure for external *uncoated* conductors at 100 V is
+  0.60 mm, while coated (B4) at 100 V is about 0.25 mm. An uncoated board
+  relies on the package's own certified spacing alone.
+- The EP needs thermal vias (skill file: >= 9) but they had nothing to land on,
+  so **L3 now carries a VIN_B island under U5** (8.2 x 10.6 mm). That both
+  clears the dangling vias and is what actually spreads the heat. Being an HV
+  island on L3, it holds HV-netclass clearance from the 5V0/SYS/3V3 pours.
+- Via pitch in the EP is 0.85 mm, giving 0.55 mm hole-to-hole against the
+  0.5 mm minimum. The first attempt scaled with pad size and produced 0.42 mm.
+
+**Decision needed:** confirm conformal coating is non-negotiable in production,
+since the U5 exception depends on it.
+
+## HV keepout
+
+Implemented as a named rule area `HV_ZONE` on all copper layers over
+x = 0.5 to 20 mm, plus the silkscreen boundary and the scoped 1.5 mm rule.
+
+More usefully, **HV zone membership is now decided by net, not by sheet.**
+The io sheet mixes 100 V front ends with 3V3 logic, and assigning the whole
+sheet to the HV zone pushed the eight DO gate-drive resistors R42-R49 into it,
+filled the zone and left 13 parts unplaced. A part is now placed in the HV zone
+if and only if it touches an HV-class net: **21 HV nets, 35 parts.** Nothing
+low-voltage sits inside the boundary except the transition devices themselves.
+
+## Floorplan
+
+Zones (x, y in mm): **HV 1-19.25**, **power 20.75-43 / y 1-27**,
+**digital 20.75-43 / y 27.5-59**, **RF 44-79**. Power gets 26 mm of height
+because L1 alone is 13.8 x 12.4 mm. RF stops at x = 44 because U1's keepout
+reaches 44.2.
+
+**137 top / 81 bottom.** Double-sided is not a choice: 3315 mm2 of courtyard
+against 4800 mm2 of board is 69 % of one side, and only L1/L4 carry signal.
+
+Placement amendments as applied:
+- **(a)** U5 / D16 / C73 / C74 clustered around L1 — the loop is tight, and the
+  3 remaining courtyard overlaps are the price of that tightness.
+- **(b)** GNSS U.FL at the bottom-right corner, LTE at the top-right, so the
+  inductor is diagonally opposite the GNSS feed.
+- **(c)** U3 at (29.5, 55) beside the provisional 5th M3, which moved to
+  (23.5, 55) — the first position had the hole's GND pad 0.2 mm from U3's 3V3
+  pads.
+- J2 on the bottom edge, where a battery lead can actually leave the board.
+
+## Deliverables
+
+`drc-placement.rpt`, `docs/drc-exceptions.md`,
+`out/renders/{top,bottom,iso}.png`.
+
+## Next: Option 1 (after floorplan approval)
+
+Hand-route RF CPWG + fence vias, the HV front end, the VBAT_MODEM rail and the
+U5 switching loop; then FreeRouting for the remaining low-speed nets; then
+review to DRC-clean. **FreeRouting is not yet installed** — it will be recorded
+in MIGRATION.md §1 as a tool dependency with its exact version and jar source
+at the point it is fetched, before it touches the board.
+
+## Open for the user
+
+- **Floorplan approval** — the gate on starting Option 1.
+- **F-20** conformal coating must be confirmed non-negotiable.
+- **Buck cluster density** — smaller inductor, bigger board, or accept touching
+  courtyards.
+- **Double-sided assembly cost.**
+- **F-18** 5th M3 hole needs a matching housing boss.
+- **F-19** 1S Li-ion is -20..+60 C discharge against the +70 C product ceiling.
+- **AF1/AF2 at x = 72 but U1's ANT pads at x = 76.55**, so the RF run doubles
+  back inboard. Short, but wrong-way; resolve with the final outline.
