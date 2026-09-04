@@ -5427,13 +5427,66 @@
 	)
 	(wire
 		(pts
+			(xy 30.48 271.78) (xy 30.48 276.86)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "899d6ff7-15e8-5545-b196-11b30fc54925")
+	)
+	(hierarchical_label "MODEM_TX"
+		(shape passive)
+		(at 30.48 276.86 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "4b389677-4eb1-5366-802d-20553fd60ffb")
+	)
+	(wire
+		(pts
+			(xy 45.72 271.78) (xy 45.72 276.86)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c8679eed-e50c-5ee7-8709-fd013c2c9263")
+	)
+	(hierarchical_label "MODEM_RX"
+		(shape passive)
+		(at 45.72 276.86 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "bdccf6b7-fda3-557c-af30-fe53ec95ebda")
+	)
+	(text "F-14 test points: modem UART pair, 3V3 (MCU) side of U8."
+		(exclude_from_sim no)
+		(at 30.48 264.16 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "832fc366-4fce-5746-bc05-ca2f2813e9e3")
+	)
+	(wire
+		(pts
 			(xy 38.1 215.9) (xy 38.1 220.98)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "bec2449b-331d-5db0-9744-459d820ce833")
+		(uuid "0f01b931-52fd-527f-98b4-8f75ebab1173")
 	)
 	(text "GND driver flag for ERC (one per project)."
 		(exclude_from_sim no)
@@ -9090,6 +9143,118 @@
 			(project "telematics-tracker"
 				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68/f6e9097b-45bc-5b1a-80f4-03a0e0f8043a"
 					(reference "#PWR025")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 30.48 271.78 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "a82af56b-dfe0-5b7e-9e71-e473d8bd88c4")
+		(property "Reference" "TP27"
+			(at 30.48 269.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "MODEM_TX"
+			(at 30.48 266.7 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
+			(at 30.48 271.78 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 30.48 271.78 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "5887e1c8-32a6-5eaa-b232-d62102ef255d")
+		)
+		(instances
+			(project "telematics-tracker"
+				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68/f6e9097b-45bc-5b1a-80f4-03a0e0f8043a"
+					(reference "TP27")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 45.72 271.78 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "8a38ee83-56c3-584e-bf7a-3baacd3ebb21")
+		(property "Reference" "TP28"
+			(at 45.72 269.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "MODEM_RX"
+			(at 45.72 266.7 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
+			(at 45.72 271.78 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 45.72 271.78 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "9a1e13f6-3460-53f0-b014-90980eb8c878")
+		)
+		(instances
+			(project "telematics-tracker"
+				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68/f6e9097b-45bc-5b1a-80f4-03a0e0f8043a"
+					(reference "TP28")
 					(unit 1)
 				)
 			)

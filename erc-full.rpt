@@ -1,15 +1,15 @@
-ERC report (2026-09-04T23:33:14, Encoding UTF8)
+ERC report (2026-09-04T23:43:22, Encoding UTF8)
 Report includes: Errors, Warnings
 
 ***** Sheet /
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 27.94 mm): Global Label '3V3'
-    @(71.12 mm, 73.66 mm): Label '3V3'
+    @(313.69 mm, 88.90 mm): Label '3V3'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 30.48 mm): Global Label 'ADC_SPARE'
-    @(292.10 mm, 185.42 mm): Label 'ADC_SPARE'
+    @(307.34 mm, 170.18 mm): Label 'ADC_SPARE'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 40.64 mm): Global Label 'DI1'
@@ -17,7 +17,7 @@ Report includes: Errors, Warnings
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 43.18 mm): Global Label 'DI2'
-    @(185.42 mm, 213.36 mm): Label 'DI2'
+    @(170.18 mm, 220.98 mm): Label 'DI2'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 45.72 mm): Global Label 'DO1_GATE'
@@ -29,7 +29,7 @@ Report includes: Errors, Warnings
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 53.34 mm): Global Label 'IGN_SENSE'
-    @(370.84 mm, 116.84 mm): Label 'IGN_SENSE'
+    @(353.06 mm, 86.36 mm): Label 'IGN_SENSE'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 71.12 mm): Global Label 'MODEM_STATUS'
@@ -41,11 +41,11 @@ Report includes: Errors, Warnings
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 86.36 mm): Global Label 'VIN_SENSE'
-    @(353.06 mm, 43.18 mm): Label 'VIN_SENSE'
+    @(370.84 mm, 73.66 mm): Label 'VIN_SENSE'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(220.98 mm, 30.48 mm): Global Label '5V0'
-    @(96.52 mm, 251.46 mm): Label '5V0'
+    @(121.92 mm, 251.46 mm): Label '5V0'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(220.98 mm, 55.88 mm): Global Label 'SYS'
@@ -53,7 +53,7 @@ Report includes: Errors, Warnings
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(220.98 mm, 60.96 mm): Global Label 'VIN'
-    @(199.39 mm, 256.54 mm): Label 'VIN'
+    @(199.39 mm, 302.26 mm): Label 'VIN'
 [footprint_link_issues]: The current configuration does not include the footprint library 'TBD-MFF2'
     ; warning
     @(358.14 mm, 127.00 mm): Symbol X2 [Conn_01x08]

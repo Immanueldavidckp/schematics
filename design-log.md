@@ -1193,3 +1193,178 @@ Recorded on the modem_rf sheet:
   return path continuous under the ANT runs
 - pad **76** (audio ground) and perimeter grounds 8/9/19/22/36/52/53/54/56/72:
   **≥1 via each**
+
+## F-15 applied — R80 10R -> 1R anti-surge
+
+**R80 = FRS2512F1R00TS, LCSC C55348540, 1 Ω 2512 anti-surge** (was 10 Ω
+FRP2512J100, C3013385). Topology it sits in:
+
+```
+J1.VIN -> F1 -> D1 (S3M) -> VIN_P -> [D2 SMDJ100A, C70/C71 2.2uF, C72]
+                                  -> R80 -> VIN_B -> [C73/C74 2.2uF] -> U5.8/9
+```
+
+### Load-line at the guaranteed 10.5 V floor, full load
+
+Full load = 5.0 V x 1 A out; at ~85 % efficiency that is **5.9 W in**.
+After D1 (S3M, Vf ~0.7 V at this current) the node is **V_P = 9.8 V**.
+The buck presents a constant-power load, so with a series R the operating
+point is the intersection of `V_B = V_P - R*I` and `V_B*I = 5.9 W`.
+
+**At 10 Ω** — substituting I = (V_P - V_B)/R:
+
+    V_B^2 - 9.8*V_B + 59 = 0     discriminant = 96.04 - 236 = -140  < 0
+
+**No real solution: the load line never meets the constant-power curve.**
+The physical statement is the max-power-transfer ceiling: a source of 9.8 V
+behind 10 Ω can deliver at most `V^2/4R = 2.4 W`, and the converter needs
+5.9 W. It is short by more than a factor of two — a hard brown-out, not a
+marginal droop.
+
+**At 1 Ω:**
+
+    I^2 - 9.8*I + 5.9 = 0   ->  I = (9.8 - sqrt(72.44))/2 = 0.644 A
+    V_B = 9.8 - 0.644 = 9.16 V        check: 9.16 x 0.644 = 5.90 W  OK
+
+Ceiling is now `V^2/4R = 24 W` — 4x headroom over the 5.9 W demand.
+
+| Line | V_P | I_in | V_B | R80 drop | R80 power |
+|---|---|---|---|---|---|
+| 10.5 V floor | 9.8 V | 0.644 A | **9.16 V** | 0.64 V | **0.41 W** |
+| 12 V nominal | 11.3 V | 0.553 A | 10.75 V | 0.55 V | 0.31 W |
+| 24 V | 23.3 V | 0.259 A | 23.04 V | 0.26 V | 0.07 W |
+| 100 V | 99.3 V | 0.0595 A | 99.24 V | 0.06 V | 0.004 W |
+
+**Worst-case continuous dissipation 0.41 W at the floor** — inside a derated
+2512 (nominally 1–2 W), and it *falls* as line rises, so the high-line case is
+not the thermal case.
+
+### Pulse duty is unchanged in energy, harder in shape
+
+The surge energy into R80 is the energy lost charging C73/C74 (4.4 µF) through
+it, and `E = 1/2*C*dV^2` is **independent of R**. With the SMDJ100A clamping
+V_P to ~162 V against a 100 V line, dV ~ 62 V:
+
+| | 10 Ω (old) | 1 Ω (new) |
+|---|---|---|
+| Energy per event | **8.5 mJ** | **8.5 mJ** (unchanged) |
+| Peak power | 384 W | **3.8 kW** (10x) |
+| Time constant tau = RC | 44 µs | **4.4 µs** (1/10) |
+
+Same energy, ten times the peak, one tenth the duration. That is precisely why
+the part is an **anti-surge** series device rather than a plain thick film —
+plain thick-film 2512s fail by surface arc-over on short high-peak pulses even
+when the average energy is trivial. Confirming the FRS2512F1R00TS single-pulse
+curve covers 3.8 kW / 4.4 µs stays on the bench list next to F-12.
+
+Secondary effects checked and accepted: hot-plug inrush at 100 V into 4.4 µF
+through 1 Ω peaks near 100 A for a few µs — fuse I²t is `V^2*C/2R` = 0.022 A²s,
+far inside the 0443001.DR rating, and the S3M's µs-scale surge capability is
+well above its 100 A 8.3 ms IFSM figure. Input-LC damping is reduced; the TVS
+and the 2x2.2 µF on the V_P side remain the primary transient elements.
+
+**Trade accepted:** R80 is now a weaker surge-softening element, so the buck
+input sees a faster edge. Brown-out immunity at the guaranteed floor outranks
+marginal surge softening, and D2 + D1 do the actual clamping.
+
+## F-14 applied — six test points added
+
+TP23–TP28, verified against the exported netlist (each shares its net with the
+real circuit nodes, not merely a same-named label):
+
+| TP | Net | Sheet | Shares net with |
+|---|---|---|---|
+| TP23 | VIN | power | J1.1, F1.1, D7.1, D8.1, R30.1, R40.1 |
+| TP24 | VBAT_MODEM | modem_rf | U1.57/58/59/60, C40–C43, Q3.3, D12.1 |
+| TP25 | CANH | io | J1.4, L2.1, D3.1 |
+| TP26 | CANL | io | J1.5, L2.2, D3.2 |
+| TP27 | MODEM_TX | mcu | U2.30 (PA9), U8.13 |
+| TP28 | MODEM_RX | mcu | U2.31 (PA10), U8.12 |
+
+Placement notes recorded on the sheets: TP23 is **in the HV zone** (up to
+100 V — keep inside the silk boundary, 1.5 mm HV-to-LV clearance); TP24 exists
+to probe VBAT_MODEM sag during transmit bursts; TP25/26 are on the connector
+side of the choke, which is the bus a technician actually probes.
+
+Implementation detail worth keeping: `hier()` was used for the hierarchical
+nets (VIN, MODEM_TX, MODEM_RX) and `net()` only for sheet-local nets
+(VBAT_MODEM, CANH, CANL). Using `net()` on a hierarchical net would have added
+another `same_local_global_label` warning each. **ERC stayed at exactly 0
+errors / 14 warnings** — no new warnings from six new parts. Sheet-pin counts
+unchanged (24/15/10/4), confirming the hier labels joined existing nets rather
+than creating new sheet pins.
+
+Rule 8 (test points on every rail, SWD, both UARTs, CAN) is now **MET**:
+28 test points, TP1–TP28 contiguous.
+
+## Product spec — environmental rating (governed by U1)
+
+Added to `docs/telematics-handoff.md` §1.1 and to the new
+`docs/installation-sheet.md`:
+
+> **Rated operating ambient −20 °C to +70 °C. Housing shaded or
+> light-coloured. 85 °C is survival, not operating.**
+
+Governed by U1, the most restrictive active part. *EC200U Hardware Design
+V1.2* §5.3 Table 42, p.75, read from the committed PDF:
+
+| EC200U range | Limits | Datasheet meaning (footnotes 9/10) |
+|---|---|---|
+| Operating | −35…+75 °C | module **meets 3GPP specifications** |
+| Extended | −40…+85 °C | functions maintained, no unrecoverable malfunction, but *"one or more specifications, such as Pout, may exceed the specified tolerances of 3GPP"* |
+| Storage | −40…+90 °C | — |
+
+So +70 °C keeps 5 °C to the top of the **3GPP-compliant** window, and 85 °C is
+exactly the **extended** limit. "Survival not operating" is the datasheet's own
+distinction, not a loose phrase. The −20 °C floor is a product choice for the
+India target (the module goes to −35 °C) taken to leave margin.
+
+The 5 °C top margin is thin deliberately, and is *why* the housing rule is a
+requirement: internal rise (transmit bursts, buck, charger) plus solar gain on
+a dark enclosure on an exposed boom lift will exceed it. A 40 °C day in direct
+sun on a black box is already over limit.
+
+**NEW FLAG F-19 — BT1 vs the +70 °C ceiling.** Typical 1S Li-ion is rated
+−20…+60 °C discharge and 0…+45 °C charge, both narrower at the top than +70 °C.
+Charge is already protected in hardware (BQ25606 TS pin + JEITA network
+R88/R89 + in-pack NTC inhibits charging outside the window). **Discharge above
+60 °C and calendar ageing at sustained high temperature are not protected**,
+and are the reason BT1 is a 2–3 year replaceable service item (rule 2).
+*Decision needed: accept +70 °C with a shortened battery service interval, or
+narrow the product rating to +60 °C.* Not a layout blocker.
+
+## Milestone-4 input — 50 Ω CPWG geometry for JLC7628 L1–L2
+
+Computed, not looked up: Ghione–Naldi conformal-mapping solution for
+conductor-backed CPW, complete elliptic integrals by arithmetic-geometric mean,
+cross-checked against Hammerstad–Jensen microstrip (which agrees: plain
+microstrip needs W = 0.405 mm at εr 4.4, and the CPWG solution converges on
+that as the gap opens).
+
+Stackup: JLCPCB 4-layer 1.6 mm "JLC7628" — **h = 0.2104 mm** (1× 7628 prepreg,
+L1 to L2), 1 oz outer copper (0.035 mm). JLCPCB quote Dk 4.6 @1 GHz; real 7628
+is nearer 4.3–4.4 at 1.5–2.7 GHz, so the solution is reported across that range
+rather than pinned to one number.
+
+**CHOSEN: trace width W = 0.40 mm, gap to coplanar ground G = 0.30 mm.**
+
+| Dk assumption | Z0 at W=0.40 / G=0.30 |
+|---|---|
+| 4.3 | ~50.4 Ω |
+| 4.4 | ~49.9 Ω |
+| 4.6 | ~48.9 Ω |
+
+**48.9–50.4 Ω across the entire Dk uncertainty — within ±2.2 % of target**,
+which is why this point was chosen over the alternatives (W=0.38/G=0.30 sits
+50.4–51.9 Ω, biased high; W=0.34/G=0.25 sits 53.0–54.6 Ω, clearly too high).
+εeff ≈ 3.27. G/h = 1.4 — enough gap that the coplanar ground is not dominant,
+tight enough that the fence stays electrically useful.
+
+Manufacturability: 0.40 mm track and 0.30 mm gap both clear JLCPCB's 0.127 mm
+minimum and the skill file's 0.15 mm "safe" threshold with large margin.
+Etch sensitivity ±25 µm (W and G moving oppositely) gives roughly ±4.5 %.
+
+**Via fence:** EC200U-CN tops out at LTE B41, 2690 MHz. With εeff 3.27,
+λ_guided at 2.7 GHz ≈ 61 mm, so λ/20 ≈ 3.1 mm. **Fence via pitch specified at
+2.0 mm** (≈λ/33 at 2.7 GHz, ≈λ/56 at GNSS L1 1575 MHz) — comfortable margin,
+placed along the gap edge either side of both ANT runs.

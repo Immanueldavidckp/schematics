@@ -238,6 +238,15 @@ def build_mcu():
     sh.text("Test points: SWD + debug UART + reset + rails (production test jig).",
             (g(296), g(90)))
 
+    # --- F-14 (approved 2026-09-04): modem UART pair on the 3V3 MCU side.
+    # hier(), not net(), so no new same_local_global_label warning is created.
+    for i, (ref, net) in enumerate((("TP27", "MODEM_TX"), ("TP28", "MODEM_RX"))):
+        tp = sh.place("Connector:TestPoint", ref, net,
+                      (g(24 + 12 * i), g(214)), TP)
+        sh.hier(tp, "1", net, "passive", length=g(4))
+    sh.text("F-14 test points: modem UART pair, 3V3 (MCU) side of U8.",
+            (g(24), g(208)))
+
     # Declares the global GND net driven for ERC. Placed here once for the
     # whole project; the real ground return comes from power.kicad_sch.
     sh.gnd_driver((g(30), g(170)))
@@ -352,6 +361,16 @@ def build_io():
     sh.gnd(d3, "3", length=g(3))
     sh.text("D3 Nexperia PESD1CAN: dual-line bidirectional CAN TVS at the "
             "connector (24 V standoff).", (g(56), g(28)))
+
+    # --- F-14 (approved 2026-09-04): CAN bus test points, connector side of
+    # the choke (that is the bus a technician actually probes). CANH/CANL are
+    # local-only nets here, so net() adds no same_local_global_label warning.
+    for i, (ref, net) in enumerate((("TP25", "CANH"), ("TP26", "CANL"))):
+        tp = sh.place("Connector:TestPoint", ref, net,
+                      (g(24 + 12 * i), g(214)), TP)
+        sh.net(tp, "1", net, length=g(4))
+    sh.text("F-14 test points: CANH / CANL at the connector side of L2.",
+            (g(24), g(208)))
 
     u4 = sh.place("jlc:SIT1051AT_3", "U4", "SIT1051AT/3",
                   (g(140), g(48)), "jlc:SOP-8_L4.9-W3.9-P1.27-LS6.0-BL",
@@ -639,6 +658,14 @@ def build_modem_rf():
     sh.text("VBAT_MODEM: 2x100uF + 1uF + 100nF + SMF5.0A, place <=5mm from "
             "U1 VBAT pads (57-60).", (g(50), g(32)))
 
+    # --- F-14 (approved 2026-09-04): VBAT_MODEM test point. This is the rail
+    # whose sag during a 2 A LTE transmit burst is the thing worth measuring.
+    tpb = sh.place("Connector:TestPoint", "TP24", "VBAT_MODEM",
+                   (g(24), g(258)), TP)
+    sh.net(tpb, "1", "VBAT_MODEM", length=g(4))
+    sh.text("F-14 test point: VBAT_MODEM (probe transmit-burst rail sag).",
+            (g(24), g(252)))
+
     # ---- Q3 modem power switch: default ON, MODEM_PWR_EN high = power cut --
     q3 = sh.place("jlc:AO3401A", "Q3", "AO3401A", (g(36), g(60)),
                   "jlc:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR", LCSC_AO3401A)
@@ -899,20 +926,35 @@ def build_power():
               C1210, LCSC_C2U2_100V, gnd_b=True)
     sh.series("Device:C", "C72", "100nF", (g(106), g(50)), "VIN_P", None,
               C0603, LCSC_C100N, gnd_b=True)
-    # 10R series to the buck input (TASK A analysed topology)
-    # R80: FOJAN FRP2512 2W high-power series (C3013385). Pulse duty per event
-    # is ~8.5 mJ (see design-log F-15 math) - well inside 2512 capability -
-    # but the 10R VALUE starves the buck at low line: see flag F-15.
-    sh.series("Device:R", "R80", "10R 2512", (g(118), g(40)), "VIN_P", "VIN_B",
-              "Resistor_SMD:R_2512_6332Metric", "C3013385")
+    # R80: series element into the buck input.
+    # F-15 APPROVED 2026-09-04 -> 1R anti-surge FRS2512F1R00TS (C55348540).
+    # The old 10R had NO load-line solution at the 10.5 V floor at full load:
+    # V_B^2 - 9.8*V_B + 59 = 0 has a negative discriminant, i.e. a 10R source
+    # can pass at most V^2/4R = 2.4 W but the converter needs 5.9 W -> brownout.
+    # At 1R: V_B = 9.16 V, I = 0.644 A, P_R80 = 0.41 W continuous worst case;
+    # deliverable ceiling V^2/4R = 24 W. Pulse energy is unchanged at 8.5 mJ
+    # (E = 1/2*C*dV^2 is independent of R); peak power rises to 3.8 kW and tau
+    # falls to 4.4 us - hence the anti-surge series part, not a plain thick film.
+    sh.series("Device:R", "R80", "1R 2512 anti-surge", (g(118), g(40)),
+              "VIN_P", "VIN_B",
+              "Resistor_SMD:R_2512_6332Metric", "C55348540")
     sh.series("Device:C", "C73", "2.2uF 100V", (g(130), g(50)), "VIN_B", None,
               C1210, LCSC_C2U2_100V, gnd_b=True)
     sh.series("Device:C", "C74", "2.2uF 100V", (g(140), g(50)), "VIN_B", None,
               C1210, LCSC_C2U2_100V, gnd_b=True)
     sh.text("Front end: F1 (250 VDC interrupt) -> D1 S3M reverse block -> "
-            "D2 SMDJ100A 3kW -> 10R (2512 anti-surge, F-5: pulse rating to "
-            "verify) -> buck. Margin at 3.7A clamp: 34.9% (design-log).",
-            (g(30), g(28)))
+            "D2 SMDJ100A 3kW -> R80 1R 2512 anti-surge (F-15 approved) -> "
+            "buck. Margin at 3.7A clamp: 34.9%. R80 at the 10.5V floor, full "
+            "load: V_B=9.16V, I=0.644A, 0.41W. 10R was a brown-out (no "
+            "load-line solution) - see design-log F-15.", (g(30), g(28)))
+
+    # --- F-14 (approved 2026-09-04): VIN test point, unprotected connector
+    # side. HV ZONE - keep the pad inside the silk HV boundary at layout and
+    # respect the 1.5 mm HV-to-LV clearance; it can sit at up to 100 V.
+    tpv = sh.place("Connector:TestPoint", "TP23", "VIN", (g(24), g(214)), TP)
+    sh.hier(tpv, "1", "VIN", "input", length=g(4))
+    sh.text("F-14 test point: VIN (HV ZONE, up to 100 V - 1.5 mm clearance).",
+            (g(24), g(208)))
 
     # ---- U5 EG11752 buck ----------------------------------------------------
     u5 = sh.place("jlc:EG11752_C53368402", "U5", "EG11752",

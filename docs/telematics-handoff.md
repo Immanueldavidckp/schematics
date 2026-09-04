@@ -19,6 +19,42 @@ local flash buffering of ≥2 days of telemetry for network outages.
 Variant for this build: **Variant A (mainstream)** — integrated-GNSS modem,
 one CAN channel, 100 V-capable power front end.
 
+### 1.1 Environmental rating (approved 2026-09-04, governed by U1)
+
+**Rated operating ambient: −20 °C to +70 °C.**
+**The housing must be mounted shaded, or be light-coloured.**
+**85 °C is a survival limit, not an operating limit.**
+
+This is governed by the **U1 EC200U temperature range**, *Quectel EC200U Series
+Hardware Design V1.2*, §5.3 Table 42, p.75 — the most restrictive active part:
+
+| EC200U range | Limits | Meaning (datasheet footnotes 9/10) |
+|---|---|---|
+| Operating | −35…+75 °C | module **meets 3GPP specifications** |
+| Extended | −40…+85 °C | functions maintained, no unrecoverable malfunction, but *"one or more specifications, such as Pout, may exceed the specified tolerances of 3GPP"* |
+| Storage | −40…+90 °C | — |
+
+So the +70 °C rating keeps 5 °C of margin to the top of the **3GPP-compliant**
+window, and 85 °C lands exactly on the **extended** limit — where the modem
+still works but is out of spec. Hence the wording: survival, not operating.
+The −20 °C floor is a product choice for the India target (the module itself
+goes to −35 °C), taken to leave margin rather than to chase it.
+
+The 5 °C top margin is thin *on purpose* and is why the housing rule exists:
+internal rise above ambient (modem transmit bursts, buck losses, charger) plus
+solar gain on a dark enclosure on an exposed boom lift can easily exceed it.
+Shading or a light/reflective housing is a **specification requirement, not a
+recommendation** — it must appear on the installation sheet.
+
+**Open item — BT1 vs the +70 °C ceiling.** Typical 1S Li-ion cells are rated
+−20…+60 °C on *discharge* and 0…+45 °C on *charge*, both narrower at the top
+than +70 °C. Charging is already protected: the BQ25606 TS pin runs the JEITA
+network (R88/R89 + the in-pack NTC), so charge is inhibited outside the cell's
+window automatically. Discharge above 60 °C and calendar life at sustained high
+temperature are **not** protected by hardware, and are the reason BT1 is
+specified as a 2–3 year field-replaceable service item (rule 2). Flag for the
+user: confirm this is acceptable, or narrow the product rating to +60 °C.
+
 ## 2. Five-year & scaling design rules (non-negotiable)
 
 1. No electrolytic or tantalum capacitors. Ceramic X7R/X7S only, voltage
