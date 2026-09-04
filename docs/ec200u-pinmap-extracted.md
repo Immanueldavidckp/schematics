@@ -10,15 +10,51 @@ parsed datasheet name for the same pin number, through a documented alias map
 (TXD→MAIN_TXD, RXD→MAIN_RXD, RI\*→MAIN_RI, DTR\*→MAIN_DTR, DCD\*→MAIN_DCD,
 RTS→MAIN_RTS, CTS→MAIN_CTS, USIM_PRESENCE→USIM_DET, NETLIGHT→NET_STATUS).
 
-**Result: 68/144 VERIFIED, 76/144 NEEDS-HUMAN.**
+**Result: 103/144 VERIFIED, 41/144 NEEDS-HUMAN.**
+(Was 68/76. The 35 GND rows were promoted to VERIFIED on 2026-09-04 when the
+Table 7 GND row was finally read from the PDF — see F-9b below.)
 
-**Geometric cross-checks already passed** (footprint `LCC-LGA-144_…_L610-CN-02`):
-ANT_GNSS(47)/ANT_MAIN(49) flanked by GND pads 46/48/50/51 on the same edge;
-VBAT_RF(57,58)+VBAT_BB(59,60) contiguous; 80 perimeter + 64 inner pads = Quectel's
-80 LCC + 64 LGA.
+**F-9b — the GND row, read verbatim from the primary source.** Chapter 3.3
+Table 7 "Pin Description", Power Supply sub-block, p.21, repeated verbatim in
+chapter 3.6.1 Table 9 "VBAT and GND Pins", p.36:
 
-**RELEASE GATE: the symbol is NOT released for modem_rf until the user has
-reviewed every NEEDS-HUMAN row below against the PDF.**
+```
+GND               8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112
+```
+
+Expanded, that is **43 GND pads** — and it matches the previously-inferred set
+exactly, pin for pin. Pin 10 `USIM_GND` is a separate (U)SIM ground.
+Table 7 note 3, p.20: *"Please keep all RESERVED and unused pins unconnected,
+and all GND pins are connected to the ground."*
+
+*Root cause of the "row not machine-parsed" rows:* the ranges are written with
+**U+2013 EN DASH** (`50–54`, `85–112`), not `~` and not ASCII `-`. The original
+parser dropped them. This was previously attributed to "the comma-list row
+format", which was wrong.
+
+**Correction to the earlier geometric argument.** The earlier claim that the
+central LGA grid is "overwhelmingly the ground/thermal field" is **false** and
+must not be relied on. The F-9b reverse check (every inner-field / ANT-fence
+pad cross-checked against the GND set) found **40 of the 64 inner-field and
+fence pads carry definite non-ground functions**, 24 of them VERIFIED directly
+against Table 7 — SPK/MIC (73–77), KEYIN/KEYOUT (78–84), LCD and SPILCD
+(119–125), SDIO2 (129–134), WLAN/BT (135–139), ADC0 (45), RFCTL (143/144).
+What the geometry *does* show, correctly stated:
+- pads **85–112** occupy an exclusive, regular full-span lattice with zero
+  signal intrusion — a genuine thermal/ground via field;
+- pad **76** sits between SPK_N/MIC_P and MIC_N in both numbering and position
+  — a local audio ground, not part of that lattice;
+- pads **46/48/50/51** alternate with ANT_GNSS(47)/ANT_MAIN(49) — an RF ground
+  fence. But 33/34/45/143/144 also fall within two pitches of an antenna pad
+  and are signals, so "near the antenna" alone proves nothing.
+
+Other geometric cross-checks that do hold: VBAT_RF(57,58)+VBAT_BB(59,60)
+contiguous; 80 perimeter + 64 inner pads = Quectel's 80 LCC + 64 LGA.
+
+**RELEASE GATE: the 43 GND pads are released and connected. The remaining 41
+NEEDS-HUMAN pins stay no-connect** — which is also what Table 7 note 3 requires
+for unused and RESERVED pins — **and must be reviewed against the PDF before any
+of them is ever wired.**
 
 | Pin | Symbol name | Status | Reference / note |
 |---|---|---|---|
@@ -72,12 +108,12 @@ reviewed every NEEDS-HUMAN row below against the PDF.**
 | 48 | GND | VERIFIED | Table 7 p.22 |
 | 49 | ANT_MAIN | VERIFIED | Table 7 p.31 |
 | 50 | GND | VERIFIED | Table 7 p.22 |
-| 51 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
-| 52 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
-| 53 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
-| 54 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
+| 51 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
+| 52 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
+| 53 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
+| 54 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
 | 55 | NC | VERIFIED | Table 7 p.32 (RESERVED) |
-| 56 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
+| 56 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
 | 57 | VBAT_RF | VERIFIED | Table 7 p.22 |
 | 58 | VBAT_RF | VERIFIED | Table 7 p.22 |
 | 59 | VBAT_BB | VERIFIED | Table 7 p.22 |
@@ -93,53 +129,53 @@ reviewed every NEEDS-HUMAN row below against the PDF.**
 | 69 | USB_DP | VERIFIED | Table 7 p.23 |
 | 70 | USB_DM | VERIFIED | Table 7 p.24 |
 | 71 | USB_VBUS | VERIFIED | Table 7 p.23 |
-| 72 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
+| 72 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
 | 73 | SPK_P | NEEDS-HUMAN | Table 7 p.27 says 'LOUDSPK_P', symbol says 'SPK_P' |
 | 74 | SPK_N | NEEDS-HUMAN | Table 7 p.27 says 'LOUDSPK_N', symbol says 'SPK_N' |
 | 75 | MIC_P | VERIFIED | Table 7 p.27 |
-| 76 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
+| 76 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
 | 77 | MIC_N | VERIFIED | Table 7 p.27 |
 | 78 | KEYIN1 | VERIFIED | Table 7 p.29 |
 | 79 | KEYIN2 | VERIFIED | Table 7 p.29 |
 | 80 | KEYIN3 | VERIFIED | Table 7 p.29 |
-| 81 | KEYIN4 | NEEDS-HUMAN | Table 7 p.32 says 'RESERVED', symbol says 'KEYIN4' |
-| 82 | KEYIN5 | NEEDS-HUMAN | Table 7 p.32 says 'RESERVED', symbol says 'KEYIN5' |
+| 81 | KEYIN4 | NEEDS-HUMAN | Table 7 p.32 says 'RESERVED', symbol says 'KEYIN4' -- RESOLVED F-9b: V1.2 RESERVED row p.30 is "18, 55, 81, 82, 116, 117", comment "Keep these pins open." Symbol uses QuecOpen-variant names (KEYOUT4/5 there). Correct action NC. |
+| 82 | KEYIN5 | NEEDS-HUMAN | Table 7 p.32 says 'RESERVED', symbol says 'KEYIN5' -- RESOLVED F-9b: in the V1.2 RESERVED row p.30, "Keep these pins open." Correct action NC. |
 | 83 | KEYOUT0 | VERIFIED | Table 7 p.29 |
 | 84 | KEYOUT1 | VERIFIED | Table 7 p.29 |
-| 85 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
-| 86 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
-| 87 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
-| 88 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
-| 89 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
-| 90 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
-| 91 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
-| 92 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
-| 93 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
-| 94 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
-| 95 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
-| 96 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
-| 97 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
-| 98 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
-| 99 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
-| 100 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
-| 101 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
-| 102 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
-| 103 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
-| 104 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
-| 105 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
-| 106 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
-| 107 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
-| 108 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
-| 109 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
-| 110 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
-| 111 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
-| 112 | GND | NEEDS-HUMAN | row not machine-parsed from Table 7 |
+| 85 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
+| 86 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
+| 87 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
+| 88 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
+| 89 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
+| 90 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
+| 91 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
+| 92 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
+| 93 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
+| 94 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
+| 95 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
+| 96 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
+| 97 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
+| 98 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
+| 99 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
+| 100 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
+| 101 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
+| 102 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
+| 103 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
+| 104 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
+| 105 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
+| 106 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
+| 107 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
+| 108 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
+| 109 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
+| 110 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
+| 111 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
+| 112 | GND | VERIFIED | Table 7 p.21 GND row, repeated verbatim in Table 9 p.36: “8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112” (F-9b: en-dash ranges defeated the original parser) |
 | 113 | KEYOUT2 | VERIFIED | Table 7 p.29 |
 | 114 | KEYOUT3 | VERIFIED | Table 7 p.29 |
 | 115 | USB_BOOT | VERIFIED | Table 7 p.29 |
 | 116 | NC | VERIFIED | Table 7 p.32 (RESERVED) |
-| 117 | CLK26M_OUT | NEEDS-HUMAN | Table 7 p.32 says 'RESERVED', symbol says 'CLK26M_OUT' |
-| 118 | NC | NEEDS-HUMAN | Table 7 p.30 says 'CLK', symbol says 'NC' |
+| 117 | CLK26M_OUT | NEEDS-HUMAN | Table 7 p.32 says 'RESERVED', symbol says 'CLK26M_OUT' -- RESOLVED F-9b: in the V1.2 RESERVED row p.30, "Keep these pins open." (CLK26M_AUX1 in QuecOpen, also reserved). Correct action NC. |
+| 118 | NC | NEEDS-HUMAN | Table 7 p.30 says 'CLK', symbol says 'NC' -- RESOLVED F-9b: V1.2 reads WLAN_SLP_CLK, DO, WLAN sleep clock, "If unused, keep it open." Correct action NC. |
 | 119 | LCD_FMARK | VERIFIED | Table 7 p.28 |
 | 120 | LCD_RSTB | VERIFIED | Table 7 p.28 |
 | 121 | SPILCD_SEL | NEEDS-HUMAN | Table 7 p.28 says 'LCD_SEL', symbol says 'SPILCD_SEL' |
@@ -149,7 +185,7 @@ reviewed every NEEDS-HUMAN row below against the PDF.**
 | 125 | SPILCD_SI/O | NEEDS-HUMAN | Table 7 p.28 says 'LCD_SI/O', symbol says 'SPILCD_SI/O' |
 | 126 | GPIO1 | VERIFIED | Table 7 p.32 |
 | 127 | PM_EN_WLAN | NEEDS-HUMAN | Table 7 p.30 says 'EN', symbol says 'PM_EN_WLAN' |
-| 128 | NC | NEEDS-HUMAN | Table 7 p.25 says 'USIM2_VDD', symbol says 'NC' |
+| 128 | NC | NEEDS-HUMAN | Table 7 p.25 says 'USIM2_VDD', symbol says 'NC' -- RESOLVED F-9b: V1.2 confirms USIM2_VDD, PO, (U)SIM2 power supply; SIM2 unused in this design. Correct action NC. |
 | 129 | SD1_DATA3 | NEEDS-HUMAN | Table 7 p.30 says 'SDIO2_DATA3', symbol says 'SD1_DATA3' |
 | 130 | SD1_DATA2 | NEEDS-HUMAN | Table 7 p.30 says 'SDIO2_DATA2', symbol says 'SD1_DATA2' |
 | 131 | SD1_DATA1 | NEEDS-HUMAN | Table 7 p.30 says 'SDIO2_DATA1', symbol says 'SD1_DATA1' |
@@ -161,7 +197,7 @@ reviewed every NEEDS-HUMAN row below against the PDF.**
 | 137 | UART3_RXD | NEEDS-HUMAN | Table 7 p.26 says 'AUX_RXD', symbol says 'UART3_RXD' |
 | 138 | UART3_TXD | NEEDS-HUMAN | Table 7 p.27 says 'AUX_TXD', symbol says 'UART3_TXD' |
 | 139 | BT_EN | VERIFIED | Table 7 p.32 |
-| 140 | NC | NEEDS-HUMAN | Table 7 p.29 says 'ISINK', symbol says 'NC' |
+| 140 | NC | NEEDS-HUMAN | Table 7 p.29 says 'ISINK', symbol says 'NC' -- RESOLVED F-9b: V1.2 confirms ISINK, PI, backlight current sink, Imax = 200 mA; unused. Correct action NC. |
 | 141 | I2C2_SCL | VERIFIED | Table 7 p.27 |
 | 142 | I2C2_SDA | VERIFIED | Table 7 p.27 |
 | 143 | RFCTL_1 | NEEDS-HUMAN | Table 7 p.32 says 'GRFC1', symbol says 'RFCTL_1' |

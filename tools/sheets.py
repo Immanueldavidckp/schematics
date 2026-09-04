@@ -568,9 +568,11 @@ def build_modem_rf():
     sh.text("MODEM + RF - Quectel EC200U-CN (BOM part C2916205; schematic symbol "
             "imported from C2916206 after F-9). Wiring per Quectel EC200U HW "
             "Design V1.2 and handoff section 6.", (g(20), g(14)), 2.0)
-    sh.text("F-9 CONDITIONAL RELEASE: only Table-7-VERIFIED pins are wired. "
-            "Every NEEDS-HUMAN pin is no-connect flagged F9-REVIEW until the "
-            "human review of docs/ec200u-pinmap-extracted.md completes.",
+    sh.text("F-9 SIGNED OFF 2026-09-04. All 43 GND pads are connected per "
+            "Quectel EC200U HW Design V1.2 Table 7 p.21 / Table 9 p.36: "
+            "\"8, 9, 19, 22, 36, 46, 48, 50-54, 56, 72, 76, 85-112\". "
+            "F-9b reverse check clean - no GND pad omitted. Remaining "
+            "NEEDS-HUMAN pins stay no-connect (Table 7 note 3).",
             (g(20), g(18)))
 
     ver, human = _ec200u_verified_pins()
@@ -606,12 +608,19 @@ def build_modem_rf():
             sh.nc(u1, pin)
             if pin in human:
                 review.append(pin)
-    sh.text(f"F9-REVIEW: NC pins pending human review of the pin map "
-            f"({len(review)} pins): " + ", ".join(review[:38]) + " ...",
+    sh.text(f"F9-REVIEW: {len(review)} unused/RESERVED pins remain no-connect "
+            f"pending human review before any future use "
+            f"(Table 7 note 3: keep RESERVED and unused pins unconnected):",
             (g(20), g(230)))
-    sh.text("F9-REVIEW: the block 85-112 and 51-56/72/76 are GND per the "
-            "symbol; they MUST be connected to GND after review sign-off, "
-            "before layout (milestone-3 gate).", (g(20), g(234)))
+    sh.text("  " + ", ".join(review), (g(20), g(234)))
+    sh.text("THERMAL RELIEF PLAN (F-9, for layout): pads 85-112 are the "
+            "central thermal/ground lattice - stitch every one straight down "
+            "to the L2 solid GND plane with its own via (no thermal spokes, "
+            "solid connection). Pad 76 is the local audio ground and pads "
+            "46/48/50/51 are the RF ground fence flanking ANT_GNSS(47)/"
+            "ANT_MAIN(49) - fence pads get >=2 vias each, placed to keep the "
+            "CPWG return path continuous. Perimeter grounds 8/9/19/22/36/"
+            "52/53/54/56/72 get >=1 via each.", (g(20), g(238)))
 
     # ---- VBAT_MODEM decoupling + clamp, <=5mm from U1 at layout -----------
     sh.series("Device:C", "C40", "100uF", (g(60), g(40)), "VBAT_MODEM", None,

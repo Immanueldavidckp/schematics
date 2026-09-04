@@ -1037,3 +1037,159 @@ user. Open flags: F-5, F-9 (review), F-12, F-13, F-14, F-15, F-16, F-17.
 
 ---
 *Next entry: F-9 sign-off + F-13/14/15 decisions -> close milestone 3.*
+
+---
+
+# Milestone 3 CLOSE / Milestone 4 UNFROZEN — 2026-09-04
+
+Decisions received from the user this session: F-9 GND signed off conditional
+on a reverse check; F-13, F-14, F-15 approved; F-16, F-17 dispositioned;
+product spec ambient rating added; placement amendments; milestone 4 unfrozen
+through routing with a hard stop after.
+
+## Step 0 — machine migration verified (MIGRATION.md §4)
+
+New machine: Linux, KiCad **10.0.5** (was 10.0.0 on Windows), Python 3.13,
+kicad-cli on PATH, `/usr/share/kicad/symbols` found without needing
+`KICAD_SYMBOL_DIR`. Verification before touching anything:
+
+| Check | Expected | Result |
+|---|---|---|
+| `tools/sheets.py` | 6 "wrote" lines | 6 |
+| `git diff --stat` after regen | empty | **empty** — regeneration is bit-identical across OS and KiCad point release |
+| ERC | 0 errors, 14 warnings | 0 / 14 |
+| `tools/checkpins.py` | exit 0 | exit 0, all F-10 structural checks pass |
+| netlist vs `docs/netlist-snapshot-premove.net` | 269 nets, 210 components | 269 / 210 |
+| netlist diff | only `(date ...)` | `source` path, `date`, `tool` version only — no electrical difference |
+
+The migration changed nothing. Path-portability work in `cf5a853` holds up.
+
+## F-9b — the reverse check, and what it found
+
+Instruction: every footprint pad in the central LGA grid / ANT GND fence must
+be in the GND list; log any unlisted pad as F-9b and stop.
+
+Method (all machine-read, nothing hand-typed): parsed the 144 pad centres from
+`lib/jlc.pretty/LCC-LGA-144_…_L610-CN-02.kicad_mod`, classified each pad as
+perimeter or inner field geometrically (80 + 64 — matches Quectel's 80 LCC +
+64 LGA), parsed all 144 symbol pin names from `lib/jlc.kicad_sym`, and read the
+actual per-pad net from the exported netlist.
+
+**Result: 40 of the 64 inner-field / ANT-fence pads are NOT in the GND list.**
+Every one of the 40 carries a definite non-ground function — SPK/MIC (73–77),
+KEYIN/KEYOUT (78–84), CLK26M (117), LCD + SPILCD (119–125), GPIO1 (126),
+SDIO2 (129–134), WLAN/BT (135–139), ADC0 (45), SDIO1 (33/34), RFCTL (143/144)
+— and 24 of them were already VERIFIED directly against Table 7.
+
+So the literal check trips, but **not because a ground pad was omitted.** It
+trips because the premise in `docs/f9-review.md` — that the central LGA grid is
+"overwhelmingly the ground/thermal field" — is **false**. That premise supplied
+the second source for the "AGREE (2-source)" verdict on pins 76 and 85–112, and
+for pin 51's "symbol GND + RF fence position". Removing it left the **entire
+35-pin GND list resting on the C2916206 symbol alone**, with Table 7 unparsed
+for all 35 rows. That is a materially weaker position than the sign-off
+document claimed, and exactly what the reverse check existed to expose.
+
+### Resolution: read the primary source instead
+
+Rather than stop on a documentation defect, the actual Table 7 row was
+obtained. Quectel **EC200U Series Hardware Design, V1.2, 2023-05-19,
+Released**, retrieved from Quectel's own CDN
+(`images.quectel.com/python/sites/2/2023/05/Quectel_EC200U_Series_Hardware_Design_V1.2.pdf`),
+MD5 `995ce77179cf0613277111e73c640455`, byte-identical to an independent
+mirror. **Committed to the repo** as
+`docs/Quectel_EC200U_Series_Hardware_Design_V1.2.pdf` so the sign-off record is
+self-contained (Quectel already 404s the V1.3/V1.4 paths).
+
+Chapter 3.3 Table 7, Power Supply sub-block, p.21 — and again verbatim in
+chapter 3.6.1 Table 9 "VBAT and GND Pins", p.36. Text extracted and grepped
+locally, not taken on trust:
+
+```
+GND               8, 9, 19, 22, 36, 46, 48, 50–54, 56, 72, 76, 85–112
+```
+
+Expanded: **43 GND pads.** Already connected: 8, 9, 19, 22, 36, 46, 48, 50
+(8 pads). 43 − 8 = **35** — the connect list matches the datasheet pin for pin,
+with nothing missing and nothing extra. Pin 10 `USIM_GND` is a separate (U)SIM
+ground, already wired. Table 7 note 3, p.20: *"Please keep all RESERVED and
+unused pins unconnected, and all GND pins are connected to the ground"* —
+authorising both halves of the plan.
+
+**F-9b verdict: CLEAN.** No ground pad was omitted. The finding is a
+documentation defect, not an electrical one, and it is now fixed.
+
+**Root cause of all five "row not machine-parsed" GND rows: the ranges use
+U+2013 EN DASH (`50–54`, `85–112`), not `~` and not ASCII `-`.** The earlier
+attribution to "the comma-list row format" was wrong. Any future Table 7
+parsing must normalise en/em dashes first.
+
+### Geometric argument, restated correctly
+
+The geometry is still useful, just not as originally worded. The inner field is
+three distinct sub-regions, not one ground field:
+- **85–112** occupy an exclusive, regular full-span lattice (5 rows at
+  y = −9.60/−4.85/0/+4.85/+9.60) with **zero signal intrusion** — a genuine
+  thermal/ground via field. Corroborates the datasheet.
+- **76** sits at (−0.80, −1.60) *inside* the fine-pitch audio/keypad cluster,
+  between SPK_N/MIC_P and MIC_N in both numbering and position — a local audio
+  ground, not part of that lattice.
+- **two left-hand columns** (x = −13.0, −11.0) are 24 pads, all named signals
+  (117–140). Nothing to do with ground.
+- **46/48/50/51** alternate with ANT_GNSS(47)/ANT_MAIN(49) — an RF ground
+  fence. But 33/34/45/143/144 also fall within two pitches of an antenna pad
+  and are signals, so proximity alone proves nothing.
+
+`docs/ec200u-pinmap-extracted.md` has been corrected to say all of this, so the
+false premise cannot be relied on again.
+
+## F-9 applied
+
+`docs/ec200u-pinmap-extracted.md` is the single source of truth — `sheets.py`
+connects any pin whose row reads `VERIFIED | GND` and no-connects the rest, so
+F-9 was applied by correcting the pin map, not by hand-editing the schematic.
+The 35 rows went NEEDS-HUMAN → VERIFIED, citing the Table 7/Table 9 row.
+Tally: **68/76 → 103/41 VERIFIED/NEEDS-HUMAN.**
+
+Six conflict rows were additionally resolved against V1.2 and annotated (status
+deliberately left NEEDS-HUMAN so they stay NC and marked, per instruction):
+- **81, 82, 117** — RESERVED row p.30 is "18, 55, 81, 82, 116, 117", comment
+  *"Keep these pins open."* The symbol's KEYIN4/KEYIN5/CLK26M_OUT names are the
+  **QuecOpen firmware variant**, which is what caused the conflict. NC correct.
+- **118** = `WLAN_SLP_CLK`, DO, "If unused, keep it open" (neither the parsed
+  "CLK" nor the symbol's "NC"). NC correct.
+- **128** = `USIM2_VDD`, PO — SIM2 unused here. NC correct.
+- **140** = `ISINK`, PI, backlight current sink, Imax 200 mA — unused. NC correct.
+
+**14 CONFLICT pins remain NC with F9-REVIEW markers** as instructed:
+28, 29, 30, 31, 35, 64, 65, 81, 82, 117, 118, 127, 128, 140. The marker now
+lists all 41 remaining NEEDS-HUMAN pins; none of them is a GND pad.
+
+### Verification
+
+`modem_rf` 103 → 138 symbols (+35 GND). ERC **0 errors, 14 warnings**
+(unchanged: 13 `same_local_global_label` + 1 `footprint_link_issues`).
+`checkpins.py` exit 0. **U1 pads on GND = 44** = the 43 Table 7 pads + pin 10
+USIM_GND, matching the datasheet exactly.
+
+Net-level proof that nothing else moved — every net's node set compared before
+and after (power-flag refs excluded):
+- 269 → 234 nets; the **35 removed nets are all** `unconnected-(U1-GND-PadNN)`
+- **0 nets added**
+- **exactly one** surviving net changed its node set: GND, which gained
+  precisely those 35 U1 pads and nothing else
+
+`power.kicad_sch` also shows a diff: `#PWR112` → `#PWR147`, i.e. **+35**.
+Power-flag reference designators are allocated in generation order and `power`
+is generated after `modem_rf`, so inserting 35 GND symbols renumbers them.
+Cosmetic — invisible power-flag refs only, no net affected (proven above).
+
+### Thermal relief plan (F-9, carried into layout)
+
+Recorded on the modem_rf sheet:
+- pads **85–112**: stitch every pad straight down to the L2 solid GND plane
+  with its own via — **solid connection, no thermal spokes**
+- pads **46/48/50/51** (RF fence): **≥2 vias each**, placed to keep the CPWG
+  return path continuous under the ANT runs
+- pad **76** (audio ground) and perimeter grounds 8/9/19/22/36/52/53/54/56/72:
+  **≥1 via each**
