@@ -24,7 +24,7 @@
 	(fp_line (start 2.16 1.81) (end -2.16 1.81) (layer F.CrtYd) (width 0.05))
 	(fp_poly (pts (xy -2.352827 -1.949044) (xy -2.364943 -1.399388) (xy -2.810027 -1.404569) (xy -2.810027 -1.949044) (xy -2.352827 -1.949044)) (stroke (width 0) (type solid)) (fill solid) (layer "F.SilkS"))
 	(fp_poly (pts (xy -2.357069 1.962379) (xy -2.343531 1.370482) (xy -2.804135 1.363701) (xy -2.814269 1.962379) (xy -2.357069 1.962379)) (stroke (width 0) (type solid)) (fill solid) (layer "F.SilkS"))
-	(model "C:/home/PCB/Telematics/telematics-tracker/lib/jlc.3dshapes/SMB_L4.32-W3.62-LS5.3-RD.wrl"
+	(model "${KIPRJMOD}/lib/jlc.3dshapes/SMB_L4.32-W3.62-LS5.3-RD.wrl"
 		(offset (xyz 0.000 0.000 0.000))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

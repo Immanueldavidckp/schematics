@@ -178,7 +178,7 @@
 	(fp_line (start -15.50 -14.00) (end 15.50 -14.00) (layer F.CrtYd) (width 0.05))
 	(fp_line (start 15.50 -14.00) (end 15.50 14.00) (layer F.CrtYd) (width 0.05))
 	(fp_line (start 15.50 14.00) (end -15.50 14.00) (layer F.CrtYd) (width 0.05))
-	(model "C:/home/PCB/Telematics/telematics-tracker/lib/jlc.3dshapes/LCC-LGA-144_L31.0-W28.0-P1.30_L610-CN-02.wrl"
+	(model "${KIPRJMOD}/lib/jlc.3dshapes/LCC-LGA-144_L31.0-W28.0-P1.30_L610-CN-02.wrl"
 		(offset (xyz 0.000 0.000 0.000))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

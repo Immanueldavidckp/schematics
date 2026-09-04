@@ -24,7 +24,7 @@
 	(fp_line (start 2.25 -1.60) (end 2.25 1.60) (layer F.CrtYd) (width 0.05))
 	(fp_line (start 2.25 1.60) (end -2.25 1.60) (layer F.CrtYd) (width 0.05))
 	(fp_line (start -2.25 1.60) (end -2.25 -1.60) (layer F.CrtYd) (width 0.05))
-	(model "C:/home/PCB/Telematics/telematics-tracker/lib/jlc.3dshapes/IND-SMD_4P-L4.5-W3.2-H2.6.wrl"
+	(model "${KIPRJMOD}/lib/jlc.3dshapes/IND-SMD_4P-L4.5-W3.2-H2.6.wrl"
 		(offset (xyz 0.000 0.000 0.000))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

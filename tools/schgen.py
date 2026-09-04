@@ -20,7 +20,17 @@ import re
 import os
 import uuid as _uuid
 
-KI_SYMS = r"C:\Program Files\KiCad\10.0\share\kicad\symbols"
+# KiCad stock symbol directory. Override with KICAD_SYMBOL_DIR when the
+# install lives elsewhere (new machine, different drive, macOS/Linux).
+_KI_CANDIDATES = [
+    os.environ.get("KICAD_SYMBOL_DIR", ""),
+    "C:/Program Files/KiCad/10.0/share/kicad/symbols",
+    "C:/Program Files/KiCad/9.0/share/kicad/symbols",
+    "/usr/share/kicad/symbols",
+    "/Applications/KiCad/KiCad.app/Contents/SharedSupport/symbols",
+]
+KI_SYMS = next((p for p in _KI_CANDIDATES if p and os.path.isdir(p)),
+               _KI_CANDIDATES[1])
 JLC_LIB = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                        "lib", "jlc.kicad_sym")
 PROJECT = "telematics-tracker"
