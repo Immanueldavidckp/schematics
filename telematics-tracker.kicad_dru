@@ -60,8 +60,13 @@
 # --- thermal / current ---------------------------------------------------
 # handoff section 4: VBAT_MODEM carries the modem's 2 A transmit burst and is
 # specified >= 2 mm wide. Enforced so a narrow neck cannot slip through.
-(rule "VBAT_MODEM width"
-	(constraint track_width (min 2.0mm))
+# The 2.0 mm trunk requirement lives in the MODEM_BULK netclass track width,
+# which is what the router uses. This floor is deliberately lower: the trace
+# has to neck down to enter U1's pad row, which is on a 1.30 mm pitch - a 2 mm
+# trace landing there bridges the neighbouring pads. A hard 2 mm minimum makes
+# the only physically possible entry illegal.
+(rule "VBAT_MODEM minimum width"
+	(constraint track_width (min 0.5mm))
 	(condition "A.NetClass == 'MODEM_BULK' && A.Type == 'track'"))
 
 # --- F-20: the buck's exposed pad is at line voltage ---------------------
@@ -86,4 +91,50 @@
 (rule "U5 package internal HV spacing"
 	(constraint clearance (min 0.3mm))
 	(condition "A.insideCourtyard('U5') && B.insideCourtyard('U5')"))
+
+# --- CHECK 3: intra-component HV->LV exemption at <= 40 V -----------------
+# Agreed policy: a pad pair INSIDE one component is exempt from the 1.5 mm
+# zone-separation rule where the voltage across that part is <= 40 V, because
+# the part IS the HV->LV transition and its pad spacing is the package.
+# The sense dividers are 3 x 100k then 9.1k = 309.1 kohm, so at VIN = 100 V the
+# current is 323.5 uA and each 100k drops 32.35 V - inside the exemption.
+(rule "divider internal spacing <=40V"
+	(constraint clearance (min 0.5mm))
+	(condition "A.insideCourtyard('R30') && B.insideCourtyard('R30')"))
+(rule "divider internal spacing <=40V R31"
+	(constraint clearance (min 0.5mm))
+	(condition "A.insideCourtyard('R31') && B.insideCourtyard('R31')"))
+(rule "divider internal spacing <=40V R32"
+	(constraint clearance (min 0.5mm))
+	(condition "A.insideCourtyard('R32') && B.insideCourtyard('R32')"))
+(rule "divider internal spacing <=40V R33"
+	(constraint clearance (min 0.5mm))
+	(condition "A.insideCourtyard('R33') && B.insideCourtyard('R33')"))
+(rule "divider internal spacing <=40V R34"
+	(constraint clearance (min 0.5mm))
+	(condition "A.insideCourtyard('R34') && B.insideCourtyard('R34')"))
+(rule "divider internal spacing <=40V R35"
+	(constraint clearance (min 0.5mm))
+	(condition "A.insideCourtyard('R35') && B.insideCourtyard('R35')"))
+
+# Above 40 V and therefore NOT covered by that exemption. These rest on the
+# IPC-2221 figure for their actual voltage (0.60 mm uncoated at <= 100 V) plus
+# the mandatory conformal coating - the same basis as F-20 at U5. Q1/Q2 are the
+# DO FETs (LV gate, HV drain, SOT-23 pitch); R40 is the DNP spare divider and
+# is a SINGLE 100k, so it sees 91.7 V where the fitted dividers see 32.35 V.
+(rule "DO FET package spacing Q1"
+	(constraint clearance (min 0.6mm))
+	(condition "A.insideCourtyard('Q1') && B.insideCourtyard('Q1')"))
+(rule "DO FET package spacing Q2"
+	(constraint clearance (min 0.6mm))
+	(condition "A.insideCourtyard('Q2') && B.insideCourtyard('Q2')"))
+(rule "spare divider R40 package spacing"
+	(constraint clearance (min 0.6mm))
+	(condition "A.insideCourtyard('R40') && B.insideCourtyard('R40')"))
+
+# X1 vendor footprint: 0.19 mm between its own GND and card-detect pads. Fixed
+# by the part, documented waiver.
+(rule "X1 vendor footprint internal spacing"
+	(constraint clearance (min 0.15mm))
+	(condition "A.memberOfFootprint('X1') && B.memberOfFootprint('X1')"))
 

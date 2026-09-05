@@ -75,11 +75,20 @@ ANCHORS = {
     "AF1": (79.3, 10.2, 0, 0),     # LTE  U.FL, above U1
     "AF2": (79.3, 48.5, 0, 0),     # GNSS U.FL, below U1 (amendment (b))
     # pi-network series 0R, inline and hard against its ANT pad (<= 2 mm)
-    "R71": (79.0, 23.04, 90, 0),   # ANT_MAIN
-    "R72": (79.0, 28.74, 90, 0),   # ANT_GNSS
+    "R71": (79.8, 23.04, 90, 0),   # ANT_MAIN
+    "R72": (79.8, 28.74, 270, 0),  # ANT_GNSS - 270: chain flows down
     # C84 is the SERIES DC block and carries the RF, so it is inline in the
     # corridor between R72 and AF2 - not a bypass part that can go anywhere.
-    "C84": (79.0, 34.5, 90, 0),
+    "C84": (79.8, 34.5, 270, 0),  # 270: chain flows down
+    # L4 taps ANT_GNSS_F, so it must sit ON that line - the packer had put it
+    # at (55.5, 4.0), 25 mm away, which would hang a long stub off the RF
+    # trace. R90/C83/C85 are DC-side and can be packed freely.
+    "L4":  (80.3, 38.0, 0, 0),    # horizontal: pad 1 on the RF line, pad 2 clear
+    # bias-T DC side, kept below U1 near L4 so the LNA supply bypass is close
+    # to the injection node rather than 30 mm away across the board
+    "R90": (71.5, 47.0, 0, 0),
+    "C85": (74.5, 46.5, 0, 0),
+    "C83": (76.3, 46.5, 0, 0),
     # Q3 was sitting inside the ANT_GNSS corridor. It is the modem VBAT P-FET,
     # so it belongs beside the VBAT bulk caps above U1, not on the RF edge.
     "Q3":  (59.5, 4.5, 0, 0),
@@ -90,8 +99,8 @@ ANCHORS = {
     # which is lower inductance than 5 mm away laterally.
     "C40": (66.9, 10.4, 0, 0),     # top
     "C41": (71.8, 10.4, 0, 0),     # top
-    "C81": (66.9, 15.09, 0, 1),    # bottom, under the VBAT pads
-    "C82": (71.8, 15.09, 0, 1),    # bottom, under the VBAT pads
+    "C81": (66.9, 17.4, 0, 1),    # bottom, under the VBAT pads
+    "C82": (71.8, 17.4, 0, 1),    # bottom, under the VBAT pads
     "X1":  (52.0, 51.0, 0, 0),
     "X2":  (65.5, 50.5, 0, 0),
 
@@ -114,7 +123,7 @@ ANCHORS = {
     # blocked C74. Neither a wider board nor a 10x10 inductor fixed that
     # (measured: 3 -> 2 and 3 -> 1 overlaps respectively); putting the cluster
     # in its own column beside L1 is what actually resolves it.
-    "L1":  (27.65, 12.0, 0, 0),    # amendment (b): left end, far from ANT_GNSS
+    "L1":  (27.65, 12.0, 180, 0),  # pad 1 (SW) must face U5    # amendment (b): left end, far from ANT_GNSS
     "D16": (38.8, 2.8, 0, 0),
     "U5":  (38.3, 9.0, 0, 0),
     "C73": (38.3, 16.2, 0, 0),   # nearest U5 VIN: this is the loop-critical one
@@ -220,7 +229,7 @@ def relax_anchors(anchor_boxes, bounds, min_gap=1.10, iters=1500):
 FIXED = {"U1",              # the corridor width depends on exactly this x
          "R71", "R72",      # inline pi network, <= 2 mm from the ANT pad
          "AF1", "AF2",      # U.FL in the corridor
-         "C84",             # series DC block, inline in the RF corridor
+         "C84", "L4",       # series DC block and bias choke, on the RF line
          "C40", "C41", "C81", "C82",   # VBAT bulk, <= 5 mm from pads 57-60
          "U3"}              # amendment (c): must stay beside H5
 
@@ -540,6 +549,15 @@ def planes(board):
     add_zone(board, board.GetLayerID("In1.Cu"), gnd,
              (inset, inset, BW - inset, BH - inset), "L2_GND_solid")
     print("L2: solid GND pour, full-board, no thermal reliefs")
+    # F.Cu and B.Cu GND pours. On the RF edge this copper IS the coplanar
+    # ground of the CPWG - the RF netclass clearance (0.30 mm) sets the gap
+    # automatically - and it is what the fence vias connect to. Without it the
+    # ANT runs are plain microstrip and every fence via reads as dangling.
+    for lay, nm in ((pcbnew.F_Cu, "F_GND"), (pcbnew.B_Cu, "B_GND")):
+        z = add_zone(board, lay, gnd,
+                     (inset, inset, BW - inset, BH - inset), nm)
+        z.SetPadConnection(pcbnew.ZONE_CONNECTION_FULL)
+    print("F.Cu / B.Cu: GND pours (coplanar ground for the RF runs)")
     # HV island on L3 under U5, for the exposed-pad thermal vias
     u5 = _fp(board, "U5")
     vinb = board.FindNet("/power/VIN_B")

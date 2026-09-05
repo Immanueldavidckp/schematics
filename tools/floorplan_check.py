@@ -110,7 +110,9 @@ def main():
     ok1 = True
     # (name, U1 pad, U.FL ref, inline parts that must sit in the RF path)
     RF = [("ANT_MAIN (LTE)", "49", "AF1", ["R71"]),
-          ("ANT_GNSS", "47", "AF2", ["R72", "C84"])]
+          # L4 is the bias tap and sits ON the RF line by design, so it is an
+          # inline element like C84 rather than an obstruction
+          ("ANT_GNSS", "47", "AF2", ["R72", "C84", "L4"])]
     corridor_half = CPWG_W / 2 + CPWG_G + FENCE_STANDOFF
     for name, u1pad, aref, rrefs in RF:
         src = pad(fp(board, "U1"), u1pad)

@@ -8,6 +8,7 @@ ANT_MAIN (LTE):  U1.49 (76.55, 22.90)  ->  AF1.3 (80.83, 10.21)   straight-line 
 ANT_GNSS:  U1.47 (76.55, 28.60)  ->  AF2.3 (80.83, 48.49)   straight-line = 20.35 mm
     R72 at 79.00,28.74: pad-to-pad from U1.47 = 0.88 mm (<= 2.00), outboard
     C84 at 79.00,34.50: 0.00 mm off the routed path (<= 1.30), outboard
+    L4 at 79.00,38.00: 0.00 mm off the routed path (<= 1.30), outboard
     dog-leg path corridor 2.60 mm wide is CLEAR of non-GND pads and vias
 
 Corridor available where the RF leaves U1:
@@ -35,7 +36,7 @@ numeric clearances stated in docs/installation-sheet.md: 80, 38.3, 15, 14.5, 120
 ==========================================================================
 3. HV->LV: >= 1.5 mm between components, <= 40 V intra exempt
 ==========================================================================
-HV-class pads: 60   LV pads (excl GND): 404
+HV-class pads: 60   LV pads (excl GND): 405
 
 minimum HV->LV clearance, ANY pair, outside the U5 exception:
     **0.800 mm**   R40.1[VIN]  <->  R40.2[ADC_SPARE]
@@ -102,9 +103,9 @@ U5 SW (pin 6) to nearest L1 pad: 4.31 mm
 board outline -0.05,-0.05 .. 82.05,62.05 (82.1 x 62.1 mm)
   J1: extent 0.99,10.88 .. 10.87,34.12  edge gaps L/T/R/B = 1.04/10.93/71.19/27.92 mm  -> nearest edge: left (1.04 mm)
   J2: extent 32.02,54.10 .. 43.01,60.94  edge gaps L/T/R/B = 32.06/54.15/39.04/1.11 mm  -> nearest edge: bottom (1.11 mm)
-  X1: extent 47.77,46.65 .. 60.16,60.24  edge gaps L/T/R/B = 47.82/46.70/21.88/1.81 mm  -> nearest edge: bottom (1.81 mm)
+  X1: extent 47.52,46.31 .. 59.91,59.90  edge gaps L/T/R/B = 47.57/46.36/22.13/2.15 mm  -> nearest edge: bottom (2.15 mm)
   X1 SIM: rotation 0 deg; card slot faces +Y (contacts are at the -Y end of the land)
-      clearance from the X1 land to the +Y board edge: 1.81 mm
+      clearance from the X1 land to the +Y board edge: 2.15 mm
 --> PASS
 
 ==========================================================================
