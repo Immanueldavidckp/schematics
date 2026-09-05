@@ -881,6 +881,38 @@ def build_modem_rf():
                       "Capacitor_SMD:C_0402_1005Metric", "", dnp=True)
         sh.net(c2, "1", f"ANT_{tag}_C", length=g(3))
         sh.gnd(c2, "2", length=g(3))
+        # --- GNSS bias-T, DNP by default -------------------------------
+        # Quectel EC200U HW Design V1.2 section 4.2, figure 31 "Reference
+        # Circuit of GNSS Antenna" (p.68). Table 37 (p.67) defines ANT_GNSS
+        # pin 47 as AI, 50 ohm, "If unused, keep it open" - it carries NO
+        # internal DC feed, so an active antenna must be biased externally.
+        # Quectel's own values: 47 nH series into the RF line, 100 pF shunt,
+        # 10 R + 0.1 uF on the supply. Note 2: "The VDD circuit is not needed
+        # if you select a passive antenna" - hence DNP by default, populated
+        # only for the external active-antenna (steel-cabinet) build.
+        #
+        # OPEN (F-21): Quectel's figure DC-couples the module pin to the
+        # injection node through the 0R. With the bias-T fitted, 3V3 would sit
+        # on ANT_GNSS. The R7x position is therefore documented as
+        # 0R-or-DC-block: fit 0R for a passive antenna, fit a DC-blocking cap
+        # when the bias-T is populated. Not resolved here - see design-log.
+        if tag == "GNSS":
+            lb = sh.place("Device:L", "L4", "47nH DNP", (g(base + 8), g(yb - 18)),
+                          "Inductor_SMD:L_0402_1005Metric", "TBD-F21", dnp=True)
+            sh.net(lb, "1", f"ANT_{tag}_C", length=g(3))
+            sh.net(lb, "2", "GNSS_BIAS", length=g(3))
+            sh.series("Device:R", "R90", "10R DNP", (g(base + 16), g(yb - 26)),
+                      "3V3", "GNSS_BIAS", "Resistor_SMD:R_0402_1005Metric", "TBD-F21", dnp=True)
+            sh.series("Device:C", "C83", "100nF DNP", (g(base + 8), g(yb - 30)),
+                      "GNSS_BIAS", None, "Capacitor_SMD:C_0402_1005Metric", LCSC_C100N, dnp=True,
+                      gnd_b=True)
+            sh.series("Device:C", "C84", "100pF DNP", (g(base - 2), g(yb - 18)),
+                      f"ANT_{tag}_C", None, "Capacitor_SMD:C_0402_1005Metric", "TBD-F21", dnp=True,
+                      gnd_b=True)
+            sh.text("GNSS bias-T (DNP): Quectel V1.2 fig 31 - 47nH series, "
+                    "100pF shunt, 10R+100nF on the 3V3 feed. Fit ONLY for an "
+                    "active external antenna; see F-21 on the DC block.",
+                    (g(base - 10), g(yb - 36)))
         af = sh.place("jlc:XY-IPEX1", f"AF{1 + ref}", "U.FL",
                       (g(base + 16), g(yb - 8)), "jlc:CONN-SMD_XY-IPEX1",
                       LCSC_UFL)

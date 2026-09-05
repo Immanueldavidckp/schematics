@@ -2300,3 +2300,161 @@ Check 1(c) is the one that shapes everything else: **the RF corridor is
 1.73 mm where a fenced CPWG needs 3.10 mm.** Fixing 1(a), 1(b) and 4 before
 that is settled risks doing the work twice, because moving U1 left moves the
 ANT pads, the U.FLs, the π networks and the VBAT caps together.
+
+---
+
+# Floorplan conditions: 7 of 8 pass — 2026-09-05
+
+Inductor: **incumbent C21325 retained** as instructed; C5142144 remains the
+logged qualified fallback.
+
+## Check 1 PASS — RF corridor opened, at the cost of two outline growths
+
+```
+corridor = board_edge(82.05) - copper_to_edge(0.30) - ANT pad outer edge(77.80)
+         = 3.95 mm            requirement 3.10 mm
+ANT_MAIN  U1.49 (77.55, 22.90) -> AF1.3 (80.83, 10.21)  = 13.40 mm
+ANT_GNSS  U1.47 (77.55, 28.60) -> AF2.3 (80.83, 48.49)  = 20.35 mm
+R71 / R72 inline: 0.88 mm pad-to-pad from their ANT pad (<= 2.00), outboard
+both dog-leg corridors (2.60 mm wide) CLEAR of non-GND pads and vias
+Q3 moved off the RF edge to beside the VBAT caps
+```
+
+**The outline grew twice. Both were forced, and both are logged in
+`tools/pcbgen.py` at the constant:**
+
+1. **Y 60 → 62 mm.** AF1 has to clear H2's M3 pad — a 6.29 mm keepout reaching
+   y = 6.65 — so U1 must sit at y ≥ 28.15. X1 is 15.09 mm tall and must fit
+   below U1 inside the keep-in, so U1 must sit at y ≤ 27.51.
+   **Infeasible by 0.64 mm.**
+2. **X 80 → 82 mm.** Moving U1 inboard for the corridor took 2 mm off the power
+   zone. That left the buck cluster single-file in a 5.35 mm strip and put
+   C73's VIN_B pad **0.215 mm** from U5's LV pins. Growing X back and returning
+   U1 to x = 61 keeps the 3.95 mm corridor *and* restores the 22.25 mm power
+   zone.
+
+Measured alternatives that did **not** work, so they are not worth retrying:
+growing X alone plateaued at 2 courtyard overlaps, and a synthetic 10 × 10
+inductor probe still left 1.
+
+## Check 2 RECLASSIFIED (per instruction) — still open on part selection
+
+**PCB copper keepout is N/A.** Both antennas mount in the lid and reach the
+board only through a U.FL pigtail, so no board copper sits under either one —
+there is nothing on the PCB to keep clear. The check now verifies instead that
+the **metal-clearance figure is recorded as an installation/housing
+requirement** in `docs/installation-sheet.md`. Antenna selection is in
+progress; the check stays FAIL until the datasheet clearance numbers are in
+that document.
+
+*(Checker bug fixed on the way: R80's value "1R 2512 anti-surge" contains the
+substring "ANT", so it was being reported as an antenna footprint. Now matched
+as a whole word.)*
+
+## Check 3 PASS — metric split permanently, ≤40 V exemption applied
+
+```
+minimum HV->LV, ANY pair (outside the U5 exception):
+    0.800 mm   R32.1 [/io/VIN_D1] <-> R32.2 [VIN_SENSE]      intra, exempt
+minimum BETWEEN DIFFERENT components (what layout controls):
+    1.779 mm   U5.8 [/power/VIN_B] <-> L1.2 [5V0]            was 1.025 mm
+```
+
+**Per-resistor voltage, as justification for the ≤40 V exemption.** The VIN and
+IGN sense chains are 3 × 100k in series then 9.1k to ground:
+
+| | |
+|---|---|
+| total | 300k + 9.1k = 309.1 kΩ |
+| current at VIN = 100 V | 100 / 309100 = **323.5 µA** |
+| across each 100k | **32.35 V** → ≤ 40 V, **EXEMPT** |
+| across the 9.1k | 2.94 V (this is VIN_SENSE / IGN_SENSE) |
+
+Intra-component pairs **above** 40 V, listed separately and *not* exempt by
+this rule — they rest on the IPC-2221 figure for their actual voltage plus the
+mandatory coating, the same basis as F-20:
+
+| part | gap | V across | note |
+|---|---|---|---|
+| Q1, Q2 | 1.04 mm | 100 V | LV gate against HV drain, SOT-23 pitch |
+| R40 | 0.80 mm | **91.66 V** | DNP spare divider |
+| R14–R19 | — | 49.4 V | DI series, 2 × 12k each |
+| OK1, OK2 | 5.00 mm | — | the isolation barrier itself |
+
+**Flagged: R40 is a SINGLE 100k** with the 9.1k, so it sees 91.7 V where the
+fitted dividers see 32.35 V. It is DNP, but if it is ever populated it should
+be 3 × 100k like the others.
+
+**How the 1.5 mm is enforced, and the mistake worth remembering.** The packer
+inflates a part's keepout by 0.85 mm across an HV/LV boundary. The first
+version classified each part as simply "HV" or not — which is wrong, because a
+**transition device** (a DO FET, a divider resistor, an opto) has *both* an HV
+pad and an LV pad. Classified as HV, it got no extra spacing from other HV
+parts while its LV pad still needed 1.5 mm from their HV pads, and the
+measurement sat at 1.060 mm. The margin now uses **per-pad flags** and applies
+whenever one part has an HV pad and the other has an LV pad, either direction.
+
+## Check 4 PASS — VBAT bulk split top and bottom
+
+```
+C40 top    1.95 mm from the nearest of U1 pads 57-60
+C41 top    1.95 mm
+C81 bottom 0.00 mm   directly beneath the pads
+C82 bottom 0.00 mm
+```
+
+Four 1210s cannot all sit within 5 mm of four pads spanning 3.9 mm on one side,
+so two are on top immediately above the pads and two on the **bottom directly
+beneath them** — lower inductance than 5 mm away laterally. All four anchored.
+
+**New FIXED anchor class.** R71/R72, AF1/AF2, C40/C41/C81/C82, U1 and U3 are
+now immovable in the relaxation, which pushes everything else around them.
+Without it the relaxation slid the π-network resistors off their ANT pads and
+the bulk caps out from under U1 — silently undoing checks 1 and 4 after they
+had been made to pass.
+
+*Bug found doing this:* a zero-size bound (how a FIXED anchor is pinned) was
+clamped as if it were a region, collapsing to `centre − w/2` and sliding the
+part half its own width. **U1 jumped 16.8 mm left.**
+
+## Checks 5, 6, 7, 8 PASS
+
+U3 **5.50 mm** from H5 and 17.5 mm off the hole centroid · hot loop
+**44.85 mm²**, U5 SW to nearest L1 pad 4.31 mm · J1 **1.04 mm** from the left
+edge, J2 moved to the new bottom edge, X1 **1.81 mm** from it with the slot
+facing +Y · renders regenerated for 82 × 62 in `docs/renders/`.
+
+## GNSS bias-T added (DNP) — verified against Quectel, one question left open
+
+Read from the committed PDF, **§4.2, Table 37 and Figure 31 (p.67–68)**:
+
+- **Table 37: `ANT_GNSS` pin 47 is AI — analog input, 50 Ω, "If unused, keep it
+  open."** The pin carries **no internal DC feed**, so an active antenna must
+  be biased externally. An external bias-T is therefore correct and cannot
+  conflict with anything inside the module.
+- **Figure 31 "Reference Circuit of GNSS Antenna" is itself a bias-T**, and its
+  values are now what the schematic uses: **47 nH series** into the RF line,
+  **100 pF shunt**, **10 R + 0.1 µF** on the supply feed, and a series 0 R on
+  the module side, with two NM positions.
+- **Note 2: "The VDD circuit is not needed if you select a passive antenna."**
+  That is exactly the DNP-by-default arrangement — populated only for the
+  external active-antenna (steel-cabinet) build.
+- Note 1: "An external LDO can be selected to supply power according to the
+  active antenna requirement" — relevant because the feed here is 3V3.
+
+Added to `modem_rf`, all DNP: **L4** 47 nH series, **C84** 100 pF shunt,
+**R90** 10 R and **C83** 100 nF on the 3V3 feed, on a new `GNSS_BIAS` net.
+
+**NEW FLAG F-21 — is a DC block needed in series with ANT_GNSS?** Quectel's
+Figure 31 shows the module pin DC-coupled to the injection node through the
+0 R. With the bias-T populated, 3V3 would therefore sit on ANT_GNSS. The pin is
+specified as AI, 50 Ω, with no statement either way about DC tolerance. The
+R72 position is documented as **0R-or-DC-block**: fit 0 R for a passive antenna
+(no DC anywhere), fit a DC-blocking capacitor when the bias-T is populated.
+**Not resolved — do not populate the bias-T until this is settled.**
+
+## State
+
+DRC **19 violations + 452 unconnected**. ERC 0 errors / 13 warnings.
+`checkpins` exit 0. 222 components placed. Board and DRC report byte-stable.
+**Routing NOT started.**

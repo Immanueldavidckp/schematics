@@ -8,6 +8,7 @@ Run:  python3 tools/floorplan_check.py
 """
 import math
 import os
+import re
 import sys
 
 import pcbnew
@@ -203,25 +204,44 @@ def main():
           ok1, "\n".join(lines))
 
     # ---------------------------------------------------------------- 2
-    keep = [z for z in board.Zones()
-            if z.GetIsRuleArea() and "ANT" in (z.GetZoneName() or "").upper()]
-    area = 0.0
-    for z in keep:
-        area += mm(mm(z.Outline().Area()))
-    detail = (f"antenna-region keepout rule areas found: {len(keep)}\n"
-              f"cleared area: {area:.1f} mm^2")
-    if not keep:
-        detail += ("\n\nNo antenna keepout exists on the board, and none can be "
-                   "drawn yet: the BOM lists ANT as \"select in stock\" for both "
-                   "the LTE FPC and the GNSS patch, so neither datasheet's "
-                   "required ground-clearance dimensions are known. Handoff "
-                   "section 7 calls for a \"GND keepout under the FPC antenna "
-                   "region per antenna datasheet\" - that datasheet does not "
-                   "exist yet.\nBoth antennas mount in the LID, not on the PCB, "
-                   "so the keepout is a board region under the lid parts and "
-                   "depends on the housing too (also unconfirmed).")
-    check(2, "Antenna-region keepout, no copper any layer, area in mm^2",
-          bool(keep), detail)
+    # RECLASSIFIED. Both antennas mount in the LID and reach the board only
+    # through a U.FL pigtail, so there is no PCB copper underneath either of
+    # them and a copper keepout is not the applicable control. What the antenna
+    # datasheets actually constrain is how far the antenna must sit from metal
+    # inside the housing - that is an INSTALLATION / HOUSING requirement, and
+    # the check is that it is written down where the installer will see it.
+    ant_fps = [f.GetReference() for f in board.GetFootprints()
+               if f.GetReference().startswith("AF")]
+    # match the whole word - "1R 2512 anti-surge" (R80) contains "ANT"
+    onboard = [f.GetReference() for f in board.GetFootprints()
+               if re.search(r"\bANTENNA\b", (f.GetValue() or "").upper())
+               and not f.GetReference().startswith("AF")]
+    inst = os.path.join(PROJ, "docs", "installation-sheet.md")
+    txt = open(inst, encoding="utf-8").read() if os.path.exists(inst) else ""
+    has_sec = "Antenna metal clearance" in txt
+    figs = re.findall(r"(\d+(?:\.\d+)?)\s*mm", txt.split("Antenna metal clearance")[1]) \
+        if has_sec else []
+    lines2 = [
+        f"antenna PCB footprints on the board: {onboard or 'none'}",
+        f"U.FL launch connectors (the only antenna-related copper): "
+        f"{sorted(ant_fps)}",
+        "",
+        "PCB copper keepout: **N/A** - both antennas are lid-mounted and reach",
+        "the board only through a U.FL pigtail, so no board copper sits under",
+        "either antenna. There is nothing on the PCB to keep clear.",
+        "",
+        f"metal-clearance recorded as an installation/housing requirement: "
+        f"{'YES' if has_sec else 'NO'}",
+    ]
+    if has_sec:
+        lines2.append(f"numeric clearances stated in docs/installation-sheet.md: "
+                      f"{', '.join(figs[:8]) if figs else 'NONE'} mm")
+    else:
+        lines2.append("docs/installation-sheet.md has no 'Antenna metal "
+                      "clearance' section yet")
+    ok2 = bool(has_sec and figs and not onboard)
+    check(2, "Antenna metal clearance (PCB copper N/A - lid-mounted)",
+          ok2, "\n".join(lines2))
 
     # ---------------------------------------------------------------- 3
     u5 = fp(board, "U5")

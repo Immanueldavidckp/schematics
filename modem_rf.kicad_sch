@@ -3591,6 +3591,169 @@
 					)
 				)
 			)
+		(symbol "Device:L"
+				(pin_numbers
+					(hide yes)
+				)
+				(pin_names
+					(offset 1.016)
+					(hide yes)
+				)
+				(exclude_from_sim no)
+				(in_bom yes)
+				(on_board yes)
+				(duplicate_pin_numbers_are_jumpers no)
+				(property "Reference" "L"
+					(at -1.27 0 90)
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(property "Value" "L"
+					(at 1.905 0 90)
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(property "Footprint" ""
+					(at 0 0 0)
+					(hide yes)
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(property "Datasheet" ""
+					(at 0 0 0)
+					(hide yes)
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(property "Description" "Inductor"
+					(at 0 0 0)
+					(hide yes)
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(property "ki_keywords" "inductor choke coil reactor magnetic"
+					(at 0 0 0)
+					(hide yes)
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(property "ki_fp_filters" "Choke_* *Coil* Inductor_* L_*"
+					(at 0 0 0)
+					(hide yes)
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(symbol "L_0_1"
+					(arc
+						(start 0 2.54)
+						(mid 0.6323 1.905)
+						(end 0 1.27)
+						(stroke
+							(width 0)
+							(type default)
+						)
+						(fill
+							(type none)
+						)
+					)
+					(arc
+						(start 0 1.27)
+						(mid 0.6323 0.635)
+						(end 0 0)
+						(stroke
+							(width 0)
+							(type default)
+						)
+						(fill
+							(type none)
+						)
+					)
+					(arc
+						(start 0 0)
+						(mid 0.6323 -0.635)
+						(end 0 -1.27)
+						(stroke
+							(width 0)
+							(type default)
+						)
+						(fill
+							(type none)
+						)
+					)
+					(arc
+						(start 0 -1.27)
+						(mid 0.6323 -1.905)
+						(end 0 -2.54)
+						(stroke
+							(width 0)
+							(type default)
+						)
+						(fill
+							(type none)
+						)
+					)
+				)
+				(symbol "L_1_1"
+					(pin passive line
+						(at 0 3.81 270)
+						(length 1.27)
+						(name "1"
+							(effects
+								(font
+									(size 1.27 1.27)
+								)
+							)
+						)
+						(number "1"
+							(effects
+								(font
+									(size 1.27 1.27)
+								)
+							)
+						)
+					)
+					(pin passive line
+						(at 0 -3.81 90)
+						(length 1.27)
+						(name "2"
+							(effects
+								(font
+									(size 1.27 1.27)
+								)
+							)
+						)
+						(number "2"
+							(effects
+								(font
+									(size 1.27 1.27)
+								)
+							)
+						)
+					)
+				)
+				(embedded_fonts no)
+			)
 	)
 	(text "MODEM + RF - Quectel EC200U-CN (BOM part C2916205; schematic symbol imported from C2916206 after F-9). Wiring per Quectel EC200U HW Design V1.2 and handoff section 6."
 		(exclude_from_sim no)
@@ -7526,13 +7689,164 @@
 	)
 	(wire
 		(pts
+			(xy 302.26 176.53) (xy 302.26 172.72)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "de7df59d-7287-5be5-b2a8-d7560ab37562")
+	)
+	(label "ANT_GNSS_C"
+		(at 302.26 172.72 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "2704e923-71b6-509c-8fff-b10f0e432531")
+	)
+	(wire
+		(pts
+			(xy 302.26 184.15) (xy 302.26 187.96)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b736301a-0e9e-5d20-b157-92c934342c18")
+	)
+	(label "GNSS_BIAS"
+		(at 302.26 187.96 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "17e4552e-4ca5-5be7-8866-0b7a28383263")
+	)
+	(wire
+		(pts
+			(xy 312.42 166.37) (xy 312.42 162.56)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "695bbac6-44dc-5b29-9f27-6ff1bdf420b2")
+	)
+	(label "3V3"
+		(at 312.42 162.56 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "618bec83-4172-53ee-a94a-14335684a256")
+	)
+	(wire
+		(pts
+			(xy 312.42 173.99) (xy 312.42 177.8)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "be4ad3dd-7658-568d-bea9-e719f2e2d84a")
+	)
+	(label "GNSS_BIAS"
+		(at 312.42 177.8 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "2df0c8aa-e324-583e-b04e-133521ff7073")
+	)
+	(wire
+		(pts
+			(xy 302.26 161.29) (xy 302.26 157.48)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8ff19522-bfff-5cac-bc5c-78cbb22ae136")
+	)
+	(label "GNSS_BIAS"
+		(at 302.26 157.48 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "e1608516-7f58-5b6b-b5aa-1349098fd7dd")
+	)
+	(wire
+		(pts
+			(xy 302.26 168.91) (xy 302.26 171.45)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e29fd0e8-e604-5f7a-86af-8b21d53d4609")
+	)
+	(wire
+		(pts
+			(xy 289.56 176.53) (xy 289.56 172.72)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0e6048b5-38e7-520f-bcfc-3ccdd200a312")
+	)
+	(label "ANT_GNSS_C"
+		(at 289.56 172.72 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "e57fa6f3-47e6-51cf-aabc-f7b8ca9eb06b")
+	)
+	(wire
+		(pts
+			(xy 289.56 184.15) (xy 289.56 186.69)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "55e67957-4124-5b1b-bff5-fe4d6f24124a")
+	)
+	(text "GNSS bias-T (DNP): Quectel V1.2 fig 31 - 47nH series, 100pF shunt, 10R+100nF on the 3V3 feed. Fit ONLY for an active external antenna; see F-21 on the DC block."
+		(exclude_from_sim no)
+		(at 279.4 157.48 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "1f4f0352-4e91-551b-8e96-72155f3c946d")
+	)
+	(wire
+		(pts
 			(xy 318.77 194.31) (xy 323.85 194.31)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "63ecae2a-e895-5040-9d64-f05bc8a473a2")
+		(uuid "91d5dc33-f24d-5bb0-bc2b-2d33e2d08174")
 	)
 	(label "ANT_GNSS_C"
 		(at 323.85 194.31 0)
@@ -7542,7 +7856,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "308b14f0-892a-5399-9172-0a44b84bac2e")
+		(uuid "878b8b3a-06f3-564a-a0e7-26cc2fc152c5")
 	)
 	(no_connect
 		(at 318.77 191.77)
@@ -7556,7 +7870,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "72deb543-af88-585e-99ea-2b9e36a112a5")
+		(uuid "df52a59d-3b3c-5c82-bd00-48bb68a960eb")
 	)
 	(wire
 		(pts
@@ -7566,7 +7880,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "c8041186-525c-5fde-be64-c747e20321e0")
+		(uuid "ec44ae3f-385b-5e84-97e3-c53bcfc7b9ff")
 	)
 	(text "ANT_MAIN(49) / ANT_GNSS(47): 50R CPWG at layout, pi network (series 0R fitted, shunts DNP) to U.FL. SMA drill template is a housing option, not a board part."
 		(exclude_from_sim no)
@@ -15210,6 +15524,356 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:L")
+		(at 302.26 180.34 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp yes)
+		(fields_autoplaced yes)
+		(uuid "f676f82e-59e7-50ec-bb05-abd6c476aa18")
+		(property "Reference" "L4"
+			(at 302.26 177.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "47nH DNP"
+			(at 302.26 175.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Inductor_SMD:L_0402_1005Metric"
+			(at 302.26 180.34 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 302.26 180.34 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "TBD-F21"
+			(at 302.26 180.34 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "1f9bee7b-bc65-57ee-8805-e9f7c8208bb6")
+		)
+		(pin "2"
+			(uuid "f4521498-f5d6-5b6e-9aea-5bb7c5187c5f")
+		)
+		(instances
+			(project "telematics-tracker"
+				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68/70fac1b9-7bfc-5985-a8dc-ae866bd73e38"
+					(reference "L4")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 312.42 170.18 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp yes)
+		(fields_autoplaced yes)
+		(uuid "4879b2d8-e32f-524f-9414-4de6c3e36784")
+		(property "Reference" "R90"
+			(at 312.42 167.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10R DNP"
+			(at 312.42 165.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 312.42 170.18 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 312.42 170.18 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "TBD-F21"
+			(at 312.42 170.18 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "e6d33f9b-c349-5871-a105-f1cc2eeb3ba9")
+		)
+		(pin "2"
+			(uuid "0b73e200-e6f3-58a0-b120-ddf81a9e9416")
+		)
+		(instances
+			(project "telematics-tracker"
+				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68/70fac1b9-7bfc-5985-a8dc-ae866bd73e38"
+					(reference "R90")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 302.26 165.1 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp yes)
+		(fields_autoplaced yes)
+		(uuid "b1e7aded-7512-5868-ad47-98e9d96981a8")
+		(property "Reference" "C83"
+			(at 302.26 162.56 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "100nF DNP"
+			(at 302.26 160.02 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
+			(at 302.26 165.1 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 302.26 165.1 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C14663"
+			(at 302.26 165.1 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "fd62999a-3141-59fe-a604-15d52b372bc0")
+		)
+		(pin "2"
+			(uuid "321aaf9a-8ee2-5b48-ab4f-0909736dd9c9")
+		)
+		(instances
+			(project "telematics-tracker"
+				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68/70fac1b9-7bfc-5985-a8dc-ae866bd73e38"
+					(reference "C83")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 302.26 171.45 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "86118e43-fbdb-5553-9f21-8cd98999cdff")
+		(property "Reference" "#PWR147"
+			(at 302.26 163.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 302.26 171.45 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "362c0bc8-ac3b-58e5-ba87-3a37c8e53bda")
+		)
+		(instances
+			(project "telematics-tracker"
+				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68/70fac1b9-7bfc-5985-a8dc-ae866bd73e38"
+					(reference "#PWR147")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 289.56 180.34 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp yes)
+		(fields_autoplaced yes)
+		(uuid "b3e6de1f-61bf-5cd3-bdb8-fef3e7684f43")
+		(property "Reference" "C84"
+			(at 289.56 177.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "100pF DNP"
+			(at 289.56 175.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
+			(at 289.56 180.34 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 289.56 180.34 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "TBD-F21"
+			(at 289.56 180.34 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "0bf3acae-f01d-59e6-9255-bb7cde0e2433")
+		)
+		(pin "2"
+			(uuid "590bdefa-e507-5c42-9fed-b0e4184d69f8")
+		)
+		(instances
+			(project "telematics-tracker"
+				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68/70fac1b9-7bfc-5985-a8dc-ae866bd73e38"
+					(reference "C84")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 289.56 186.69 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "485b8152-6f0d-55a5-ac44-8a79251dc6eb")
+		(property "Reference" "#PWR148"
+			(at 289.56 179.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 289.56 186.69 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "15248323-553f-5235-82d3-5bc08b6ecaec")
+		)
+		(instances
+			(project "telematics-tracker"
+				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68/70fac1b9-7bfc-5985-a8dc-ae866bd73e38"
+					(reference "#PWR148")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "jlc:XY-IPEX1")
 		(at 312.42 193.04 0)
 		(unit 1)
@@ -15292,8 +15956,8 @@
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
-		(uuid "86118e43-fbdb-5553-9f21-8cd98999cdff")
-		(property "Reference" "#PWR147"
+		(uuid "2f66c142-c969-5af1-aca8-b23c2c6f83d7")
+		(property "Reference" "#PWR149"
 			(at 300.99 184.15 0)
 			(effects
 				(font
@@ -15311,12 +15975,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "362c0bc8-ac3b-58e5-ba87-3a37c8e53bda")
+			(uuid "50c6a119-4f27-5988-9084-11ad1fbfeeb9")
 		)
 		(instances
 			(project "telematics-tracker"
 				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68/70fac1b9-7bfc-5985-a8dc-ae866bd73e38"
-					(reference "#PWR147")
+					(reference "#PWR149")
 					(unit 1)
 				)
 			)
@@ -15331,8 +15995,8 @@
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
-		(uuid "485b8152-6f0d-55a5-ac44-8a79251dc6eb")
-		(property "Reference" "#PWR148"
+		(uuid "83dd982e-19cd-584c-8273-89ec27c3740c")
+		(property "Reference" "#PWR150"
 			(at 300.99 186.69 0)
 			(effects
 				(font
@@ -15350,12 +16014,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "15248323-553f-5235-82d3-5bc08b6ecaec")
+			(uuid "ac54d42b-04e7-551c-a2db-f07a4bab0005")
 		)
 		(instances
 			(project "telematics-tracker"
 				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68/70fac1b9-7bfc-5985-a8dc-ae866bd73e38"
-					(reference "#PWR148")
+					(reference "#PWR150")
 					(unit 1)
 				)
 			)
