@@ -31,7 +31,18 @@ TEMPLATE = os.path.join(PROJ, "tools", "pcb-template.kicad_pcb")
 SYSFP = "/usr/share/kicad/footprints"
 
 # ---- provisional outline -------------------------------------------------
-BW, BH = 80.0, 60.0          # mm, board width x height
+# CHECK 1: the outline grew in Y from 60.0 to 62.0 mm. Placement could not
+# absorb U1's inboard/downward shift:
+#   AF1 must clear H2's 6.29 mm M3 pad (reaches y=6.65) -> U1 y >= 28.15
+#   X1 (15.09 mm tall) must fit below U1 above the keep-in -> U1 y <= 27.51
+# infeasible by 0.64 mm at BH=60. BH=62 opens the window to 28.15..29.51.
+# STILL PROVISIONAL - the final outline comes from the purchased housing.
+# X also grew, 80.0 -> 82.0. Moving U1 inboard for the RF corridor took 2 mm
+# off the power zone, which left the buck cluster single-file in a 5.35 mm
+# strip and pushed C73's VIN_B pad to 0.215 mm from U5's LV pins (check 3
+# needs 1.5 mm between components). Growing X by 2 mm and putting U1 back at
+# x=61 keeps the 3.73 mm corridor AND restores the power zone to 22.25 mm.
+BW, BH = 82.0, 62.0          # mm, board width x height
 CORNER = 2.0                 # mm, corner radius (housing-friendly, avoids a
                              # sharp point at the M3 bosses)
 HOLE_INSET = 3.5             # mm, M3 hole centre from each edge

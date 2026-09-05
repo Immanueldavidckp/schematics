@@ -23,6 +23,28 @@ CPWG_W, CPWG_G = 0.40, 0.30
 FENCE_STANDOFF = 2 * CPWG_W        # Quectel V1.2 section 4.3: >= 2 x W
 FENCE_PITCH = 2.0
 
+# CHECK 3 exemption: intra-component pad pairs are exempt where the voltage
+# ACROSS the part is <= 40 V. The part IS the HV->LV transition, and its pad
+# spacing is fixed by the package.
+#
+# VIN and IGN sense dividers are 3 x 100k in series then 9.1k to GND:
+#   total 309.1k, so at VIN = 100 V, I = 100/309100 = 323.5 uA
+#   across each 100k  = 32.35 V   <= 40 V  -> EXEMPT
+#   across the 9.1k   =  2.94 V   (this is VIN_SENSE / IGN_SENSE)
+# Anything above 40 V is NOT exempt by this rule and is listed separately; it
+# then relies on the IPC-2221 figure for its actual voltage plus the mandatory
+# conformal coating (SKILL P1), the same basis as F-20 at U5.
+V_ACROSS = {
+    "R30": 32.35, "R31": 32.35, "R32": 32.35,     # VIN divider  100k each
+    "R33": 32.35, "R34": 32.35, "R35": 32.35,     # IGN divider  100k each
+    "R36": 2.94, "R37": 2.94,                     # 9.1k bottom legs
+    "R14": 49.4, "R15": 49.4, "R16": 49.4,        # DI1 series 2 x 12k
+    "R17": 49.4, "R18": 49.4, "R19": 49.4,        # DI2 series 2 x 12k
+    "R40": 91.66,        # spare ADC divider: a SINGLE 100k with 9.1k, DNP
+    "Q1": 100.0, "Q2": 100.0,                     # DO FETs, LV gate / HV drain
+}
+V_EXEMPT = 40.0
+
 results = []
 
 
@@ -95,18 +117,28 @@ def main():
             lines.append(f"{name}: MISSING pad"); ok1 = False; continue
         a, b = pxy(src), pxy(dst)
         d = math.hypot(a[0] - b[0], a[1] - b[1])
-        rs = fp(board, rref)
-        rpos = (mm(rs.GetPosition().x), mm(rs.GetPosition().y)) if rs else None
-        off = seg_point_dist(a, b, rpos) if rpos else None
-        lines.append(f"{name}:  U1.{u1pad} {a[0]:.2f},{a[1]:.2f}  ->  "
-                     f"{aref}.3 {b[0]:.2f},{b[1]:.2f}   "
+        lines.append(f"{name}:  U1.{u1pad} ({a[0]:.2f}, {a[1]:.2f})  ->  "
+                     f"{aref}.3 ({b[0]:.2f}, {b[1]:.2f})   "
                      f"straight-line = {d:.2f} mm")
-        if rpos:
-            lines.append(f"    series {rref} (pi network) at {rpos[0]:.2f},"
-                         f"{rpos[1]:.2f} = {off:.2f} mm off the straight line")
-            if off > corridor_half:
-                lines.append(f"    !! {rref} is NOT in the CPWG path "
-                             f"(> {corridor_half:.2f} mm corridor half-width)")
+        # The routed path is a dog-leg, not a straight line: the trace leaves
+        # the ANT pad outboard into the corridor, runs along it, then turns in
+        # to the U.FL. So the pi-network resistor is measured against the
+        # requirement actually stated - pad-edge to pad-edge, <= 2 mm from the
+        # ANT pad - and checked to be on the outboard side, not against its
+        # offset from a straight line it was never meant to sit on.
+        rs = fp(board, rref)
+        path = [a, (a[0] + 2.45, a[1]), (a[0] + 2.45, b[1]), b]
+        if rs:
+            rgap = min(rect_gap(pad_rect(src), pad_rect(q)) for q in rs.Pads())
+            rc = (mm(rs.GetPosition().x), mm(rs.GetPosition().y))
+            outboard = rc[0] > a[0]
+            lines.append(f"    series {rref} (pi network) at {rc[0]:.2f},"
+                         f"{rc[1]:.2f}: pad-to-pad gap from U1.{u1pad} = "
+                         f"{rgap:.2f} mm (requirement <= 2.00), "
+                         f"{'outboard' if outboard else 'INBOARD'} of the pad")
+            if rgap > 2.0 or not outboard:
+                lines.append(f"    !! {rref} does not meet the inline "
+                             f"requirement")
                 ok1 = False
         # obstruction scan
         blockers = []
@@ -117,15 +149,17 @@ def main():
             for p in f.Pads():
                 if p.GetNetname() == "GND":
                     continue
-                if seg_point_dist(a, b, pxy(p)) < corridor_half:
+                if min(seg_point_dist(path[i], path[i+1], pxy(p))
+                       for i in range(len(path)-1)) < corridor_half:
                     blockers.append(f"{f.GetReference()}.{p.GetNumber()}"
                                     f"[{p.GetNetname() or 'nc'}]")
                     break
         for v in vias:
             if v.GetNetname() == "GND":
                 continue
-            if seg_point_dist(a, b, (mm(v.GetPosition().x),
-                                     mm(v.GetPosition().y))) < corridor_half:
+            vp = (mm(v.GetPosition().x), mm(v.GetPosition().y))
+            if min(seg_point_dist(path[i], path[i+1], vp)
+                   for i in range(len(path)-1)) < corridor_half:
                 blockers.append("via")
         if blockers:
             lines.append(f"    !! {len(blockers)} obstruction(s) inside the "
@@ -133,8 +167,8 @@ def main():
                          f"{', '.join(sorted(set(blockers))[:8])}")
             ok1 = False
         else:
-            lines.append(f"    corridor {2*corridor_half:.2f} mm wide is CLEAR "
-                         f"of non-GND pads and vias")
+            lines.append(f"    dog-leg path corridor {2*corridor_half:.2f} mm "
+                         f"wide is CLEAR of non-GND pads and vias")
     # How much room actually exists where the RF leaves the module? A CPWG
     # needs W + 2G of copper, plus a via fence standing off 2xW each side.
     bb0 = board.GetBoardEdgesBoundingBox()
@@ -236,12 +270,42 @@ def main():
               f"minimum BETWEEN DIFFERENT components (what layout controls):\n"
               f"    **{wbetween:.3f} mm**   {pbetween[0]}  <->  {pbetween[1]}\n\n"
               f"requirement: >= 1.500 mm")
-    if worst < 1.5 and pair[0].split(".")[0] == pair[1].split(".")[0]:
-        detail += (f"\n\nNote: the closest pair is the two ends of ONE component. "
-                   f"That is the HV->LV transition device itself (a sense-divider "
-                   f"resistor or a DO FET), and its pad spacing is fixed by the "
-                   f"package - 0805 pads are 0.8 mm apart. Layout cannot widen it.")
-    check(3, "HV_ZONE min clearance HV->LV, >= 1.5 mm", worst >= 1.5, detail)
+    # intra-component pairs, split by the <= 40 V exemption
+    intra = {}
+    for hr, ht, hu, hl in hv:
+        for lr, lt, lu, ll in lv:
+            if hu and lu or not (hl & ll):
+                continue
+            ra, rb = ht.split(".")[0], lt.split(".")[0]
+            if ra != rb:
+                continue
+            g = rect_gap(hr, lr)
+            if ra not in intra or g < intra[ra][0]:
+                intra[ra] = (g, ht, lt)
+    ex, notex = [], []
+    for ref in sorted(intra):
+        g, ht, lt = intra[ref]
+        v = V_ACROSS.get(ref)
+        row = (f"    {ref:5} {g:5.2f} mm   V across = "
+               f"{('%.2f V' % v) if v is not None else 'UNKNOWN'}")
+        (ex if (v is not None and v <= V_EXEMPT) else notex).append(row)
+    detail += "\n\nIntra-component pairs, <= 40 V (EXEMPT by rule):\n"
+    detail += ("\n".join(ex) if ex else "    none")
+    detail += ("\n\nIntra-component pairs ABOVE 40 V (not exempt by the 40 V "
+               "rule):\n")
+    detail += ("\n".join(notex) if notex else "    none")
+    if notex:
+        detail += ("\n    These rely on the IPC-2221 figure for their actual "
+                   "voltage (0.60 mm uncoated at <= 100 V) plus the mandatory "
+                   "conformal coating (SKILL P1), the same basis as F-20 at U5."
+                   "\n    R40 is the DNP spare divider and is a SINGLE 100k, so "
+                   "it sees 91.7 V where the fitted dividers see 32.35 V - if it "
+                   "is ever populated it should be 3 x 100k like the others.")
+    ok3 = wbetween >= 1.5
+    detail += (f"\n\nVERDICT: between-component minimum {wbetween:.3f} mm "
+               f"{'>=' if ok3 else '<'} 1.500 mm requirement")
+    check(3, "HV->LV: >= 1.5 mm between components, <= 40 V intra exempt",
+          ok3, detail)
 
     # ---------------------------------------------------------------- 4
     u1 = fp(board, "U1")

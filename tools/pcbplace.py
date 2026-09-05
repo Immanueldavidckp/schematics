@@ -32,6 +32,12 @@ JLCFP = os.path.join(PROJ, "lib", "jlc.pretty")
 NETLIST = os.path.join(PROJ, "nl.net")
 
 GAP = 0.70          # mm between courtyards when packing
+
+# CHECK 3: a part touching an HV net gets its keepout inflated by this much on
+# every side, so an HV part ends up at least HV_EXTRA + GAP = 1.55 mm from
+# anything else. Keepout >= pad extent, so a keepout gap of 1.55 mm guarantees
+# the pad-to-pad gap is at least that - which is the 1.5 mm the rule asks for.
+HV_EXTRA = 1.05
 EDGE = 1.0          # mm keep-in from the board edge
 
 # ---------------------------------------------------------------- floorplan
@@ -51,20 +57,40 @@ ZONES = {
 # These are decisions, not packing results.
 ANCHORS = {
     # --- RF end ---------------------------------------------------------
-    # U1 centred in the RF zone, ANT pads (47/49) facing the right edge.
-    "U1":  (61.0, 27.0, 0, 0),
-    # Placement amendment (b): GNSS moved to the BOTTOM-right corner so the
-    # buck inductor sits diagonally opposite it (~62 mm instead of ~45 mm).
-    # LTE takes the top-right corner - it transmits and has AGC, GNSS does
-    # neither.
-    "AF1": (72.0, 8.0, 0, 0),      # LTE  U.FL, top-right
-    "AF2": (72.0, 52.0, 0, 0),     # GNSS U.FL, bottom-right
-    # SIM group beside the module, away from the RF edge. F-16: pad map is the
-    # verified incumbent, locating-post holes deliberately absent.
+    # CHECK 1: U1 moved 2.0 mm inboard (x 61.0 -> 59.0), the minimum that gives
+    # a two-sided fenced CPWG corridor outboard of the ANT pads:
+    #   corridor = board_edge(80.05) - copper_to_edge(0.30) - (U1_x + 17.02)
+    #   at x=61.0 -> 1.73 mm (too narrow); at x=59.0 -> 3.73 mm
+    # requirement is 3.10 mm (W 0.40 + 2xG 0.30 + 2x(2W standoff + via radius))
+    # plus margin. U1's keepout now reaches x=42.20, so the RF zone starts at
+    # 42.0 and the power/digital zones lose 2 mm of width.
+    "U1":  (61.0, 29.0, 0, 0),   # +2 mm in y: see the AF1 note below
+    # ANT pads land at x=74.77: pad 49 (MAIN) y=21.04, pad 47 (GNSS) y=26.74.
+    # The U.FLs sit in the corridor clear of U1's body (top edge y=11.7,
+    # bottom edge y=42.3) so each run is a short vertical hop up or down.
+    # AF1 is squeezed between H2's M3 pad (a 6.29 mm keepout reaching y=6.65,
+    # blocking the corridor) and U1's top edge. At U1 y=27 that gap was 5.05 mm
+    # and AF1 needs 6.20 mm, so U1 moved down 2 mm to y=29, opening it to
+    # 7.05 mm. U1 was not vertically centred anyway (11.7 above, 17.7 below).
+    "AF1": (79.3, 10.2, 0, 0),     # LTE  U.FL, above U1
+    "AF2": (79.3, 48.5, 0, 0),     # GNSS U.FL, below U1 (amendment (b))
+    # pi-network series 0R, inline and hard against its ANT pad (<= 2 mm)
+    "R71": (79.0, 23.04, 90, 0),   # ANT_MAIN
+    "R72": (79.0, 28.74, 90, 0),   # ANT_GNSS
+    # Q3 was sitting inside the ANT_GNSS corridor. It is the modem VBAT P-FET,
+    # so it belongs beside the VBAT bulk caps above U1, not on the RF edge.
+    "Q3":  (59.5, 4.5, 0, 0),
+    # CHECK 4: the four F-13 bulk caps, anchored against U1 pads 57-60
+    # (x 65.27..69.17, y 13.09 - U1's top edge). Four 1210s cannot all sit
+    # within 5 mm of four pads spanning 3.9 mm on one side, so two go on top
+    # immediately above the pads and two on the BOTTOM directly beneath them,
+    # which is lower inductance than 5 mm away laterally.
+    "C40": (66.9, 10.4, 0, 0),     # top
+    "C41": (71.8, 10.4, 0, 0),     # top
+    "C81": (66.9, 15.09, 0, 1),    # bottom, under the VBAT pads
+    "C82": (71.8, 15.09, 0, 1),    # bottom, under the VBAT pads
     "X1":  (52.0, 51.0, 0, 0),
-    # F-17 land pattern now exists, so the MFF2 site can be placed. It sits
-    # beside X1 because the two are wired in parallel through 0R selects.
-    "X2":  (63.5, 50.5, 0, 0),
+    "X2":  (65.5, 50.5, 0, 0),
 
     # --- HV end ---------------------------------------------------------
     # J1 rotated so its 23.2 mm length runs up the 60 mm edge.
@@ -88,18 +114,18 @@ ANCHORS = {
     "L1":  (27.65, 12.0, 0, 0),    # amendment (b): left end, far from ANT_GNSS
     "D16": (38.8, 2.8, 0, 0),
     "U5":  (38.3, 9.0, 0, 0),
-    "C73": (38.3, 15.0, 0, 0),   # nearest U5 VIN: this is the loop-critical one
+    "C73": (38.3, 16.2, 0, 0),   # nearest U5 VIN: this is the loop-critical one
     # U6 charger and U9 LDO are low-voltage and do not belong in the buck
     # column: U6 feeds SYS to the battery at J2, so it belongs near J2 on the
     # digital side. U9 (SYS -> 3V3 LDO) has no critical position at all and is
     # left to the packer.
     "U6":  (30.0, 46.0, 0, 0),
-    "J2":  (40.0, 55.0, 0, 0),
+    "J2":  (40.0, 57.0, 0, 0),
 
     # --- digital --------------------------------------------------------
     "U2":  (29.0, 25.0, 0, 0),
     # Amendment (c) / F-18: U3 hard against the provisional 5th M3 at (27,52).
-    "U3":  (29.5, 55.0, 0, 0),
+    "U3":  (29.0, 55.0, 0, 0),
     "U7":  (24.0, 33.0, 0, 0),
     "U4":  (24.5, 43.5, 0, 0),
     "U8":  (41.0, 24.0, 0, 0),
@@ -153,8 +179,14 @@ def relax_anchors(anchor_boxes, bounds, min_gap=1.10, iters=1500):
                     pos[b][1] -= sgn * push
         for r, (x0, y0, x1, y1) in bounds.items():
             A = anchor_boxes[r]
-            pos[r][0] = min(max(pos[r][0], x0 + A["w"] / 2), x1 - A["w"] / 2)
-            pos[r][1] = min(max(pos[r][1], y0 + A["h"] / 2), y1 - A["h"] / 2)
+            # A zero-size bound means "pinned here". Clamping naively would
+            # collapse it to centre - w/2 and slide the part half its own width
+            # (U1 jumped 16.8 mm left before this was fixed), so pin explicitly
+            # whenever the bound is narrower than the part.
+            lo, hi = x0 + A["w"] / 2, x1 - A["w"] / 2
+            pos[r][0] = (x0 + x1) / 2 if lo > hi else min(max(pos[r][0], lo), hi)
+            lo, hi = y0 + A["h"] / 2, y1 - A["h"] / 2
+            pos[r][1] = (y0 + y1) / 2 if lo > hi else min(max(pos[r][1], lo), hi)
         if not moved:
             break
     # Report anything still overlapping after the last iteration. Silent
@@ -175,6 +207,18 @@ def relax_anchors(anchor_boxes, bounds, min_gap=1.10, iters=1500):
         print(f"  relaxation did NOT converge for {len(leftover)} pair(s): "
               + ", ".join(leftover))
     return {r: (round(v[0], 2), round(v[1], 2)) for r, v in pos.items()}
+
+
+# Anchors whose position is a REQUIREMENT, not a preference. The relaxation
+# treats these as immovable and pushes everything else around them, the same
+# way it treats mounting holes. Without this the relaxation happily slides the
+# pi-network resistors away from their ANT pads and the bulk caps out from
+# under U1's VBAT pads, silently undoing checks 1 and 4.
+FIXED = {"U1",              # the corridor width depends on exactly this x
+         "R71", "R72",      # inline pi network, <= 2 mm from the ANT pad
+         "AF1", "AF2",      # U.FL in the corridor
+         "C40", "C41", "C81", "C82",   # VBAT bulk, <= 5 mm from pads 57-60
+         "U3"}              # amendment (c): must stay beside H5
 
 
 # sheet -> zone for everything not anchored
@@ -367,26 +411,36 @@ class Shelf:
         self.x0, self.y0, self.x1, self.y1 = rect
         self.obstacles = []
 
-    def block(self, x, y, w, h):
+    def block(self, x, y, w, h, hv=(False, False)):
         self.obstacles.append((x - w / 2 - GAP / 2, y - h / 2 - GAP / 2,
-                               x + w / 2 + GAP / 2, y + h / 2 + GAP / 2))
+                               x + w / 2 + GAP / 2, y + h / 2 + GAP / 2, hv))
 
-    def _free(self, cx, cy, w, h):
+    def _free(self, cx, cy, w, h, hv=(False, False)):
+        has_hv, has_lv = hv
+        for o in self.obstacles:
+            # Per-PAD semantics, not per-part. A transition device (a DO FET, a
+            # divider resistor, an opto) has both an HV pad and an LV pad, so
+            # classifying it simply as "HV" left it with no extra spacing from
+            # other HV parts while its LV pad still needed 1.5 mm from their HV
+            # pads. The margin applies whenever one part has an HV pad and the
+            # other has an LV pad, in either direction.
+            o_hv, o_lv = o[4]
+            m = HV_EXTRA if ((has_hv and o_lv) or (has_lv and o_hv)) else 0.0
+            a = (cx - w / 2 - m, cy - h / 2 - m, cx + w / 2 + m, cy + h / 2 + m)
+            if a[0] < o[2] and a[2] > o[0] and a[1] < o[3] and a[3] > o[1]:
+                return False
         a = (cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2)
         if a[0] < self.x0 or a[1] < self.y0 or a[2] > self.x1 or a[3] > self.y1:
             return False
-        for o in self.obstacles:
-            if a[0] < o[2] and a[2] > o[0] and a[1] < o[3] and a[3] > o[1]:
-                return False
         return True
 
-    def place(self, w, h, step=0.5):
+    def place(self, w, h, step=0.5, hv=False):
         y = self.y0 + h / 2
         while y <= self.y1 - h / 2 + 1e-9:
             x = self.x0 + w / 2
             while x <= self.x1 - w / 2 + 1e-9:
-                if self._free(x, y, w, h):
-                    self.block(x, y, w, h)
+                if self._free(x, y, w, h, hv):
+                    self.block(x, y, w, h, hv)
                     return x, y
                 x += step
             y += step
@@ -478,7 +532,7 @@ def planes(board):
     pads, and should be fully connected to ground."
     """
     gnd = get_net(board, "GND")
-    inset = 0.35
+    inset = 0.65   # board setup enforces 0.5 mm edge clearance; 0.35 failed
     add_zone(board, board.GetLayerID("In1.Cu"), gnd,
              (inset, inset, BW - inset, BH - inset), "L2_GND_solid")
     print("L2: solid GND pour, full-board, no thermal reliefs")
@@ -601,7 +655,11 @@ def main():
 
     HV = hv_nets()
     hv_refs = {ref for n, nodes in nets.items() if n in HV for ref, _ in nodes}
-    print(f"HV-class nets: {len(HV)}; parts touching HV: {len(hv_refs)}")
+    lv_refs = {ref for n, nodes in nets.items()
+               if n not in HV and n != "GND" for ref, _ in nodes}
+    print(f"HV-class nets: {len(HV)}; parts with an HV pad: {len(hv_refs)}; "
+          f"with an LV pad: {len(lv_refs)}; transition parts (both): "
+          f"{len(hv_refs & lv_refs)}")
 
     board = pcbnew.LoadBoard(PCB)
     placed, unplaced = {}, []
@@ -666,7 +724,10 @@ def main():
             if zx0 - 1.5 <= ax <= zx1 + 1.5 and zy0 - 1.5 <= ay <= zy1 + 1.5:
                 home = (zx0, zy0, zx1, zy1)
                 break
-        bounds[ref] = home or (EDGE, EDGE, BW - EDGE, BH - EDGE)
+        if ref in FIXED:
+            bounds[ref] = (bcx, bcy, bcx, bcy)   # immovable
+        else:
+            bounds[ref] = home or (EDGE, EDGE, BW - EDGE, BH - EDGE)
     # mounting holes take part but cannot move
     for f in board.GetFootprints():
         r = f.GetReference()
@@ -713,6 +774,7 @@ def main():
                 # keepout (J1 blocked a 23x10 box where the part is 10x23, so
                 # the packer dropped D7 straight on top of it).
                 bcx, bcy, w, h = keepout_abs(fp)
+                a_hv = (ref in hv_refs, ref in lv_refs)
                 # An SMD anchor only obstructs its OWN side. Blocking it on
                 # both wasted most of the bottom side - U1 alone removed
                 # ~1030 mm2 of bottom-side area it does not actually occupy,
@@ -720,7 +782,7 @@ def main():
                 same = [zn for zn in zones
                         if zn.endswith("_b") == bool(side)]
                 for zn in same:
-                    zones[zn].block(bcx, bcy, w, h)
+                    zones[zn].block(bcx, bcy, w, h, a_hv)
                 # through-hole pads and unplated holes DO pierce both sides
                 for ox, oy, ow, oh in through_obstacles(fp):
                     for z in zones.values():
@@ -732,6 +794,7 @@ def main():
             continue
         probe.SetPosition(pt(0, 0))
         pox, poy, w, h = keepout_abs(probe)
+        is_hv = (ref in hv_refs, ref in lv_refs)
         zname = ZONE_OVERRIDE.get(ref)
         if zname is None:
             zname = SHEET_ZONE.get(c["sheet"], "dig")
@@ -740,11 +803,11 @@ def main():
         # own zone top, own zone bottom, then the spill chain top then bottom
         spot, side = None, 0
         for cand in [zname] + SPILL.get(zname, []):
-            spot = zones[cand].place(w, h)
+            spot = zones[cand].place(w, h, hv=is_hv)
             if spot is not None:
                 side = 0
                 break
-            spot = zones[cand + "_b"].place(w, h)
+            spot = zones[cand + "_b"].place(w, h, hv=is_hv)
             if spot is not None:
                 side = 1
                 break
