@@ -88,6 +88,40 @@ than re-fitted.
   fit both bulkhead antennas outside the cabinet — a closed steel enclosure
   will prevent both GNSS fix and LTE registration.
 
+## 5a. Antenna metal clearance and separation — HOUSING REQUIREMENTS
+
+These are requirements on the **housing and the installation**, not on the PCB.
+Both antennas mount in the lid and reach the board only through a U.FL
+pigtail, so there is no board copper underneath either of them.
+
+From *Quectel EC200U Series Hardware Design V1.2*, §4.4.1 Table 39
+"Antenna Requirements":
+
+| requirement | value |
+|---|---|
+| **Isolation, GNSS to LTE antenna** | **> 40 dB** |
+| GNSS frequency range | 1559–1609 MHz |
+| GNSS polarisation | RHCP or linear |
+| GNSS VSWR | ≤ 2 (typ.) |
+| GNSS efficiency | > 30 % |
+| Passive GNSS antenna gain | > 0 dBi |
+| Active GNSS antenna: noise factor | < 1.5 dB |
+| Active GNSS antenna: gain | > 0 dBi |
+| **Active GNSS antenna: internal LNA gain** | **< 17 dB** |
+| LTE cable loss | < 1 dB below 1 GHz, < 1.5 dB 1–2.3 GHz, < 2 dB above 2.3 GHz |
+
+**The > 40 dB isolation figure is the one that constrains the lid.** Both
+antennas sit in the same lid of a ~120 × 80 mm housing, and 40 dB of isolation
+between two antennas that close is not automatic — it drives how far apart and
+in what orientation they are mounted. Confirm by measurement on the first
+build; it is not something the PCB layout can fix afterwards.
+
+On the board the two U.FL launches are **38.3 mm apart** (handoff §7 asks for
+≥ 15 mm), so the board side is not the limiting factor.
+
+*Per-antenna metal-clearance figures are added here once the antennas are
+selected — see design-log, check 2.*
+
 ## 6. Commissioning check
 
 1. Apply machine power. The status LED indicates network activity.

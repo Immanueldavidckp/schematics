@@ -18,19 +18,23 @@ GND fence plan: CPWG W=0.4 G=0.3 mm; fence vias >= 0.80 mm from the trace (Quect
 --> PASS
 
 ==========================================================================
-2. Antenna-region keepout, no copper any layer, area in mm^2
+2. Antenna metal clearance (PCB copper N/A - lid-mounted)
 ==========================================================================
-antenna-region keepout rule areas found: 0
-cleared area: 0.0 mm^2
+antenna PCB footprints on the board: none
+U.FL launch connectors (the only antenna-related copper): ['AF1', 'AF2']
 
-No antenna keepout exists on the board, and none can be drawn yet: the BOM lists ANT as "select in stock" for both the LTE FPC and the GNSS patch, so neither datasheet's required ground-clearance dimensions are known. Handoff section 7 calls for a "GND keepout under the FPC antenna region per antenna datasheet" - that datasheet does not exist yet.
-Both antennas mount in the LID, not on the PCB, so the keepout is a board region under the lid parts and depends on the housing too (also unconfirmed).
+PCB copper keepout: **N/A** - both antennas are lid-mounted and reach
+the board only through a U.FL pigtail, so no board copper sits under
+either antenna. There is nothing on the PCB to keep clear.
+
+metal-clearance recorded as an installation/housing requirement: NO
+docs/installation-sheet.md has no 'Antenna metal clearance' section yet
 --> FAIL
 
 ==========================================================================
 3. HV->LV: >= 1.5 mm between components, <= 40 V intra exempt
 ==========================================================================
-HV-class pads: 60   LV pads (excl GND): 397
+HV-class pads: 60   LV pads (excl GND): 403
 
 minimum HV->LV clearance, ANY pair, outside the U5 exception:
     **0.800 mm**   R40.1[VIN]  <->  R40.2[ADC_SPARE]
@@ -114,7 +118,7 @@ board outline -0.05,-0.05 .. 82.05,62.05 (82.1 x 62.1 mm)
 SUMMARY
 ==========================================================================
   1. PASS  ANT pad -> U.FL distance, CPWG path clear, GND fence
-  2. FAIL  Antenna-region keepout, no copper any layer, area in mm^2
+  2. FAIL  Antenna metal clearance (PCB copper N/A - lid-mounted)
   3. PASS  HV->LV: >= 1.5 mm between components, <= 40 V intra exempt
   4. PASS  VBAT_MODEM bulk caps within 5 mm of U1 pads 57-60
   5. PASS  U3 IMU adjacent to a mounting hole, not mid-span
