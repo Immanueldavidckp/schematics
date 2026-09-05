@@ -119,8 +119,58 @@ build; it is not something the PCB layout can fix afterwards.
 On the board the two U.FL launches are **38.3 mm apart** (handoff §7 asks for
 ≥ 15 mm), so the board side is not the limiting factor.
 
-*Per-antenna metal-clearance figures are added here once the antennas are
-selected — see design-log, check 2.*
+### Selected antennas and their clearance figures
+
+**LTE — Bat Wireless BW4GFNX39-15B1, LCSC C496569** (5,536 stock, $0.383 @250)
+39.6 × 14.5 mm FPC · **700–2700 MHz continuous** · RG1.13 coax, **120 mm**,
+IPEX-1 · 2.8 dBi typ · VSWR < 2.1 · −45…+85 °C.
+
+**GNSS — Bat Wireless BWGNSCNX25-25B1Y4L120, LCSC C784386** (942 stock,
+~$1.53 @250) 25 × 25 × 6.5 mm patch · IPEX-1, RG1.13, **120 mm** · RHCP ·
+1575 ±5 / 1561 ±5 MHz · **ACTIVE, internal LNA 21.5 dB, 1.8–3.6 V, 4.3 mA** ·
+−45…+85 °C.
+
+**External active GNSS (steel-cabinet option) — u-blox ANN-MB-00**
+LNA 28 ±3 dB · 3.0–5.0 V, 15 mA · SMA male · RG174, 5.0 m · magnetic base
++ 2 × M4 · −40…+85 °C. Not LCSC-stocked; order from Digi-Key/Mouser/Farnell.
+
+### Clearance requirements — MANDATORY
+
+**Neither antenna datasheet publishes a numeric clearance figure.** Both were
+searched in full, in English and Chinese (净空 / 间距 / 距离 / 金属); the only
+mounting line in the LTE sheet is `安装方式 / Mount way: 压扣`. The figures
+below therefore come from **Quectel**, which does specify them:
+
+| requirement | value | source |
+|---|---|---|
+| **LTE FPC to the main PCB** | **> 5 mm** | Antenna Design Guide V3.3 §3.1 note 2 p.14 |
+| **GNSS patch to any tall metal component** | **≥ 10 mm** | GNSS Antenna Application Note V1.0 §4.2.3 |
+| **GNSS patch to the enclosure wall** | **≥ 3 mm**, enclosure non-metal near the antenna | GNSS Antenna Application Note V1.0 §4.2.3 |
+| GNSS to LTE antenna isolation | > 40 dB | HW Design V1.2 §4.4.1 Table 39 |
+
+Verbatim, Antenna Design Guide V3.3 §3.1 note 2:
+> "Keep the distance between antenna and the main PCB more than 5 mm (for a
+> particular distance, refer to the evaluation result of the antenna supplier)."
+
+Verbatim, GNSS Antenna Application Note V1.0 §4.2.3:
+> "Maintain at least 10 mm distance between the patch antenna and other tall
+> metal components to prevent adverse impacts on antenna performance."
+> "Device enclosure should be made of non-metal materials, particularly in the
+> vicinity of the antenna area. The minimum distance between antenna and
+> enclosure is 3 mm."
+
+### Adhesive will not hold at the top of the temperature range
+
+Quectel Antenna Design Guide V3.3 §3.1 note 3:
+> "As effectiveness of the adhesive (usually 3M adhesive is used) will be
+> weakened under high ambient temperature, heat staking or other mounting
+> methods should be used to fix the FPC antenna."
+
+This unit is rated to **+70 °C ambient** and the lid is the hottest part of the
+enclosure. **Do not rely on adhesive alone for the LTE FPC** — use heat staking,
+a clamp or a mechanical retainer. Note also that C496569's datasheet specifies
+its mount as **压扣 (crimp)**, not adhesive; a 3M backing on this part is
+**UNVERIFIED** and must be confirmed with the supplier before the build.
 
 ## 6. Commissioning check
 

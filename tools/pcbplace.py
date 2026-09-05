@@ -77,6 +77,9 @@ ANCHORS = {
     # pi-network series 0R, inline and hard against its ANT pad (<= 2 mm)
     "R71": (79.0, 23.04, 90, 0),   # ANT_MAIN
     "R72": (79.0, 28.74, 90, 0),   # ANT_GNSS
+    # C84 is the SERIES DC block and carries the RF, so it is inline in the
+    # corridor between R72 and AF2 - not a bypass part that can go anywhere.
+    "C84": (79.0, 34.5, 90, 0),
     # Q3 was sitting inside the ANT_GNSS corridor. It is the modem VBAT P-FET,
     # so it belongs beside the VBAT bulk caps above U1, not on the RF edge.
     "Q3":  (59.5, 4.5, 0, 0),
@@ -217,6 +220,7 @@ def relax_anchors(anchor_boxes, bounds, min_gap=1.10, iters=1500):
 FIXED = {"U1",              # the corridor width depends on exactly this x
          "R71", "R72",      # inline pi network, <= 2 mm from the ANT pad
          "AF1", "AF2",      # U.FL in the corridor
+         "C84",             # series DC block, inline in the RF corridor
          "C40", "C41", "C81", "C82",   # VBAT bulk, <= 5 mm from pads 57-60
          "U3"}              # amendment (c): must stay beside H5
 

@@ -556,6 +556,12 @@ def build_io():
 LCSC_EC200U = "C2916205"       # BOM part EC200UCNAA-N05-SGNSA; symbol source C2916206
 LCSC_TXB0104 = "C60708"        # TI TXB0104PWR TSSOP-14
 LCSC_SIM = "C53207808"         # JXTCONN NANO SIM 7P 1.37H PUSH (6 contacts + CD)
+# GNSS DC block + bias-T (F-21 resolved). The inductor MUST be wirewound:
+# every multilayer 47/68 nH 0402 at LCSC has SRF ~1.0-1.3 GHz and is already
+# capacitive at 1575 MHz. LQW15AN68NG80D is SRF 2.5 GHz, 320 mA, DCR 1.128 ohm.
+LCSC_C100P_RF = "C1546"        # 100pF C0G 50V 0402, JLC Basic - SERIES block
+LCSC_L68N_RF = "C3221844"      # Murata LQW15AN68NG80D 68nH wirewound, SRF 2.5GHz
+LCSC_R10_RF = "C25077"         # 10R 0402 1%, JLC Basic
 LCSC_UFL = "C53133524"         # XYECONN XY-IPEX1 (IPEX gen-1 / U.FL, 6 GHz 50R)
 LCSC_USBLC6 = "C7519"          # ST USBLC6-2SC6 (genuine)
 LCSC_SMF05C = "C15879"         # onsemi SMF05CT1G SOT-363
@@ -881,42 +887,60 @@ def build_modem_rf():
                       "Capacitor_SMD:C_0402_1005Metric", "", dnp=True)
         sh.net(c2, "1", f"ANT_{tag}_C", length=g(3))
         sh.gnd(c2, "2", length=g(3))
-        # --- GNSS bias-T, DNP by default -------------------------------
-        # Quectel EC200U HW Design V1.2 section 4.2, figure 31 "Reference
-        # Circuit of GNSS Antenna" (p.68). Table 37 (p.67) defines ANT_GNSS
-        # pin 47 as AI, 50 ohm, "If unused, keep it open" - it carries NO
-        # internal DC feed, so an active antenna must be biased externally.
-        # Quectel's own values: 47 nH series into the RF line, 100 pF shunt,
-        # 10 R + 0.1 uF on the supply. Note 2: "The VDD circuit is not needed
-        # if you select a passive antenna" - hence DNP by default, populated
-        # only for the external active-antenna (steel-cabinet) build.
+        # --- GNSS DC block + bias-T -------------------------------------
+        # Quectel EC200U HW Design V1.2 section 4.2, figure 31 (p.69), read
+        # from the rendered figure, not the text dump:
         #
-        # OPEN (F-21): Quectel's figure DC-couples the module pin to the
-        # injection node through the 0R. With the bias-T fitted, 3V3 would sit
-        # on ANT_GNSS. The R7x position is therefore documented as
-        # 0R-or-DC-block: fit 0R for a passive antenna, fit a DC-blocking cap
-        # when the bias-T is populated. Not resolved here - see design-log.
+        #   ANT_GNSS --*--[0R]--*--||--*------ GNSS Antenna
+        #              |        | 100pF|
+        #             (NM)     (NM)  [47nH]
+        #                              |
+        #                            [10R]--VDD--0.1uF--GND
+        #
+        # The 100 pF is drawn with VERTICAL plates in the signal line: it is a
+        # SERIES DC BLOCK, and the bias is injected on the ANTENNA side of it.
+        # The module pin is therefore DC-isolated from the feed. (An earlier
+        # reading of the -layout text dump had this as a shunt and raised a
+        # false F-21 - see design-log.)
+        #
+        # Corroborated by Quectel Antenna Design Guide V3.3 section 5.1 note 5:
+        # "a blocking capacitor should be reserved to block DC. Inductors of
+        # above 56 nH should be applied in series between the power supply and
+        # the impedance line." Hence 68 nH, not figure 31's 47 nH.
+        #
+        # Table 40 (Absolute Maximum Ratings) does not list ANT_GNSS at all -
+        # there is no published DC rating for pin 47, which is the real reason
+        # the block is mandatory.
         if tag == "GNSS":
-            lb = sh.place("Device:L", "L4", "47nH DNP", (g(base + 8), g(yb - 18)),
-                          "Inductor_SMD:L_0402_1005Metric", "TBD-F21", dnp=True)
-            sh.net(lb, "1", f"ANT_{tag}_C", length=g(3))
+            # SERIES DC block - ALWAYS FITTED. It carries the RF; depopulating
+            # it opens the antenna. 1.0 ohm at 1575.42 MHz, electrically
+            # invisible.
+            sh.series("Device:C", "C84", "100pF C0G", (g(base + 10), g(yb)),
+                      f"ANT_{tag}_C", f"ANT_{tag}_F",
+                      "Capacitor_SMD:C_0402_1005Metric", LCSC_C100P_RF)
+            # bias-T proper - DNP, fitted only for an active antenna
+            lb = sh.place("Device:L", "L4", "68nH", (g(base + 42), g(yb)),
+                          "Inductor_SMD:L_0402_1005Metric", LCSC_L68N_RF,
+                          dnp=True)
+            sh.net(lb, "1", f"ANT_{tag}_F", length=g(3))
             sh.net(lb, "2", "GNSS_BIAS", length=g(3))
-            sh.series("Device:R", "R90", "10R DNP", (g(base + 16), g(yb - 26)),
-                      "3V3", "GNSS_BIAS", "Resistor_SMD:R_0402_1005Metric", "TBD-F21", dnp=True)
-            sh.series("Device:C", "C83", "100nF DNP", (g(base + 8), g(yb - 30)),
-                      "GNSS_BIAS", None, "Capacitor_SMD:C_0402_1005Metric", LCSC_C100N, dnp=True,
-                      gnd_b=True)
-            sh.series("Device:C", "C84", "100pF DNP", (g(base - 2), g(yb - 18)),
-                      f"ANT_{tag}_C", None, "Capacitor_SMD:C_0402_1005Metric", "TBD-F21", dnp=True,
-                      gnd_b=True)
-            sh.text("GNSS bias-T (DNP): Quectel V1.2 fig 31 - 47nH series, "
-                    "100pF shunt, 10R+100nF on the 3V3 feed. Fit ONLY for an "
-                    "active external antenna; see F-21 on the DC block.",
-                    (g(base - 10), g(yb - 36)))
+            sh.series("Device:R", "R90", "10R", (g(base + 58), g(yb - 10)),
+                      "3V3", "GNSS_BIAS",
+                      "Resistor_SMD:R_0402_1005Metric", LCSC_R10_RF, dnp=True)
+            sh.series("Device:C", "C83", "100nF", (g(base + 46), g(yb - 14)),
+                      "GNSS_BIAS", None,
+                      "Capacitor_SMD:C_0402_1005Metric", LCSC_C100N,
+                      dnp=True, gnd_b=True)
+            sh.text("GNSS: C84 100pF SERIES DC BLOCK IS ALWAYS FITTED (Quectel "
+                    "fig 31). L4/R90/C83 are the bias-T, DNP - fit only for an "
+                    "active antenna. 68nH per Antenna Design Guide >=56nH; must "
+                    "be WIREWOUND (multilayer 0402 SRF is ~1.1GHz, useless).",
+                    (g(base + 30), g(yb - 22)))
         af = sh.place("jlc:XY-IPEX1", f"AF{1 + ref}", "U.FL",
                       (g(base + 16), g(yb - 8)), "jlc:CONN-SMD_XY-IPEX1",
                       LCSC_UFL)
-        sh.net(af, "3", f"ANT_{tag}_C", length=g(4))
+        sh.net(af, "3", f"ANT_{tag}_F" if tag == "GNSS" else f"ANT_{tag}_C",
+               length=g(4))
         sh.nc(af, "4")
         sh.gnd(af, "1", length=g(3))
         sh.gnd(af, "2", length=g(3))

@@ -108,10 +108,11 @@ def main():
     # ---------------------------------------------------------------- 1
     lines = []
     ok1 = True
-    RF = [("ANT_MAIN (LTE)", "49", "AF1", "R71"),
-          ("ANT_GNSS", "47", "AF2", "R72")]
+    # (name, U1 pad, U.FL ref, inline parts that must sit in the RF path)
+    RF = [("ANT_MAIN (LTE)", "49", "AF1", ["R71"]),
+          ("ANT_GNSS", "47", "AF2", ["R72", "C84"])]
     corridor_half = CPWG_W / 2 + CPWG_G + FENCE_STANDOFF
-    for name, u1pad, aref, rref in RF:
+    for name, u1pad, aref, rrefs in RF:
         src = pad(fp(board, "U1"), u1pad)
         dst = pad(fp(board, aref), "3")
         if src is None or dst is None:
@@ -127,23 +128,36 @@ def main():
         # requirement actually stated - pad-edge to pad-edge, <= 2 mm from the
         # ANT pad - and checked to be on the outboard side, not against its
         # offset from a straight line it was never meant to sit on.
-        rs = fp(board, rref)
         path = [a, (a[0] + 2.45, a[1]), (a[0] + 2.45, b[1]), b]
-        if rs:
-            rgap = min(rect_gap(pad_rect(src), pad_rect(q)) for q in rs.Pads())
+        for rref in rrefs:
+            rs = fp(board, rref)
+            if rs is None:
+                lines.append(f"    !! {rref} not placed"); ok1 = False; continue
             rc = (mm(rs.GetPosition().x), mm(rs.GetPosition().y))
             outboard = rc[0] > a[0]
-            lines.append(f"    series {rref} (pi network) at {rc[0]:.2f},"
-                         f"{rc[1]:.2f}: pad-to-pad gap from U1.{u1pad} = "
-                         f"{rgap:.2f} mm (requirement <= 2.00), "
-                         f"{'outboard' if outboard else 'INBOARD'} of the pad")
-            if rgap > 2.0 or not outboard:
-                lines.append(f"    !! {rref} does not meet the inline "
-                             f"requirement")
-                ok1 = False
+            # distance from the routed dog-leg, not from the ANT pad: only the
+            # first element has to be hard against the pad
+            off = min(seg_point_dist(path[i], path[i+1], rc)
+                      for i in range(len(path)-1))
+            if rref == rrefs[0]:
+                g0 = min(rect_gap(pad_rect(src), pad_rect(q)) for q in rs.Pads())
+                lines.append(f"    {rref} at {rc[0]:.2f},{rc[1]:.2f}: "
+                             f"pad-to-pad from U1.{u1pad} = {g0:.2f} mm "
+                             f"(<= 2.00), {'outboard' if outboard else 'INBOARD'}")
+                if g0 > 2.0 or not outboard:
+                    lines.append(f"    !! {rref} fails the inline requirement")
+                    ok1 = False
+            else:
+                lines.append(f"    {rref} at {rc[0]:.2f},{rc[1]:.2f}: "
+                             f"{off:.2f} mm off the routed path "
+                             f"(<= {corridor_half:.2f}), "
+                             f"{'outboard' if outboard else 'INBOARD'}")
+                if off > corridor_half or not outboard:
+                    lines.append(f"    !! {rref} is not inline in the RF path")
+                    ok1 = False
         # obstruction scan
         blockers = []
-        allow = {"U1", aref, rref}
+        allow = {"U1", aref} | set(rrefs)
         for f in board.GetFootprints():
             if f.GetReference() in allow:
                 continue

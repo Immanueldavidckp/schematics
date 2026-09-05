@@ -2458,3 +2458,151 @@ R72 position is documented as **0R-or-DC-block**: fit 0 R for a passive antenna
 DRC **19 violations + 452 unconnected**. ERC 0 errors / 13 warnings.
 `checkpins` exit 0. 222 components placed. Board and DRC report byte-stable.
 **Routing NOT started.**
+
+---
+
+# Check 2 closed — antennas selected. 8 of 8 pass. Routing still on hold.
+
+## F-21 RETRACTED — I misread Figure 31, and the misreading was mine
+
+I raised F-21 saying Quectel's reference circuit DC-couples the module pin to
+the bias node through the 0 R, so 3V3 would land on ANT_GNSS. **That was wrong.**
+It came from reading the `pdftotext -layout` dump, where `0R` and `100 pF`
+share a row and `NM NM` sit on the row below — I took the 100 pF for a shunt.
+
+I rendered page 69 at 200 dpi and looked at the actual drawing. **The 100 pF has
+vertical plates sitting in the horizontal signal line: it is a SERIES DC
+block.** The 47 nH injects VDD on the **antenna** side of it. The 0 R and both
+NM positions are on the module side. The module pin is DC-isolated by
+construction, and there was never a conflict to resolve.
+
+```
+ANT_GNSS --*--[0R]--*--||--*------ GNSS Antenna
+           |        | 100pF|
+          (NM)     (NM)  [47nH]
+                           |
+                         [10R]--VDD--0.1uF--GND
+```
+
+Corroborated by **Antenna Design Guide V3.3 §5.1 note 5**:
+> "It is necessary to reserve LNA power supply circuit on the motherboard and a
+> blocking capacitor should be reserved to block DC. Inductors of above 56 nH
+> should be applied in series between the power supply and the impedance line."
+
+Two consequences applied to the schematic:
+
+1. **C84 (100 pF) is in series in the RF path and is ALWAYS FITTED.** It is not
+   DNP — depopulating it opens the antenna. At 1575.42 MHz it is 1.0 Ω,
+   electrically invisible. Only L4 / R90 / C83 are DNP.
+2. **L4 is 68 nH, not Figure 31's 47 nH** — the Design Guide asks for ≥ 56 nH.
+
+Also worth recording: **Table 40 (Absolute Maximum Ratings) does not list
+ANT_GNSS at all.** There is no published DC rating for pin 47. That, rather
+than any module-versus-bias-T conflict, is the real reason the block is
+mandatory.
+
+The netlist guard earned its keep here: the first placement of the bias-T
+tripped `checkpins` with *"stub for net 'GNSS_BIAS' passes through … which
+belongs to net 'USIM_VDD'. They would merge."* — a genuine short caught before
+it reached copper.
+
+Final chain, verified in the netlist:
+```
+ANT_GNSS_M : U1.47, R72.1, C50.1(NM)
+ANT_GNSS_C : R72.2, C84.1, C51.1(NM)
+ANT_GNSS_F : C84.2, AF2.3, L4.1        <- bias injected here, antenna side
+GNSS_BIAS  : L4.2, R90.2, C83.1
+```
+
+**Parts, all in stock.** The inductor **must be wirewound**: every multilayer
+47/68 nH 0402 at LCSC has SRF ≈1.0–1.3 GHz and is already capacitive at
+1575 MHz.
+
+| fn | value | LCSC | part | note |
+|---|---|---|---|---|
+| series DC block | 100 pF C0G | **C1546** | FH 0402CG101J500NT | JLC Basic, **always fitted** |
+| bias choke | 68 nH | **C3221844** | Murata LQW15AN68NG80D | wirewound, **SRF 2.5 GHz**, 320 mA, DNP |
+| feed resistor | 10 Ω | **C25077** | UNI-ROYAL 0402 | JLC Basic, DNP |
+| feed bypass | 0.1 µF | **C60474** | YAGEO X7R 16 V | DNP |
+
+Avoid: C97998, C76776, C27151, C395068 (multilayer, SRF ~1.1 GHz) and
+C3221157 (LQW15AW68NJ80D, SRF 1.8 GHz — only 14 % above carrier).
+
+## Antennas selected
+
+**LTE — C496569**, Bat Wireless BW4GFNX39-15B1. 5,536 stock, $0.383 @250.
+700–2700 MHz continuous, 39.6 × 14.5 mm, RG1.13 120 mm IPEX-1, 2.8 dBi typ,
+VSWR < 2.1, −45…+85 °C. Runner-up **C22467619** (AICF002, $0.234, adhesive) was
+**rejected: it omits B40 (2300–2400 MHz), which Jio uses heavily in India**, and
+its VSWR is 5/4/7:1.
+*Caveat:* C496569's datasheet gives its mount as **压扣 (crimp)**; a 3M backing
+is **UNVERIFIED** and must be confirmed with the supplier.
+
+**GNSS — C784386**, Bat Wireless BWGNSCNX25-25B1Y4L120. 942 stock, ~$1.53 @250.
+25 × 25 × 6.5 mm, IPEX-1 RG1.13 120 mm, RHCP, −45…+85 °C.
+
+**DEVIATION FROM THE STATED SPEC, needs a decision.** The brief asked for a
+**passive** 25 × 25 patch with a U.FL pigtail. **No such part is in LCSC
+stock** — verified two independent ways. C784386 is **ACTIVE** (internal LNA
+21.5 dB, 1.8–3.6 V, 4.3 mA). Consequences:
+
+- **The bias-T stops being optional for the internal build.** L4/R90/C83 must be
+  POPULATED, not DNP, if C784386 is fitted. 3V3 sits inside its 1.8–3.6 V
+  window and 4.3 mA is trivial for the 320 mA choke.
+- Its LNA masks both the coax loss and the absent ground plane, which is
+  genuinely useful for a lid mount.
+
+The alternative is **C784398** (BWGNSCNX25-25W4, 1,830 stock, $0.484) — 25 × 25
+× 4 mm and genuinely **passive**, but it has **solder pins and no cable**, so it
+needs a hand-added pigtail *and* a ground plane built into the lid.
+
+Neither datasheet states a ground-plane size. Quectel's **GNSS Antenna
+Application Note V1.0 §4.2.1** simulates exactly a 25 × 25 × 4 mm patch on a
+**30 × 30 mm** plane, and Figure 13 gives gain against plane size:
+
+| plane | 30 | 40 | 50 | 60 | 70 | 80 | 100 mm |
+|---|---|---|---|---|---|---|---|
+| gain dBi | +1.25 | **−1.38** | +0.36 | +1.30 | **+1.40** | +1.26 | +0.72 |
+
+If the passive route is taken, **target 60–70 mm and specifically avoid ~40 mm**
+— counter-intuitively worse than 30 mm.
+
+**External active (steel cabinet) — u-blox ANN-MB-00.** LNA 28 ±3 dB, 3.0–5.0 V,
+15 mA, SMA male, RG174 5.0 m, magnetic + 2 × M4, −40…+85 °C. Not LCSC-stocked.
+
+## The 17 dB LNA limit — recommendation, not a hard limit
+
+Quectel Table 39 lists `Active antenna internal LNA gain: < 17 dB` with no test
+method, no tolerance and no compatibility clause. The only stated consequence is
+in the GNSS Antenna Application Note:
+> "excessive gain in the LNA may cause saturation or system de-sensitization…
+> The total antenna gain equals the internal LNA gain minus the total insertion
+> loss of cables and components inside the antenna."
+
+So it is measured on **total** gain, and **Quectel's own active antennas
+(YEGB000Q1C, YEGN001Q1A) are 21 ±3 dB — above their own figure.** Both of our
+candidates land ≈4 dB over: ANN-MB at 21.4 dB (28 − 6.6 dB cable), C784386 at
+≈21.3 dB.
+
+**Design rule adopted:** treat 17 dB as the target, accept up to ~22 dB total,
+and **validate C/N0 on the bench with the LTE modem transmitting at full
+power**. If desense appears, fit a 3–6 dB 0402 pad at the module end — cheaper
+than re-sourcing. ANN-MB's SAW pre-filter (85/80/70/75/80 dB rejection at
+698/960/1710/2170/2690 MHz) makes its 21.4 dB materially lower-risk than the
+same figure from an unfiltered antenna sharing the lid.
+
+## Check 2 result
+
+PCB copper keepout **N/A** — both antennas are lid-mounted and reach the board
+only by U.FL, so no board copper sits under either. The clearance figures are
+now recorded in `docs/installation-sheet.md` as installation/housing
+requirements: **LTE FPC > 5 mm from the main PCB**, **GNSS patch ≥ 10 mm from
+tall metal and ≥ 3 mm from a non-metal enclosure wall**, **> 40 dB antenna
+isolation**. Plus the adhesive warning: at +70 °C ambient the LTE FPC must be
+heat-staked or clamped, not stuck on.
+
+## State — 8 of 8 PASS
+
+DRC 19 violations + 452 unconnected · ERC 0 errors / 13 warnings ·
+`checkpins` exit 0 · 222 components placed · board byte-stable.
+**Routing NOT started.**

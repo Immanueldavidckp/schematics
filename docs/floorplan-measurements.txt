@@ -3,10 +3,11 @@
 1. ANT pad -> U.FL distance, CPWG path clear, GND fence
 ==========================================================================
 ANT_MAIN (LTE):  U1.49 (76.55, 22.90)  ->  AF1.3 (80.83, 10.21)   straight-line = 13.40 mm
-    series R71 (pi network) at 79.00,23.04: pad-to-pad gap from U1.49 = 0.88 mm (requirement <= 2.00), outboard of the pad
+    R71 at 79.00,23.04: pad-to-pad from U1.49 = 0.88 mm (<= 2.00), outboard
     dog-leg path corridor 2.60 mm wide is CLEAR of non-GND pads and vias
 ANT_GNSS:  U1.47 (76.55, 28.60)  ->  AF2.3 (80.83, 48.49)   straight-line = 20.35 mm
-    series R72 (pi network) at 79.00,28.74: pad-to-pad gap from U1.47 = 0.88 mm (requirement <= 2.00), outboard of the pad
+    R72 at 79.00,28.74: pad-to-pad from U1.47 = 0.88 mm (<= 2.00), outboard
+    C84 at 79.00,34.50: 0.00 mm off the routed path (<= 1.30), outboard
     dog-leg path corridor 2.60 mm wide is CLEAR of non-GND pads and vias
 
 Corridor available where the RF leaves U1:
@@ -27,14 +28,14 @@ PCB copper keepout: **N/A** - both antennas are lid-mounted and reach
 the board only through a U.FL pigtail, so no board copper sits under
 either antenna. There is nothing on the PCB to keep clear.
 
-metal-clearance recorded as an installation/housing requirement: NO
-docs/installation-sheet.md has no 'Antenna metal clearance' section yet
---> FAIL
+metal-clearance recorded as an installation/housing requirement: YES
+numeric clearances stated in docs/installation-sheet.md: 80, 38.3, 15, 14.5, 120, 6.5, 120, 5 mm
+--> PASS
 
 ==========================================================================
 3. HV->LV: >= 1.5 mm between components, <= 40 V intra exempt
 ==========================================================================
-HV-class pads: 60   LV pads (excl GND): 403
+HV-class pads: 60   LV pads (excl GND): 404
 
 minimum HV->LV clearance, ANY pair, outside the U5 exception:
     **0.800 mm**   R40.1[VIN]  <->  R40.2[ADC_SPARE]
@@ -118,7 +119,7 @@ board outline -0.05,-0.05 .. 82.05,62.05 (82.1 x 62.1 mm)
 SUMMARY
 ==========================================================================
   1. PASS  ANT pad -> U.FL distance, CPWG path clear, GND fence
-  2. FAIL  Antenna metal clearance (PCB copper N/A - lid-mounted)
+  2. PASS  Antenna metal clearance (PCB copper N/A - lid-mounted)
   3. PASS  HV->LV: >= 1.5 mm between components, <= 40 V intra exempt
   4. PASS  VBAT_MODEM bulk caps within 5 mm of U1 pads 57-60
   5. PASS  U3 IMU adjacent to a mounting hole, not mid-span
@@ -126,4 +127,4 @@ SUMMARY
   7. PASS  J1/J2 edge positions, SIM access direction
   8. PASS  Renders exported to docs/renders/
 
-7/8 passed, 1 failed
+8/8 passed, 0 failed
