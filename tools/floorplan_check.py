@@ -1,0 +1,383 @@
+#!/usr/bin/env python3
+"""Measure the placed board against the eight floorplan approval conditions.
+
+Numbers, not descriptions. Every check prints its measurement and PASS/FAIL.
+Exit code is non-zero if any check fails, so this can gate routing.
+
+Run:  python3 tools/floorplan_check.py
+"""
+import math
+import os
+import sys
+
+import pcbnew
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from netclasses import HV as HV_NETS                      # noqa: E402
+
+PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PCB = os.path.join(PROJ, "telematics-tracker.kicad_pcb")
+
+# 50 ohm CPWG on JLC7628 L1-L2, from the design log
+CPWG_W, CPWG_G = 0.40, 0.30
+FENCE_STANDOFF = 2 * CPWG_W        # Quectel V1.2 section 4.3: >= 2 x W
+FENCE_PITCH = 2.0
+
+results = []
+
+
+def check(n, title, ok, detail):
+    results.append((n, title, ok, detail))
+    print(f"\n{'='*74}\n{n}. {title}\n{'='*74}")
+    print(detail)
+    print(f"--> {'PASS' if ok else 'FAIL'}")
+
+
+def mm(v):
+    return pcbnew.ToMM(v)
+
+
+def fp(board, ref):
+    for f in board.GetFootprints():
+        if f.GetReference() == ref:
+            return f
+    return None
+
+
+def pad(f, num):
+    if f is None:
+        return None
+    for p in f.Pads():
+        if p.GetNumber() == num:
+            return p
+    return None
+
+
+def pxy(p):
+    return (mm(p.GetPosition().x), mm(p.GetPosition().y))
+
+
+def pad_rect(p):
+    b = p.GetBoundingBox()
+    return (mm(b.GetLeft()), mm(b.GetTop()), mm(b.GetRight()), mm(b.GetBottom()))
+
+
+def rect_gap(a, b):
+    """Edge-to-edge gap between two axis-aligned rects; 0 if they overlap."""
+    dx = max(a[0] - b[2], b[0] - a[2], 0.0)
+    dy = max(a[1] - b[3], b[1] - a[3], 0.0)
+    return math.hypot(dx, dy)
+
+
+def seg_point_dist(a, b, p):
+    ax, ay = a; bx, by = b; px, py = p
+    dx, dy = bx - ax, by - ay
+    if dx == 0 and dy == 0:
+        return math.hypot(px - ax, py - ay)
+    t = max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy)))
+    return math.hypot(px - (ax + t * dx), py - (ay + t * dy))
+
+
+def main():
+    board = pcbnew.LoadBoard(PCB)
+    vias = [v for v in board.GetTracks() if isinstance(v, pcbnew.PCB_VIA)]
+
+    # ---------------------------------------------------------------- 1
+    lines = []
+    ok1 = True
+    RF = [("ANT_MAIN (LTE)", "49", "AF1", "R71"),
+          ("ANT_GNSS", "47", "AF2", "R72")]
+    corridor_half = CPWG_W / 2 + CPWG_G + FENCE_STANDOFF
+    for name, u1pad, aref, rref in RF:
+        src = pad(fp(board, "U1"), u1pad)
+        dst = pad(fp(board, aref), "3")
+        if src is None or dst is None:
+            lines.append(f"{name}: MISSING pad"); ok1 = False; continue
+        a, b = pxy(src), pxy(dst)
+        d = math.hypot(a[0] - b[0], a[1] - b[1])
+        rs = fp(board, rref)
+        rpos = (mm(rs.GetPosition().x), mm(rs.GetPosition().y)) if rs else None
+        off = seg_point_dist(a, b, rpos) if rpos else None
+        lines.append(f"{name}:  U1.{u1pad} {a[0]:.2f},{a[1]:.2f}  ->  "
+                     f"{aref}.3 {b[0]:.2f},{b[1]:.2f}   "
+                     f"straight-line = {d:.2f} mm")
+        if rpos:
+            lines.append(f"    series {rref} (pi network) at {rpos[0]:.2f},"
+                         f"{rpos[1]:.2f} = {off:.2f} mm off the straight line")
+            if off > corridor_half:
+                lines.append(f"    !! {rref} is NOT in the CPWG path "
+                             f"(> {corridor_half:.2f} mm corridor half-width)")
+                ok1 = False
+        # obstruction scan
+        blockers = []
+        allow = {"U1", aref, rref}
+        for f in board.GetFootprints():
+            if f.GetReference() in allow:
+                continue
+            for p in f.Pads():
+                if p.GetNetname() == "GND":
+                    continue
+                if seg_point_dist(a, b, pxy(p)) < corridor_half:
+                    blockers.append(f"{f.GetReference()}.{p.GetNumber()}"
+                                    f"[{p.GetNetname() or 'nc'}]")
+                    break
+        for v in vias:
+            if v.GetNetname() == "GND":
+                continue
+            if seg_point_dist(a, b, (mm(v.GetPosition().x),
+                                     mm(v.GetPosition().y))) < corridor_half:
+                blockers.append("via")
+        if blockers:
+            lines.append(f"    !! {len(blockers)} obstruction(s) inside the "
+                         f"{2*corridor_half:.2f} mm corridor: "
+                         f"{', '.join(sorted(set(blockers))[:8])}")
+            ok1 = False
+        else:
+            lines.append(f"    corridor {2*corridor_half:.2f} mm wide is CLEAR "
+                         f"of non-GND pads and vias")
+    # How much room actually exists where the RF leaves the module? A CPWG
+    # needs W + 2G of copper, plus a via fence standing off 2xW each side.
+    bb0 = board.GetBoardEdgesBoundingBox()
+    edge_r = mm(bb0.GetRight())
+    need_trace = CPWG_W + 2 * CPWG_G
+    need_full = CPWG_W + 2 * CPWG_G + 2 * (FENCE_STANDOFF + 0.25)
+    lines.append("")
+    lines.append("Corridor available where the RF leaves U1:")
+    for name, u1pad, aref, rref in RF:
+        p49 = pad(fp(board, "U1"), u1pad)
+        if p49 is None:
+            continue
+        r = pad_rect(p49)
+        avail = edge_r - r[2] - 0.30      # 0.30 = min copper-to-edge
+        lines.append(f"  {name}: pad outer edge x={r[2]:.2f}, board edge "
+                     f"x={edge_r:.2f}  ->  usable strip = {avail:.2f} mm")
+    lines.append(f"  CPWG needs {need_trace:.2f} mm for trace+gaps, "
+                 f"{need_full:.2f} mm including a two-sided via fence")
+    if avail < need_full:
+        lines.append(f"  !! the strip outboard of the ANT pads is "
+                     f"{avail:.2f} mm - too narrow for a fenced CPWG "
+                     f"({need_full:.2f} mm). A one-sided (inboard) fence fits "
+                     f"in {need_trace:.2f} mm but the outboard side would rely "
+                     f"on the board edge, not a via wall.")
+        ok1 = False
+    lines.append("")
+    lines.append(f"GND fence plan: CPWG W={CPWG_W} G={CPWG_G} mm; fence vias "
+                 f">= {FENCE_STANDOFF:.2f} mm from the trace (Quectel V1.2 "
+                 f"4.3: 2xW), pitch {FENCE_PITCH} mm "
+                 f"(= lambda/33 at 2.69 GHz, LTE B41 top).")
+    check(1, "ANT pad -> U.FL distance, CPWG path clear, GND fence",
+          ok1, "\n".join(lines))
+
+    # ---------------------------------------------------------------- 2
+    keep = [z for z in board.Zones()
+            if z.GetIsRuleArea() and "ANT" in (z.GetZoneName() or "").upper()]
+    area = 0.0
+    for z in keep:
+        area += mm(mm(z.Outline().Area()))
+    detail = (f"antenna-region keepout rule areas found: {len(keep)}\n"
+              f"cleared area: {area:.1f} mm^2")
+    if not keep:
+        detail += ("\n\nNo antenna keepout exists on the board, and none can be "
+                   "drawn yet: the BOM lists ANT as \"select in stock\" for both "
+                   "the LTE FPC and the GNSS patch, so neither datasheet's "
+                   "required ground-clearance dimensions are known. Handoff "
+                   "section 7 calls for a \"GND keepout under the FPC antenna "
+                   "region per antenna datasheet\" - that datasheet does not "
+                   "exist yet.\nBoth antennas mount in the LID, not on the PCB, "
+                   "so the keepout is a board region under the lid parts and "
+                   "depends on the housing too (also unconfirmed).")
+    check(2, "Antenna-region keepout, no copper any layer, area in mm^2",
+          bool(keep), detail)
+
+    # ---------------------------------------------------------------- 3
+    u5 = fp(board, "U5")
+    u5box = None
+    if u5:
+        b = u5.GetCourtyard(pcbnew.F_CrtYd).BBox()
+        u5box = (mm(b.GetLeft()), mm(b.GetTop()), mm(b.GetRight()), mm(b.GetBottom()))
+
+    def in_u5(r):
+        if not u5box:
+            return False
+        return not (r[2] < u5box[0] or r[0] > u5box[2]
+                    or r[3] < u5box[1] or r[1] > u5box[3])
+
+    hv, lv = [], []
+    for f in board.GetFootprints():
+        for p in f.Pads():
+            n = p.GetNetname()
+            r = pad_rect(p)
+            # Pads must SHARE a copper layer to have a clearance relationship.
+            # Ignoring this reported C73 (F.Cu) against R87 (B.Cu) as 0.000 mm
+            # when they are on opposite sides of 1.6 mm of FR4 - which is also
+            # why DRC, which does check layers, reported no short.
+            lset = frozenset(p.GetLayerSet().CuStack())
+            tag = f"{f.GetReference()}.{p.GetNumber()}[{n or 'nc'}]"
+            if n in HV_NETS:
+                hv.append((r, tag, in_u5(r), lset))
+            elif n and n != "GND":
+                lv.append((r, tag, in_u5(r), lset))
+    worst, pair = 1e9, None          # any pair
+    wbetween, pbetween = 1e9, None   # different footprints only
+    for hr, ht, hu, hl in hv:
+        for lr, lt, lu, ll in lv:
+            if hu and lu:      # both inside U5's courtyard -> F-20 exception
+                continue
+            if not (hl & ll):  # no shared copper layer
+                continue
+            g = rect_gap(hr, lr)
+            if g < worst:
+                worst, pair = g, (ht, lt)
+            if ht.split(".")[0] != lt.split(".")[0] and g < wbetween:
+                wbetween, pbetween = g, (ht, lt)
+    detail = (f"HV-class pads: {len(hv)}   LV pads (excl GND): {len(lv)}\n\n"
+              f"minimum HV->LV clearance, ANY pair, outside the U5 exception:\n"
+              f"    **{worst:.3f} mm**   {pair[0]}  <->  {pair[1]}\n"
+              f"minimum BETWEEN DIFFERENT components (what layout controls):\n"
+              f"    **{wbetween:.3f} mm**   {pbetween[0]}  <->  {pbetween[1]}\n\n"
+              f"requirement: >= 1.500 mm")
+    if worst < 1.5 and pair[0].split(".")[0] == pair[1].split(".")[0]:
+        detail += (f"\n\nNote: the closest pair is the two ends of ONE component. "
+                   f"That is the HV->LV transition device itself (a sense-divider "
+                   f"resistor or a DO FET), and its pad spacing is fixed by the "
+                   f"package - 0805 pads are 0.8 mm apart. Layout cannot widen it.")
+    check(3, "HV_ZONE min clearance HV->LV, >= 1.5 mm", worst >= 1.5, detail)
+
+    # ---------------------------------------------------------------- 4
+    u1 = fp(board, "U1")
+    vb = [pad(u1, n) for n in ("57", "58", "59", "60")]
+    vb = [p for p in vb if p]
+    rows, ok4 = [], True
+    for ref in ("C40", "C41", "C81", "C82"):
+        f = fp(board, ref)
+        if f is None:
+            rows.append(f"  {ref}: NOT PLACED"); ok4 = False; continue
+        best = min(rect_gap(pad_rect(cp), pad_rect(vp))
+                   for cp in f.Pads() for vp in vb)
+        c = (mm(f.GetPosition().x), mm(f.GetPosition().y))
+        rows.append(f"  {ref} at ({c[0]:6.2f},{c[1]:6.2f})  nearest of U1 "
+                    f"pads 57-60 = {best:5.2f} mm"
+                    f"   {'ok' if best <= 5.0 else '<-- OVER 5 mm'}")
+        if best > 5.0:
+            ok4 = False
+    check(4, "VBAT_MODEM bulk caps within 5 mm of U1 pads 57-60",
+          ok4, "\n".join(rows))
+
+    # ---------------------------------------------------------------- 5
+    u3 = fp(board, "U3")
+    holes = [(f.GetReference(), mm(f.GetPosition().x), mm(f.GetPosition().y))
+             for f in board.GetFootprints() if f.GetReference().startswith("H")]
+    if u3 and holes:
+        ux, uy = mm(u3.GetPosition().x), mm(u3.GetPosition().y)
+        ds = sorted(((math.hypot(ux - hx, uy - hy), r) for r, hx, hy in holes))
+        near, nref = ds[0]
+        cx = sum(h[1] for h in holes) / len(holes)
+        cy = sum(h[2] for h in holes) / len(holes)
+        midspan = math.hypot(ux - cx, uy - cy)
+        detail = (f"U3 at ({ux:.2f}, {uy:.2f})\n"
+                  f"nearest mounting hole: {nref} at "
+                  f"{near:.2f} mm centre-to-centre\n"
+                  f"all holes: " + ", ".join(f"{r}={d:.1f}" for d, r in ds) +
+                  f"\ndistance from the mounting-hole centroid "
+                  f"({cx:.1f},{cy:.1f}): {midspan:.2f} mm "
+                  f"(larger = further from mid-span)")
+        ok5 = near <= 8.0
+        detail += f"\ncriterion: nearest hole <= 8.00 mm -> {near:.2f} mm"
+        check(5, "U3 IMU adjacent to a mounting hole, not mid-span", ok5, detail)
+    else:
+        check(5, "U3 IMU adjacent to a mounting hole", False, "U3 or holes missing")
+
+    # ---------------------------------------------------------------- 6
+    pts, miss = [], []
+    for ref, pn in (("C73", "1"), ("U5", "8"), ("U5", "6"),
+                    ("D16", "1"), ("D16", "2"), ("C73", "2")):
+        p = pad(fp(board, ref), pn)
+        if p is None:
+            miss.append(f"{ref}.{pn}")
+        else:
+            pts.append((f"{ref}.{pn}", pxy(p)))
+    if miss:
+        check(6, "Buck hot-loop enclosed area", False, f"missing: {miss}")
+    else:
+        xs = [p[1][0] for p in pts]; ys = [p[1][1] for p in pts]
+        a = 0.0
+        for i in range(len(pts)):
+            x1, y1 = pts[i][1]; x2, y2 = pts[(i + 1) % len(pts)][1]
+            a += x1 * y2 - x2 * y1
+        area6 = abs(a) / 2
+        l1 = fp(board, "L1")
+        l1d = ""
+        if l1:
+            sw = pad(fp(board, "U5"), "6")
+            best = min(rect_gap(pad_rect(sw), pad_rect(q)) for q in l1.Pads())
+            l1d = f"\nU5 SW (pin 6) to nearest L1 pad: {best:.2f} mm"
+        detail = ("loop vertices (commutating path C73 -> U5 VIN -> U5 SW -> "
+                  "D16 -> GND -> C73):\n" +
+                  "\n".join(f"  {n:8} ({x:6.2f}, {y:6.2f})" for n, (x, y) in pts) +
+                  f"\n\nenclosed area (shoelace) = **{area6:.2f} mm^2**"
+                  f"\nbounding box {max(xs)-min(xs):.2f} x {max(ys)-min(ys):.2f} mm"
+                  + l1d)
+        check(6, "Buck hot loop U5 SW -> L1 -> D16 -> C73 enclosed area",
+              area6 > 0, detail)
+
+    # ---------------------------------------------------------------- 7
+    bb = board.GetBoardEdgesBoundingBox()
+    ex0, ey0 = mm(bb.GetLeft()), mm(bb.GetTop())
+    ex1, ey1 = mm(bb.GetRight()), mm(bb.GetBottom())
+    rows, ok7 = [f"board outline {ex0:.2f},{ey0:.2f} .. {ex1:.2f},{ey1:.2f} "
+                 f"({ex1-ex0:.1f} x {ey1-ey0:.1f} mm)"], True
+    for ref in ("J1", "J2", "X1"):
+        f = fp(board, ref)
+        if f is None:
+            rows.append(f"  {ref}: NOT PLACED"); ok7 = False; continue
+        b = f.GetCourtyard(pcbnew.F_CrtYd).BBox()
+        r = (mm(b.GetLeft()), mm(b.GetTop()), mm(b.GetRight()), mm(b.GetBottom()))
+        gaps = {"left": r[0]-ex0, "top": r[1]-ey0, "right": ex1-r[2],
+                "bottom": ey1-r[3]}
+        near = min(gaps, key=gaps.get)
+        rows.append(f"  {ref}: extent {r[0]:.2f},{r[1]:.2f} .. {r[2]:.2f},"
+                    f"{r[3]:.2f}  edge gaps L/T/R/B = "
+                    f"{gaps['left']:.2f}/{gaps['top']:.2f}/"
+                    f"{gaps['right']:.2f}/{gaps['bottom']:.2f} mm"
+                    f"  -> nearest edge: {near} ({gaps[near]:.2f} mm)")
+        if ref in ("J1", "J2") and gaps[near] > 3.0:
+            rows.append(f"      !! {ref} is a wire-to-board connector and sits "
+                        f"{gaps[near]:.2f} mm from the nearest edge")
+            ok7 = False
+    x1 = fp(board, "X1")
+    if x1:
+        b = x1.GetCourtyard(pcbnew.F_CrtYd).BBox()
+        r = (mm(b.GetLeft()), mm(b.GetTop()), mm(b.GetRight()), mm(b.GetBottom()))
+        # the card slot opens on the side away from the contact rows; the
+        # contacts sit at the -y end of the footprint, so the opening is +y
+        rot = x1.GetOrientationDegrees() % 360
+        rows.append(f"  X1 SIM: rotation {rot:.0f} deg; card slot faces +Y "
+                    f"(contacts are at the -Y end of the land)")
+        rows.append(f"      clearance from the X1 land to the +Y board edge: "
+                    f"{ey1 - r[3]:.2f} mm")
+        if ey1 - r[3] > 3.0:
+            rows.append("      !! the slot does not face an edge - insertion "
+                        "needs a lid opening; confirm with the housing")
+            ok7 = False
+    check(7, "J1/J2 edge positions, SIM access direction", ok7, "\n".join(rows))
+
+    # ---------------------------------------------------------------- 8
+    want = [os.path.join(PROJ, "docs", "renders", n)
+            for n in ("top.png", "bottom.png", "iso.png")]
+    have = [p for p in want if os.path.exists(p)]
+    check(8, "Renders exported to docs/renders/",
+          len(have) == len(want),
+          "\n".join(f"  {'ok  ' if p in have else 'MISS'} {os.path.relpath(p, PROJ)}"
+                    for p in want))
+
+    # ---------------------------------------------------------------- summary
+    print(f"\n{'='*74}\nSUMMARY\n{'='*74}")
+    for n, title, ok, _ in results:
+        print(f"  {n}. {'PASS' if ok else 'FAIL'}  {title}")
+    nfail = sum(1 for _, _, ok, _ in results if not ok)
+    print(f"\n{len(results)-nfail}/{len(results)} passed, {nfail} failed")
+    return 1 if nfail else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

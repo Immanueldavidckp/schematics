@@ -2158,3 +2158,145 @@ Plus the two related pcbnew traps (`board.Remove()` segfault,
 | regeneration | byte-identical across consecutive builds |
 
 **Routing is NOT started and remains blocked on floorplan approval.**
+
+---
+
+# Floorplan approval measurements — 2026-09-05. 4 of 8 FAIL. ROUTING NOT STARTED.
+
+Measured by `tools/floorplan_check.py` (committed; exit code gates routing).
+Full output in `docs/floorplan-measurements.txt`. **Inductor decision: incumbent
+C21325 retained as instructed; C5142144 stays logged as the qualified fallback.**
+
+| # | check | result |
+|---|---|---|
+| 1 | ANT pad → U.FL, CPWG path clear, GND fence | **FAIL** |
+| 2 | Antenna-region keepout, area in mm² | **FAIL** |
+| 3 | HV→LV clearance ≥ 1.5 mm | **FAIL** |
+| 4 | VBAT_MODEM caps ≤ 5 mm from U1 57–60 | **FAIL** |
+| 5 | U3 IMU adjacent to a mounting hole | PASS |
+| 6 | Buck hot-loop enclosed area | PASS |
+| 7 | J1/J2 edge positions, SIM access | PASS |
+| 8 | Renders in `docs/renders/` | PASS |
+
+## 1. FAIL — three separate findings
+
+```
+ANT_MAIN (LTE)  U1.49 (76.77, 21.04) -> AF1.3 (73.53,  8.73)  = 12.72 mm
+ANT_GNSS        U1.47 (76.77, 26.74) -> AF2.3 (73.53, 47.12)  = 20.63 mm
+```
+
+**(a) The π-network series resistors are not in the RF path.** R71 sits
+6.19 mm off the ANT_MAIN line, R72 **20.94 mm** off the ANT_GNSS line. They were
+never anchored, so the packer placed them by area. A series element in a π
+network has to be in-line — this is a placement defect.
+
+**(b) Q3.3 [VBAT_MODEM] is inside the ANT_GNSS corridor** (2.60 mm wide,
+= W + 2G + 2×fence standoff). The ANT_MAIN corridor is clear.
+
+**(c) The structural one — there is not enough room outboard of the ANT pads.**
+
+| | |
+|---|---|
+| ANT pad outer edge | x = 78.02 |
+| board edge | x = 80.05 |
+| usable strip (less 0.30 copper-to-edge) | **1.73 mm** |
+| CPWG trace + gaps (W 0.40 + 2×G 0.30) | 1.00 mm |
+| **CPWG + two-sided via fence** | **3.10 mm** |
+
+A fenced 50 Ω CPWG does not fit in 1.73 mm. A one-sided inboard fence fits in
+1.00 mm, but then the outboard side relies on the board edge rather than a via
+wall — which is exactly what Quectel §4.3 asks for ("adding some ground vias
+around RF traces… distance ≥ 2 × W"). **This cannot be nudged away.** U1 has to
+move left, which means narrowing the digital zone, or the outline has to grow.
+
+Also worth stating plainly: **ANT_GNSS is the longer run at 20.63 mm**, on the
+receive-only system with −130 dBm sensitivity. On FR4 CPWG that is roughly
+0.2–0.3 dB of extra loss before any mismatch. If the outline changes anyway,
+GNSS should get the shorter run, not the longer one.
+
+## 2. FAIL — no antenna keepout can be drawn yet
+
+Cleared area: **0.0 mm²**. Not an oversight and not fixable by layout: the BOM
+lists **ANT as "select in stock"** for both the LTE FPC and the GNSS patch, so
+neither datasheet's ground-clearance dimensions exist. Handoff §7 requires a
+"GND keepout under the FPC antenna region **per antenna datasheet**". Both
+antennas also mount in the **lid**, so the keepout depends on the housing,
+which is also unconfirmed. **Blocked on a BOM/housing decision, not on layout.**
+
+## 3. FAIL by the stated criterion — but read which pair
+
+```
+minimum HV->LV, ANY pair (outside the U5 exception):
+    0.800 mm   R32.1 [/io/VIN_D1]  <->  R32.2 [VIN_SENSE]
+minimum BETWEEN DIFFERENT components (what layout controls):
+    1.025 mm   R30.2 [/io/VIN_D0]  <->  Q1.1 [/io/Q1_G]
+```
+
+The 0.800 mm pair is **the two ends of one 0805 resistor** — R32 is the bottom
+element of the 3×100k VIN divider, so it has the divided node on one pad and
+the ADC tap on the other. That spacing is the package (0805 pads are 0.8 mm
+apart) and no layout can widen it. Same category as F-20 at U5.
+
+The number layout *can* act on is **1.025 mm between R30 and Q1**, still short
+of 1.5 mm. Both are HV-zone parts near the DO gate drive.
+
+*Measurement bug found and fixed while producing this:* the first version
+compared pads without checking layers and reported 0.000 mm for
+C73 [F.Cu] ↔ R87 [B.Cu] — opposite sides of 1.6 mm of FR4. That is also why
+DRC, which does check layers, reported no short. The check is now layer-aware.
+
+## 4. FAIL — the bulk caps are nowhere near the modem
+
+```
+U1 VBAT pads 57-60 at y = 13.09, x = 67.27 .. 71.17   (U1's top edge)
+
+C40 (46.34,  2.65)   20.07 mm      C41 (51.84,  2.65)   15.16 mm
+C81 (46.34,  6.64)   18.87 mm      C82 (51.84,  6.64)   13.53 mm
+                                   requirement: <= 5.00 mm
+```
+
+The four F-13 caps were **never anchored** — added in the F-13 commit and left
+to the packer, which placed them by free area. Handoff §4 requires them within
+5 mm of pads 57–60.
+
+Fixing this is not just an anchor edit: **four 1210 caps (4.69 mm keepout each)
+cannot all sit within 5 mm of four pads spanning 3.9 mm on one side.** The
+arrangement that works is two on top immediately above the pads and two on the
+**bottom directly beneath them** — which is lower inductance than 5 mm away
+laterally, and is standard for modem bulk decoupling. That is a placement
+change to make deliberately, not a nudge.
+
+## 5. PASS
+
+U3 at (29.31, 55.00); nearest mounting hole **H5 at 5.81 mm** (criterion
+≤ 8 mm). Distance from the four-corner-hole centroid (36.7, 35.0) is
+**21.32 mm**, i.e. well away from mid-span.
+
+## 6. PASS
+
+Commutating loop C73 → U5 VIN → U5 SW → D16 → GND → C73:
+**enclosed area 43.42 mm²**, bounding box 4.56 × 13.03 mm.
+U5 SW (pin 6) to the nearest L1 pad: **4.31 mm**.
+
+## 7. PASS
+
+Outline 80.1 × 60.1 mm.
+**J1** 1.04 mm from the left edge · **J2** 1.11 mm from the bottom edge — both
+wire-to-board connectors are on an edge as required.
+**X1** 1.52 mm from the bottom edge, card slot facing +Y, i.e. toward that
+edge. Insertion is accessible; confirm the lid does not foul it.
+
+## 8. PASS
+
+`docs/renders/{top,bottom,iso}.png` exported and committed.
+
+## Verdict
+
+**Routing is NOT started.** Checks 1 and 4 are placement work; check 3 needs a
+decision on whether the 1.5 mm rule is meant to apply across a transition
+component; check 2 is blocked on selecting the antennas.
+
+Check 1(c) is the one that shapes everything else: **the RF corridor is
+1.73 mm where a fenced CPWG needs 3.10 mm.** Fixing 1(a), 1(b) and 4 before
+that is settled risks doing the work twice, because moving U1 left moves the
+ANT pads, the U.FLs, the π networks and the VBAT caps together.
