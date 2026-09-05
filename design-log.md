@@ -2606,3 +2606,110 @@ heat-staked or clamped, not stuck on.
 DRC 19 violations + 452 unconnected · ERC 0 errors / 13 warnings ·
 `checkpins` exit 0 · 222 components placed · board byte-stable.
 **Routing NOT started.**
+
+---
+
+# F-22 R90 approved, F-23 accepted — 2026-09-05
+
+## F-22 — GNSS feed current limit, R90 = 68 R 1210 (APPROVED)
+
+**The vendor publishes only a TYPICAL 4.3 mA and no maximum**, for either
+current or supply voltage — both sit under a column headed "Typical value",
+and the datasheet has no absolute-maximum table at all. There is therefore no
+published worst case to design against, so the value is set from a conservative
+multiple and the fault power.
+
+Series chain is R90 + L4's DCR = 68 + 1.128 = **69.13 Ω**.
+
+**Normal operation**, 3V3 at −5 % = 3.135 V, antenna needs ≥ 1.80 V:
+
+| draw | V at the antenna | |
+|---|---|---|
+| 1× typical (4.3 mA) | 2.838 V | ok |
+| 2× (8.6 mA) | 2.540 V | ok |
+| 3× (12.9 mA) | 2.243 V | ok |
+| **4× (17.2 mA)** | **1.946 V** | ok |
+| 5× (21.5 mA) | 1.649 V | fails |
+
+So it tolerates **4.3× the typical current** before the LNA drops out of spec —
+adequate cover for an unpublished maximum.
+
+**Fault — antenna or coax shorted**, 3V3 at +5 % = 3.465 V:
+
+```
+I_fault = 3.465 / 69.13 = 50.1 mA
+P_R90   = 0.0501^2 x 68 = 0.171 W
+```
+
+50.1 mA against a 500 mA LDO (ME6211) already carrying ~150 mA: the 3V3 rail
+cannot be pulled out of regulation. Also well under L4's 320 mA rating.
+
+**Why 68 R and not the ~150 mA the brief asked for.** The fault-power reasoning
+is the deciding factor:
+
+| R90 | I_fault | P_R90 | package needed at 70 °C |
+|---|---|---|---|
+| 22 R | 143 mA | **0.448 W** | 2512, and still 90 % of a 50 %-derated 1 W |
+| 33 R | 97 mA | 0.309 W | 2010 |
+| **68 R** | **50 mA** | **0.171 W** | **1210 — 68 % of a 50 %-derated 500 mW** |
+| 100 R | 33 mA | 0.106 W | 1206, but only 1.78 V at 15 mA — too tight |
+
+A shorted coax does not clear itself. At 22 R the board would dissipate
+**0.448 W continuously inside a sealed IP65 enclosure at 70 °C ambient**, from
+a fault that persists until someone opens the unit. 68 R limits harder than
+asked, survives indefinitely in a 1210, and still leaves 4.3× current headroom.
+
+**C85 10 nF APPROVED** at the injection node. Raising Quectel's 10 R to 68 R
+increases supply-noise coupling into the LNA; C83 (0.1 µF) with 68 R puts the
+supply corner at 23 kHz, and C85 handles what the electrolytic-scale bypass
+cannot at higher frequency.
+
+C-numbers for R90/C85 are **TBD-F22**, to be fixed at the milestone-5 BOM
+stage like the other TBD-F5 passives.
+
+## F-23 ACCEPTED — antennas join the 85 °C survival tier
+
+Both antennas are **−45 to +85 °C for operating and storage** (identical
+ranges, verified verbatim in both datasheets). Accepted: they join the **85 °C
+survival tier already set by U1**, whose extended range tops out at the same
++85 °C. The product's survival limit is therefore set consistently by three
+parts — U1, and now both antennas — rather than by the antennas alone.
+
+**Consequences recorded:**
+
+1. **The antennas are field-replaceable items, alongside BT1.** The service
+   list is now: BT1 (2–3 year interval, rule 2) **and both antennas**. All
+   three are the parts whose life is set by temperature rather than by design
+   margin, and all three are reachable without unsoldering anything — the
+   antennas are lid-mounted on U.FL pigtails.
+2. **85 °C soak added to prototype qualification, with C/N0 measured before
+   and after.** GNSS carrier-to-noise is the right metric: it is the thing an
+   ageing patch or a degraded LNA actually loses, and it is measurable in the
+   field afterwards. Measuring only "does it still fix" would miss gradual
+   degradation.
+
+This also raises the stakes on two existing requirements rather than adding
+new ones: the housing must be shaded or light-coloured (§1.1), and antenna
+retention must be mechanical (§6.3) — adhesive fails first at exactly the
+temperature that defines this tier.
+
+## FreeRouting import rules (standing policy)
+
+Recorded because they govern every future autorouter run, not just this one:
+
+1. **Never loosen a netclass width or clearance to improve completion.**
+   HV 1.5 mm, VBAT_MODEM 2 mm and the locked RF are non-negotiable. If the
+   router cannot finish, the answer is placement or hand-routing, never a
+   relaxed rule.
+2. **After every import, verify:** the locked RF items are byte-identical to
+   pre-export; `net_settings` survived the round trip (SKILL G2 — KiCad
+   silently drops net classes); and `floorplan_check.py` still passes, with no
+   autorouted copper inside the RF corridors, the antenna region, or the U1/U5
+   via fields.
+3. **Unrouted nets are listed individually** and resolved by local placement
+   change or hand-routing — reported per net, never left silent.
+4. **Every autorouted HV net path is reviewed individually** (VIN, IGN, DI
+   chains, DO drains): confirm it stays inside `HV_ZONE` and measure its
+   closest LV approach.
+5. **Thermal vias under the U1 paddle and the U5 exposed pad are counted and
+   logged** after import, since the router may add or disturb vias.
