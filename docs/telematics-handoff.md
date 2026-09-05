@@ -67,7 +67,9 @@ user: confirm this is acceptable, or narrow the product rating to +60 °C.
 5. OTA path: modem DFOTA for its own firmware + custom MCU bootloader in
    external flash for application FOTA.
 6. Temperature: all semiconductors ≥105 °C rated where available (AT32 is
-   −40…+105 °C). Conformal coat production boards.
+   −40…+105 °C). **Conformal coating is MANDATORY on every board, including
+   prototypes — it is a safety-critical process requirement, not a finish
+   preference. Creepage at U5 depends on it (see F-20 below).**
 7. Scaling/second-source: CAN transceiver pad-compatible alternates
    (SIT1051 ↔ TJA1051T/3 ↔ TCAN1042), IMU footprint fixed to QMI8658
    (LGA-14), dual SIM footprint — nano-SIM holder AND MFF2 eSIM pads in
@@ -215,6 +217,31 @@ stage clamps the gate; 10 k gate pulldown retained. Consequence: DO1/DO2
 
 **Storage (U7).** SPI1 @ 30 MHz+, 100 nF + 1 µF. Firmware: ring buffer with
 wear leveling; at 150 B/10 s ≈ 1.3 MB/day → 8 MB ≈ 6 days.
+
+### 6.1 F-20 — conformal coating is creepage-critical (confirmed 2026-09-05)
+
+**U5's exposed pad (EG11752 pin 9) is VIN_B, at up to 100 V, and the SOIC-8
+package places its own signal pins 0.55 mm away.** Measured from the footprint:
+EP 3.30 × 2.40 mm centred, signal pads at y = ±2.72 with 1.94 mm height, so
+their inner edges sit at ±1.75 against an EP edge at ±1.20. No layout can widen
+this — it is the package.
+
+| condition | IPC-2221 requirement at 100 V | actual |
+|---|---|---|
+| external, **uncoated** (B1) | 0.60 mm | 0.55 mm — **FAILS** |
+| external, **coated** (B4) | ≈0.25 mm | 0.55 mm — passes, >2:1 margin |
+
+**The board only meets creepage once coated.** Therefore:
+1. Conformal coating is **mandatory in production and on prototypes**.
+2. **Prototypes must be coated before the 100 V / 85 °C burn-in.**
+3. The **U5 area is a coating inspection point**, marked on the assembly
+   drawing (F.Fab) as `COATING INSPECTION - CREEPAGE CRITICAL (F-20)`.
+4. An uncoated board relies on the package's certified spacing alone and
+   **must not be energised at line voltage.**
+5. The 0.3 mm DRC exception in `telematics-tracker.kicad_dru` is scoped to the
+   `HV_ZONE` rule area and is written against the **coated** figure. If the
+   coating requirement is ever dropped, that exception becomes invalid and U5
+   must be reconsidered.
 
 ## 7. PCB & housing
 

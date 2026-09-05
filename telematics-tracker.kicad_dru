@@ -71,11 +71,18 @@
 # an EP edge at +/-1.20). No layout can widen that: it is the package.
 #
 # 0.60 mm is the IPC-2221 table 6-1 figure for EXTERNAL UNCOATED conductors at
-# 100 V. Handoff rule 6 mandates conformal coating on production boards, and
-# the coated (B4) requirement at 100 V is about 0.25 mm, so 0.55 mm passes with
-# better than 2:1 margin ONCE COATED. This exception is therefore conditional
-# on the conformal-coating requirement actually being honoured in production -
-# an uncoated board relies on the package's own certified spacing alone.
+# 100 V; coated (B4) at 100 V is about 0.25 mm, so 0.55 mm passes with better
+# than 2:1 margin ONCE COATED.
+#
+# CONFIRMED 2026-09-05: conformal coating is MANDATORY on every board including
+# prototypes, and is logged as a safety-critical process requirement (handoff
+# section 6.1, SKILL.md P1). Prototypes are coated before the 100 V / 85 C
+# burn-in, and the U5 area carries a coating inspection marking on F.Fab.
+#
+# THIS EXCEPTION IS VALID ONLY WHILE THAT REQUIREMENT HOLDS. If coating is ever
+# dropped, this rule must be deleted and U5 reconsidered - an uncoated board
+# relies on the package's own certified spacing alone and must not be
+# energised at line voltage.
 (rule "U5 package internal HV spacing"
 	(constraint clearance (min 0.3mm))
 	(condition "A.insideCourtyard('U5') && B.insideCourtyard('U5')"))

@@ -52,6 +52,14 @@ range will still age the cell faster and may shorten the replacement interval.
 Replace with the specified 1S Li-ion pack **with NTC and JST lead** only. A
 pack without the thermistor will not charge.
 
+## 2a. Conformal coating (do not remove)
+
+Every board is conformal coated, and the coating is part of the unit's
+electrical safety, not a cosmetic finish — the 100 V section relies on it for
+creepage. Do not scrape, solvent-clean or rework the coating in the field. If a
+board is opened and the coating is damaged, the unit must be returned rather
+than re-fitted.
+
 ## 3. Supply wiring
 
 - Guaranteed input range: **10.5 V to 100 V DC**. Below 10.5 V the unit runs

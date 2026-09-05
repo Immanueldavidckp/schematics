@@ -106,10 +106,20 @@ def canonicalise(path):
         ref = re.search(r'\(property "Reference" "([^"]*)"', f)
         at = re.search(r"\(at ([-\d.]+) ([-\d.]+)", f)
         start = re.search(r"\(start ([-\d.]+) ([-\d.]+)", f)
-        c = at or start
+        # zones carry neither a Reference nor an (at ...) - they are polygons -
+        # so without these two they all sorted as equal and swapped places
+        # between runs, breaking byte-identical regeneration.
+        zname = re.search(r'\(name "([^"]*)"', f)
+        znet = re.search(r'\(net_name "([^"]*)"', f)
+        firstxy = re.search(r"\(xy ([-\d.]+) ([-\d.]+)", f)
+        c = at or start or firstxy
         xy = (float(c.group(1)), float(c.group(2))) if c else (0.0, 0.0)
         lay = re.search(r'\(layer "([^"]+)"', f)
-        return (tag, ref.group(1) if ref else "", lay.group(1) if lay else "",
+        return (tag,
+                ref.group(1) if ref else "",
+                zname.group(1) if zname else "",
+                znet.group(1) if znet else "",
+                lay.group(1) if lay else "",
                 xy[0], xy[1], len(f))
 
     rest.sort(key=key)

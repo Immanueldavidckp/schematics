@@ -2001,3 +2001,160 @@ at the point it is fetched, before it touches the board.
 - **F-19** 1S Li-ion is -20..+60 C discharge against the +70 C product ceiling.
 - **AF1/AF2 at x = 72 but U1's ANT pads at x = 76.55**, so the RF run doubles
   back inboard. Short, but wrong-way; resolve with the final outline.
+
+---
+
+# F-20 CONFIRMED + buck cluster resolved — 2026-09-05
+
+## F-20 — conformal coating is a safety-critical process requirement
+
+**CONFIRMED by the user.** Coating is now recorded as a process requirement,
+not a finish preference, because **creepage at U5 depends on it**.
+
+| condition | IPC-2221 at 100 V | actual at U5 | verdict |
+|---|---|---|---|
+| external, **uncoated** (B1) | 0.60 mm | 0.55 mm | **FAILS** |
+| external, **coated** (B4) | ≈0.25 mm | 0.55 mm | passes, >2:1 |
+
+Recorded in four places so it cannot be lost:
+- `docs/SKILL.md` **P1** — safety-critical process requirements section.
+- `docs/telematics-handoff.md` **§6.1** and rule 6 (now "MANDATORY on every
+  board, including prototypes").
+- `telematics-tracker.kicad_dru` — the 0.3 mm exception now states it is
+  **valid only while the coating requirement holds**, and that if coating is
+  ever dropped the rule must be deleted and U5 reconsidered.
+- `docs/installation-sheet.md` §2a — field warning not to scrape or
+  solvent-clean the coating.
+
+Applied as instructed:
+- **Prototypes are coated before the 100 V / 85 °C burn-in.**
+- **U5 is marked as a coating inspection point on the assembly drawing**:
+  `coating_inspection_marks()` draws a boxed outline on F.Fab around U5 plus
+  the caption `COATING INSPECTION - CREEPAGE CRITICAL (F-20)`.
+- The 0.3 mm exception stays scoped to `HV_ZONE`.
+
+## Buck cluster — courtyard overlaps 3 → 0, and the inductor was NOT the cause
+
+Instruction was to select a smaller inductor, or grow the outline if none
+qualified. **Both were measured, and neither would have worked.** The overlaps
+were a floorplan defect, not a component-size problem:
+
+| attempted fix | courtyard overlaps |
+|---|---|
+| baseline (12.3 × 12.3 inductor) | **3** |
+| grow board to 82 / 84 / 86 mm | 2 / 2 / 2 — plateaus, never reaches 0 |
+| synthetic 10 × 10 inductor probe | **1** — better, still not 0 |
+| **restructure the cluster into a column** | **0** |
+
+The real cause: C73/C74 were stacked in the narrow strip **above** L1, which
+left a 4.2 mm gap for two 3.29 mm parts. C73 was clamped on the zone edge and
+L1 blocked C74, so the relaxation could not separate them — it converged them
+to 3.08 mm apart no matter what they were anchored to.
+
+**Fix:** the buck cluster is now a vertical column beside L1, ordered to follow
+the hot loop (amendment (a)): **D16 above U5** because SW is pin 6 on U5's
+upper edge, **C73 below** because VIN is pin 8 on the lower edge. U6 (charger)
+moved to the digital zone beside J2, which is where it belongs electrically —
+it feeds SYS to the battery. U9 (SYS→3V3 LDO) has no critical position and was
+dropped from the anchors entirely. **C74 was also un-anchored**: only the cap
+nearest U5's VIN pin is loop-critical, and anchoring both over-constrained a
+4.7 mm-wide column whose zone edge is 0.65 mm away.
+
+### Inductor comparison (researched as instructed, NOT applied)
+
+A qualifying part does exist. All figures read from datasheets; prices at the
+150–499 break; all parts including the incumbent are JLCPCB **Extended**.
+
+| | **C21325** incumbent | **C5142144** best candidate | C5374179 | C2596017 Sumida |
+|---|---|---|---|---|
+| MPN | SMDRI127-151MT | YNR1050-151M | SNR.1050.TYD151MT00 | CDRH10D60BT150NP-101MC |
+| L | 150 µH ±20 % | 150 µH ±20 % | 150 µH ±20 % | **100 µH** |
+| Isat | **2.70 A** @25 % drop | 2.00 A @30 % drop | 2.00 A | 1.92 A |
+| Irms | **1.42 A** | 1.20 A | 1.20 A | 2.30 A |
+| **DCR** | **280 mΩ** | **438 mΩ max** | 438 mΩ | 250 mΩ |
+| **I²R @ 1.0 A** | **0.280 W** | **0.438 W (+0.158 W)** | 0.438 W | 0.250 W |
+| Body | 12.3 × 12.3 × 8.0 | **10.0 × 10.0 × 5.0** | same | 10.3 × 10.0 × 6.35 |
+| Land area | ~170 mm² | ~102 mm² (**−40 %**) | 102 mm² | 108 mm² |
+| Stock | **5132** | 496 | 787 | 415 |
+| $ @250 | 0.154 | 0.162 | 0.127 | 1.11 |
+
+**DECISION: keep the incumbent C21325.** The area saving is no longer needed —
+overlaps are already 0 — and the swap costs real margin on a 5-year product:
+
+- **DCR +56 % (280 → 438 mΩ)**, conduction loss 0.280 → 0.438 W at 1.0 A.
+  That is +0.158 W, about 3.2 % of the 5 W output, on a converter whose
+  thermal headroom is already the thing limiting the +70 °C ambient rating.
+  At 125 °C copper the 438 mΩ becomes roughly 0.61 Ω.
+- **Irms 1.42 → 1.20 A**, so self-heating rises materially at the same load.
+- **Isat 2.70 → 2.00 A**, and the criteria differ — the incumbent's figure is
+  at 25 % inductance drop, the candidate's at 30 %, so like-for-like the
+  candidate is slightly under 2.00 A. Startup and over-current derating is
+  much tighter.
+- **Stock 5132 → 496** — under two builds of 250.
+- Requires a **new footprint** (NR1050 pads are 5.5 × 2.0 with a 6.2 mm inner
+  gap, rotated 90° relative to the current 2.90 × 5.40 at x = ±5.45).
+- **Core loss UNVERIFIED** — neither datasheet publishes it, and a smaller core
+  at the same 150 µH and ripple means higher peak flux density.
+
+Rejected candidates and the exact reason: **C19190466** (8 × 8, would save
+58 %) has Isat **min 1.60 A** and Irms **min 0.95 A** — zero Isat margin and
+guaranteed Irms *below* the 1.0 A operating current. **C2594377** Sumida is
+technically the best part (250 mΩ, AEC-Q200, −55…+150 °C) but **stock 0**.
+**C397813 / C53430502** publish a single "IDC max" with no Isat/Irms
+definition — unverifiable, rejected on evidence. **C18222150** is the right
+part with only **44 pcs**.
+
+**Kept on file:** if the outline ever shrinks or the buck moves, C5142144 is
+the qualified 10 × 10 option and C5374179 is its second source (identical
+geometry and electrical table, same OEM design — but its datasheet never says
+"shielded", so that claim is UNVERIFIED for that vendor specifically).
+
+## Four more silent bugs found this pass
+
+1. **SMD anchors were blocked on the bottom-side shelves too.** U1 alone
+   removed ~1030 mm² of bottom-side area it does not occupy, which is why
+   parts started going unplaced. Only through-hole pads, unplated holes and
+   vias pierce both sides.
+2. **The stitching-via sites were reserved AFTER packing**, despite the comment
+   saying "before". R84 was packed on the bottom directly under U5's
+   exposed-pad via field — 3 shorts, 3 mask bridges and 3 hole-clearance
+   errors from one misordered step. Reservation now happens at the moment the
+   last anchor is placed.
+3. **`canonicalise()` could not order zones.** Zones carry neither a
+   `Reference` nor an `(at ...)` — they are polygons — so every zone sorted as
+   equal and the L3 pours swapped places between runs, breaking byte-identical
+   regeneration. The sort key now includes zone name, net name and first
+   vertex.
+4. **`tools/build.py` was truncating warnings out of its own output.** The
+   relaxation's "did NOT converge" message was being cut by the `tail -14`,
+   which cost real debugging time chasing a symptom whose cause was already
+   being printed. `run()` now always keeps lines containing NOT converge /
+   UNPLACED / FAILED / WARNING.
+
+The relaxation also now **reports any pair it fails to separate**, so silent
+non-convergence cannot resurface as a mystery courtyard error later.
+
+## Permanent guards added to docs/SKILL.md
+
+As instructed, the two silent-bug classes are now standing requirements:
+- **G1** — a footprint's courtyard may be smaller than its pad extent, and is
+  not necessarily centred on the origin. Keepout must be
+  `max(courtyard, pads)` positioned by the box centre.
+- **G2** — `pcbnew.SaveBoard()` wipes `net_settings`; net classes must be
+  applied *after* every board-writing step and **verified to survive a KiCad
+  round trip**.
+Plus the two related pcbnew traps (`board.Remove()` segfault,
+`FootprintLoad()` object reuse) and the **P1** coating requirement.
+
+## State
+
+| | |
+|---|---|
+| DRC | **33 violations + 452 unconnected** (896 on the first pass) |
+| courtyard overlaps / shorts / mask bridges | **0 / 0 / 0** |
+| annular / padstack / hole-to-hole / dangling via | **0 / 0 / 0 / 0** |
+| ERC | 0 errors, 13 warnings |
+| placement | **218 of 218**, 132 top / 86 bottom |
+| regeneration | byte-identical across consecutive builds |
+
+**Routing is NOT started and remains blocked on floorplan approval.**

@@ -24,6 +24,60 @@ description: >
 5. Keep a running `design-log.md`: every decision, every deviation, every
    ERC/DRC exception.
 
+## Silent-failure guards (mandatory — these fail without any error)
+
+Both of these were hit on this project. Neither produces a warning; both leave
+a board that looks correct and is not. **Check them, do not assume them.**
+
+**G1. A footprint's courtyard may be SMALLER than its pad extent.**
+Never use `GetCourtyard()` alone as a keepout, and never use a footprint's
+courtyard as the basis for spacing or clearance reasoning. U2's LQFP-48
+courtyard measures 7.1 x 7.1 mm — the body — while its pads reach 9.0 mm, so
+packing to the courtyard put 0603s directly on its leads. Also note the
+courtyard box is **not necessarily centred on the footprint origin**: J1's
+derived Molex courtyard is centred 7.50 mm in x and 1.92 mm in y away from its
+origin, because the origin sits on pin 1.
+- *Required:* keepout = `max(courtyard, pad bounding box)` per axis, positioned
+  by the **box centre**, not the footprint origin. See `keepout_abs()` in
+  `tools/pcbplace.py`.
+
+**G2. `pcbnew.SaveBoard()` wipes `net_settings` out of the .kicad_pro.**
+Every net class and net-class pattern is destroyed each time a Python
+generator saves the board. RF/HV/VBAT_MODEM rules then stop applying while DRC
+continues to report a low violation count, so the design silently loses its
+impedance, HV-clearance and current-carrying constraints. Compounding it,
+KiCad **discards any hand-written net class** that lacks `bus_width`,
+`priority` or `tuning_profile`, or that is written with the wrong
+`meta.version` — again with no warning.
+- *Required:* apply net classes **after** every board-writing step, then
+  **verify they survive a KiCad round trip** and fail loudly if they do not.
+  See `tools/netclasses.py`, and use `tools/build.py` rather than running the
+  stages by hand.
+
+Two related pcbnew traps, for anyone editing the generators:
+- `board.Remove()` hands ownership back to Python and double-frees on the next
+  GC — the interpreter segfaults with exit 139 and no traceback. Rebuild from
+  a template instead of deleting.
+- `pcbnew.FootprintLoad()` returns **one C++ object per library id**. Caching
+  and reusing it collapses every component sharing that footprint onto a single
+  instance, because `board.Add()` is a no-op after the first call. This
+  produced 45 footprints instead of 219 and left 349 pads unbound to nets.
+
+## Safety-critical process requirements
+
+**P1. Conformal coating is MANDATORY on every board, including prototypes.**
+Not a finish preference — **creepage at U5 depends on it.** The EG11752's
+exposed pad is VIN_B at up to 100 V and the SOIC-8 package places its own
+signal pins 0.55 mm away. IPC-2221 needs 0.60 mm for external *uncoated*
+conductors at 100 V; coated (B4) needs about 0.25 mm. The board therefore only
+meets creepage **once coated**, and the 0.3 mm DRC exception scoped to
+`HV_ZONE` is written against the coated figure.
+- Prototypes must be coated **before** the 100 V / 85 C burn-in.
+- The **U5 area is a coating inspection point** and is marked as such on the
+  assembly drawing (F.Fab).
+- An uncoated board relies on the package's own certified spacing alone and
+  must not be energised at line voltage.
+
 ## Environment setup (run once)
 ```bash
 # KiCad 9 (Ubuntu; use the installer on Windows/Mac)

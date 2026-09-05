@@ -37,7 +37,12 @@ def run(desc, cmd, quiet=True):
     out = [l for l in r.stdout.splitlines()
            if l.strip() and "property.h" not in l and "PROPERTY_ENUM" not in l]
     if quiet:
+        # never truncate away a warning - the relaxation non-convergence
+        # message was being hidden by the tail, which cost real debugging time
+        keep = [l for l in out if any(w in l for w in
+                ("NOT converge", "UNPLACED", "FAILED", "!", "WARNING"))]
         out = out[-14:]
+        out += [l for l in keep if l not in out]
     for l in out:
         print("   " + l)
     if r.returncode != 0:

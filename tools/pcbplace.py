@@ -75,18 +75,25 @@ ANCHORS = {
     "R80": (16.0, 27.5, 90, 0),
 
     # --- power block ----------------------------------------------------
-    # Amendment (a): the U5 / D16 / C73-C74 hot loop packed tight, and
-    # amendment (b): L1 at the left end, furthest from the RF edge.
-    "L1":  (27.5, 8.5, 0, 0),
-    "U5":  (35.5, 4.5, 0, 0),
-    "D16": (35.5, 9.5, 0, 0),
-    "C73": (31.0, 3.0, 0, 0),
-    "C74": (31.0, 5.5, 0, 0),
-    "U6":  (41.0, 5.0, 0, 0),
-    "U9":  (41.0, 12.0, 0, 0),
-    # J2 must sit ON an edge: it is a wire-to-board JST for the replaceable
-    # battery pack, and its lead has to leave the board. The first pass put it
-    # mid-board next to U2, which the 3D render caught.
+    # Amendment (a): the hot loop is C73/C74 -> U5 VIN -> U5 SW -> D16, so the
+    # column is ordered to follow it. D16 sits above U5 because SW is pin 6 on
+    # U5's upper edge; C73/C74 sit below because VIN is pin 8 on the lower one.
+    #
+    # The first attempt stacked C73/C74 in the strip ABOVE L1, which left a
+    # 4.2 mm gap for two 3.29 mm parts - the caps ended 1.33 mm apart and could
+    # not be relaxed out, because C73 was clamped on the zone edge and L1
+    # blocked C74. Neither a wider board nor a 10x10 inductor fixed that
+    # (measured: 3 -> 2 and 3 -> 1 overlaps respectively); putting the cluster
+    # in its own column beside L1 is what actually resolves it.
+    "L1":  (27.65, 12.0, 0, 0),    # amendment (b): left end, far from ANT_GNSS
+    "D16": (38.8, 2.8, 0, 0),
+    "U5":  (38.3, 9.0, 0, 0),
+    "C73": (38.3, 15.0, 0, 0),   # nearest U5 VIN: this is the loop-critical one
+    # U6 charger and U9 LDO are low-voltage and do not belong in the buck
+    # column: U6 feeds SYS to the battery at J2, so it belongs near J2 on the
+    # digital side. U9 (SYS -> 3V3 LDO) has no critical position at all and is
+    # left to the packer.
+    "U6":  (30.0, 46.0, 0, 0),
     "J2":  (40.0, 55.0, 0, 0),
 
     # --- digital --------------------------------------------------------
@@ -150,6 +157,23 @@ def relax_anchors(anchor_boxes, bounds, min_gap=1.10, iters=1500):
             pos[r][1] = min(max(pos[r][1], y0 + A["h"] / 2), y1 - A["h"] / 2)
         if not moved:
             break
+    # Report anything still overlapping after the last iteration. Silent
+    # non-convergence here shows up much later as a courtyard DRC error whose
+    # cause is no longer obvious.
+    leftover = []
+    refs = sorted(pos)
+    for i, a in enumerate(refs):
+        for b in refs[i + 1:]:
+            A, B = anchor_boxes[a], anchor_boxes[b]
+            if A["side"] != B["side"]:
+                continue
+            ox = (A["w"] + B["w"]) / 2 - abs(pos[a][0] - pos[b][0])
+            oy = (A["h"] + B["h"]) / 2 - abs(pos[a][1] - pos[b][1])
+            if ox > 0 and oy > 0:
+                leftover.append(f"{a}+{b} (x {ox:+.2f}, y {oy:+.2f})")
+    if leftover:
+        print(f"  relaxation did NOT converge for {len(leftover)} pair(s): "
+              + ", ".join(leftover))
     return {r: (round(v[0], 2), round(v[1], 2)) for r, v in pos.items()}
 
 
@@ -383,6 +407,38 @@ def add_zone(board, layer, net, rect, name=""):
     z.SetIsFilled(False)
     board.Add(z)
     return z
+
+
+def coating_inspection_marks(board):
+    """Mark the U5 area on the assembly drawing as a coating inspection point.
+
+    F-20 / SKILL P1: conformal coating is a safety-critical process
+    requirement here, not a finish preference. The EG11752's exposed pad is
+    VIN_B at up to 100 V with its own signal pins 0.55 mm away, so the board
+    only meets creepage once coated. Whoever inspects the assembly has to know
+    that this specific area is load-bearing.
+    """
+    u5 = _fp(board, "U5")
+    if u5 is None:
+        return
+    ux = pcbnew.ToMM(u5.GetPosition().x)
+    uy = pcbnew.ToMM(u5.GetPosition().y)
+    _, _, uw, uh = keepout_abs(u5)
+    m = 1.2
+    for layer in (pcbnew.F_Fab,):
+        for a, b in (((ux - uw/2 - m, uy - uh/2 - m), (ux + uw/2 + m, uy - uh/2 - m)),
+                     ((ux + uw/2 + m, uy - uh/2 - m), (ux + uw/2 + m, uy + uh/2 + m)),
+                     ((ux + uw/2 + m, uy + uh/2 + m), (ux - uw/2 - m, uy + uh/2 + m)),
+                     ((ux - uw/2 - m, uy + uh/2 + m), (ux - uw/2 - m, uy - uh/2 - m))):
+            add_seg(board, layer, a, b, width=0.12)
+        t = pcbnew.PCB_TEXT(board)
+        t.SetText("COATING INSPECTION - CREEPAGE CRITICAL (F-20)")
+        t.SetLayer(layer)
+        t.SetPosition(pt(ux, uy - uh / 2 - m - 1.4))
+        t.SetTextSize(pcbnew.VECTOR2I(mm(0.7), mm(0.7)))
+        t.SetTextThickness(mm(0.11))
+        board.Add(t)
+    print("F-20: U5 marked as a coating inspection point on F.Fab")
 
 
 def hv_rule_area(board):
@@ -628,8 +684,23 @@ def main():
     print(f"anchor relaxation moved {len(nudged)}: {sorted(nudged)}")
 
     order = sorted(comps, key=lambda r: (r not in ANCHORS, r))
+    via_spots = []
+    reserved = False
     for ref in order:
         c = comps[ref]
+        if ref not in ANCHORS and not reserved:
+            # Anchors are all placed by now, so U1 and U5 have positions and
+            # the stitching-via sites can be computed. Reserving them HERE,
+            # before any packing, is the whole point: the previous version ran
+            # this after the packing loop, and R84 was packed on the bottom
+            # directly under U5's exposed-pad via field - 3 shorts, 3 mask
+            # bridges and 3 hole-clearance errors from one misordered step.
+            via_spots = planned_vias(board)
+            for vx, vy, vd in via_spots:
+                for z in zones.values():
+                    z.block(vx, vy, vd + 0.8, vd + 0.8)
+            print(f"reserved {len(via_spots)} stitching-via sites before packing")
+            reserved = True
         if ref in ANCHORS:
             x, y, rot, side = ANCHORS[ref]
             if ref in relaxed:
@@ -642,9 +713,15 @@ def main():
                 # keepout (J1 blocked a 23x10 box where the part is 10x23, so
                 # the packer dropped D7 straight on top of it).
                 bcx, bcy, w, h = keepout_abs(fp)
-                for z in zones.values():
-                    z.block(bcx, bcy, w, h)
-                # through-hole pads / unplated holes pierce both sides
+                # An SMD anchor only obstructs its OWN side. Blocking it on
+                # both wasted most of the bottom side - U1 alone removed
+                # ~1030 mm2 of bottom-side area it does not actually occupy,
+                # which is why parts started going unplaced.
+                same = [zn for zn in zones
+                        if zn.endswith("_b") == bool(side)]
+                for zn in same:
+                    zones[zn].block(bcx, bcy, w, h)
+                # through-hole pads and unplated holes DO pierce both sides
                 for ox, oy, ow, oh in through_obstacles(fp):
                     for z in zones.values():
                         z.block(ox, oy, ow + 0.4, oh + 0.4)
@@ -676,16 +753,6 @@ def main():
             continue
         add(ref, c, spot[0] - pox, spot[1] - poy, 0, side)
 
-    # --- reserve the stitching vias before packing anything else --------
-    # They derive from U1 and U5, which are anchors, so their positions are
-    # known now. Placing the vias later without reserving the space here let
-    # packed parts sit on top of them.
-    via_spots = planned_vias(board)
-    for vx, vy, vd in via_spots:
-        for z in zones.values():
-            z.block(vx, vy, vd + 0.5, vd + 0.5)
-    print(f"reserved {len(via_spots)} stitching-via sites before packing")
-
     # --- bind pads to nets ----------------------------------------------
     bound = 0
     byref = {f.GetReference(): f for f in board.GetFootprints()}
@@ -701,6 +768,7 @@ def main():
     print(f"pads bound to nets: {bound}")
 
     hv_rule_area(board)
+    coating_inspection_marks(board)
     planes(board)
     stitch_vias(board, via_spots)
 

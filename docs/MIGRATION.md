@@ -141,44 +141,69 @@ is the only acceptable difference.)
 
 ---
 
-## 5. Exact next step after migrating
+## 5. RESUME HERE — state as of 2026-09-05 (after F-20 + buck fix)
 
-Resume at **milestone 3, tasks 1–5** — the deliverables are prepared and
-presented; what remains is the user's sign-off and the decisions it unblocks.
-Nothing may be connected or routed before that.
+Milestone 3 is closed. Milestone 4 placement is complete and **awaiting the
+user's floorplan approval**. **Routing has not started and must not start until
+that approval is given.**
 
-1. **Task 1 — F-9 sign-off (hard gate).** Review `docs/f9-review.md`
-   line by line: all 76 NEEDS-HUMAN EC200U pins, three sources each, 62 AGREE /
-   14 CONFLICT. Priority 1 is the **35 GND rows** (51–54, 56, 72, 76, 85–112),
-   then RESERVED rows 81/82/117. These pins are currently **no-connect** in
-   `modem_rf.kicad_sch`; a modem with its ground field NC cannot go to layout,
-   so connecting them after sign-off is the gate that unblocks milestone 4.
-   Pins 64/65 (RTS/CTS swap) and 128 are logged anomalies with no design impact.
-2. **Task 2 — keep `docs/firmware-notes.md` current** (FW-1…FW-17, BV-1…BV-4);
-   update it every milestone.
-3. **Task 3 — F-15 decision (layout blocker).** R80 is 10 Ω
-   (FRP2512J100, C3013385). The pulse duty is fine — 8.5 mJ/event, 384 W peak,
-   τ = 44 µs, energy independent of R — but 10 Ω has **no load-line solution at
-   the 10.5 V floor at full load** (brown-out). Recommended: **1 Ω anti-surge,
-   FRS2512F1R00TS, C55348540** (0.41 W continuous, same pulse energy).
-4. **Task 4 — close the rules audit findings.** **F-13**: modem bulk caps are
-   X5R 6.3 V on a 4.35 V rail (violates the no-X5R / 2:1 derating rule) —
-   choose 10 V X7S, 4×22 µF/16 V X7R, or a written waiver. **F-14**: add the six
-   missing test points (VIN, VBAT_MODEM, CANH, CANL, modem UART pair).
-5. **Task 5 — milestone-4 prep is done except two footprint items.**
-   Stackup defined (JLC7628 1.6 mm: L1 sig/RF, L2 solid GND, L3 power, L4 sig);
-   placement study in `docs/placement-study.svg` on a **provisional 80×60 mm**
-   outline — final outline and M3 hole positions come from the purchased
-   housing. Open: **F-16** (SIM holder locating posts — drawing's y-datum is
-   ambiguous, needs a physical sample or vendor answer; no copper was guessed)
-   and **F-17** (MFF2 land pattern — needs the chosen eSIM vendor's packaging
-   spec; st.com was unreachable).
+### Verify before touching anything
 
-Also still open: **F-12** (EG11752 R_IS value and the 100 V / 455 ns
-min-on-time bench test — the #1 bench item) and **F-5** (provisional passive
-C-numbers, to be verified at the milestone-5 BOM stage).
+Do these three checks first. Each guards a failure that is otherwise silent:
 
-**Do not start routing until F-9 is signed off and F-15 is decided.**
+```bash
+python3 tools/build.py        # runs the whole build in the only order that works
+```
+Then confirm all three:
+
+| check | expected | why it matters |
+|---|---|---|
+| `VERIFIED: net classes and patterns survive a KiCad round trip` appears twice | yes | `pcbnew.SaveBoard()` wipes `net_settings`; if this fails, RF/HV/VBAT_MODEM rules are silently not applying (SKILL G2) |
+| DRC total | **33 violations + 452 unconnected** — i.e. 20 clearance, 8 silk-over-copper, 3 isolated-copper, 2 silk-overlap. **Courtyard overlaps, shorting items and solder-mask bridges must all be 0.** | a different number means something moved; reconcile before proceeding |
+| ERC | **0 errors, 13 warnings** (all `same_local_global_label`) | — |
+
+`git status` must be clean after a build: the board is generated
+deterministically and re-running must produce a byte-identical file.
+
+### What is done
+
+- **F-9 / F-9b** signed off; all 43 EC200U GND pads connected, verified against
+  Table 7 of the datasheet committed at `docs/Quectel_EC200U_..._V1.2.pdf`.
+- **F-13** 4× 47 µF X7R (C84494) = 111.9 µF effective at 4.35 V/85 °C. Rule 1 MET.
+- **F-14** six test points. **F-15** R80 = 1 Ω (C55348540).
+- **F-16 CLOSED** — the imported SIM footprint already had the locating-post
+  holes, matching three vendors to 0.01 mm. Now NPTH.
+- **F-17 CLOSED** — MFF2 land derived from four vendor documents + ETSI.
+- **F-20 CONFIRMED** — conformal coating is a **safety-critical process
+  requirement**; the 0.3 mm DRC exception at U5 is valid only while it holds.
+- Placement, L2 GND, L3 pours, HV keepout (`HV_ZONE` rule area), 46 stitching
+  vias. All 218 components placed, 137 top / 81 bottom.
+
+### Next actions, in order
+
+1. **Wait for floorplan approval.** Renders are in `out/renders/`.
+   The buck-cluster overlaps are resolved (3 → 0) by restructuring the cluster
+   into a column, **not** by changing the inductor — measured: growing the
+   board plateaued at 2 overlaps and a 10×10 inductor still left 1. The
+   incumbent L1 (C21325) is retained; C5142144 is the qualified 10×10 fallback
+   if the outline ever shrinks. See design-log for the DCR/loss comparison.
+2. **Then Option 1 routing** — hand-route RF CPWG (W = 0.40, G = 0.30) with
+   fence vias at ≥ 0.80 mm standoff and 2.0 mm pitch, the HV front end, the
+   VBAT_MODEM 2 mm rail and the U5 switching loop; then FreeRouting for the
+   remaining low-speed nets (**pin its version and jar SHA-256 in §1 first**);
+   then review to DRC-clean.
+
+### Still open for the user
+
+**F-20 is CONFIRMED and closed** — conformal coating is mandatory; the 0.3 mm
+DRC exception at U5 is valid only while that holds (SKILL.md P1).
+**F-18** 5th M3 hole needs a matching housing boss · **F-19** 1S Li-ion is
+−20…+60 °C discharge against the +70 °C product ceiling · double-sided assembly
+cost · AF1/AF2 sit at x = 72 while U1's ANT pads are at x = 76.55, so the RF run
+doubles back inboard · final outline and hole positions from the purchased
+housing.
+
+**The narrative for every decision above is in `design-log.md`, newest last.**
 
 ---
 
