@@ -23,7 +23,7 @@ import sys
 import pcbnew
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from pcbgen import PROJ, PCB, mm, pt                       # noqa: E402
+from pcbgen import PROJ, PCB, mm, pt, canonicalise         # noqa: E402
 
 # pcbgen.mm is FromMM (mm -> nm, for WRITING geometry). Reading a position back
 # needs the inverse. Conflating the two overflows VECTOR2I.
@@ -256,12 +256,27 @@ def main():
     print("VBAT_MODEM + U5 hot loop: left to FreeRouting under their "
           "netclasses (MODEM_BULK 2.00 mm, PWR 0.50 mm)")
 
+    # Lock everything placed by hand. This is part of the reproducible flow,
+    # not a one-off: the lock is what makes KiCad export these as Specctra
+    # (type fix) rather than (type route), which is what stops FreeRouting
+    # ripping up the RF CPWG, its fence and the U1/U5 stitching vias. Locking
+    # outside the generator would also break byte-identical regeneration.
+    nlock = 0
+    for t in board.GetTracks():
+        t.SetLocked(True)
+        nlock += 1
+    print(f"locked {nlock} hand-routed items (exported as Specctra 'type fix')")
+
     board.BuildListOfNets()
     try:
         pcbnew.ZONE_FILLER(board).Fill(board.Zones())
     except Exception as e:
         print(f"  zone refill skipped: {e}")
     pcbnew.SaveBoard(PCB, board)
+    # Same reason as pcbgen/pcbplace: pcbnew mints random KIIDs and writes
+    # tracks from an unordered container, so without this the board is not
+    # byte-stable and "rebuild, then git diff must be empty" stops working.
+    canonicalise(PCB)
     print(f"\ntracks added: {n_tracks}   fence/tie vias added: {n_vias}")
 
 

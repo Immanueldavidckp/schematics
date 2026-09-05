@@ -31,11 +31,11 @@ Report includes: Errors, Warnings
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 53.34 mm): Global Label 'IGN_SENSE'
-    @(370.84 mm, 116.84 mm): Label 'IGN_SENSE'
+    @(322.58 mm, 101.60 mm): Label 'IGN_SENSE'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 71.12 mm): Global Label 'MODEM_STATUS'
-    @(165.10 mm, 157.48 mm): Label 'MODEM_STATUS'
+    @(149.86 mm, 149.86 mm): Label 'MODEM_STATUS'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 83.82 mm): Global Label 'VBAT_SENSE'
@@ -43,11 +43,11 @@ Report includes: Errors, Warnings
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 86.36 mm): Global Label 'VIN_SENSE'
-    @(322.58 mm, 58.42 mm): Label 'VIN_SENSE'
+    @(370.84 mm, 73.66 mm): Label 'VIN_SENSE'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(220.98 mm, 30.48 mm): Global Label '5V0'
-    @(96.52 mm, 297.18 mm): Label '5V0'
+    @(121.92 mm, 297.18 mm): Label '5V0'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(220.98 mm, 55.88 mm): Global Label 'SYS'
@@ -55,7 +55,7 @@ Report includes: Errors, Warnings
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(220.98 mm, 60.96 mm): Global Label 'VIN'
-    @(292.10 mm, 170.18 mm): Label 'VIN'
+    @(199.39 mm, 302.26 mm): Label 'VIN'
 
 ***** Sheet /mcu/
 ***** Sheet /storage/
