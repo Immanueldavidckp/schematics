@@ -7837,7 +7837,37 @@
 		)
 		(uuid "a565b06c-194e-5369-83f3-028ac894429b")
 	)
-	(text "GNSS: C84 100pF SERIES DC BLOCK IS ALWAYS FITTED (Quectel fig 31). L4/R90/C83 are the bias-T, DNP - fit only for an active antenna. 68nH per Antenna Design Guide >=56nH; must be WIREWOUND (multilayer 0402 SRF is ~1.1GHz, useless)."
+	(wire
+		(pts
+			(xy 358.14 181.61) (xy 358.14 177.8)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "296ee019-b25d-535e-963d-b9395b2d1dfb")
+	)
+	(label "GNSS_BIAS"
+		(at 358.14 177.8 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "7dc10359-8b38-576d-b8bf-05756bc7b2e4")
+	)
+	(wire
+		(pts
+			(xy 358.14 189.23) (xy 358.14 191.77)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7ae87d9b-4e80-526e-90fb-6bf6c1af5b80")
+	)
+	(text "GNSS bias-T POPULATED ON ALL BUILDS - antenna C784386 is ACTIVE (LNA 21.5dB, 1.8-3.6V). C84 100pF is the SERIES DC BLOCK (Quectel fig 31), always fitted. L4 68nH per Antenna Design Guide >=56nH, must be WIREWOUND. R90 is the antenna-short current limit - see design-log."
 		(exclude_from_sim no)
 		(at 330.2 175.26 0)
 		(effects
@@ -7846,7 +7876,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "097494f5-5c71-58e5-b1a4-b2eaa5ec5b30")
+		(uuid "8302b6ad-1d6c-5ec6-b9d5-85e136a05888")
 	)
 	(wire
 		(pts
@@ -7856,7 +7886,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "91d5dc33-f24d-5bb0-bc2b-2d33e2d08174")
+		(uuid "2a7d9ca0-5e20-5d0f-8f69-c37686e40d2b")
 	)
 	(label "ANT_GNSS_F"
 		(at 323.85 194.31 0)
@@ -7866,7 +7896,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "dae0c5bb-b3d2-5776-b842-a1206a23b24a")
+		(uuid "7a8e4a3c-fffe-5a19-8598-e1a41b0c7b52")
 	)
 	(no_connect
 		(at 318.77 191.77)
@@ -7880,7 +7910,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "df52a59d-3b3c-5c82-bd00-48bb68a960eb")
+		(uuid "6ea17e98-63ec-5709-bdaf-a185cb2a9610")
 	)
 	(wire
 		(pts
@@ -7890,7 +7920,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "ec44ae3f-385b-5e84-97e3-c53bcfc7b9ff")
+		(uuid "a9ec74c1-7d9c-5a27-92c5-413b6c217a70")
 	)
 	(text "ANT_MAIN(49) / ANT_GNSS(47): 50R CPWG at layout, pi network (series 0R fitted, shunts DNP) to U.FL. SMA drill template is a housing option, not a board part."
 		(exclude_from_sim no)
@@ -15608,7 +15638,7 @@
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(dnp yes)
+		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "f676f82e-59e7-50ec-bb05-abd6c476aa18")
 		(property "Reference" "L4"
@@ -15676,7 +15706,7 @@
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(dnp yes)
+		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "4879b2d8-e32f-524f-9414-4de6c3e36784")
 		(property "Reference" "R90"
@@ -15687,7 +15717,7 @@
 				)
 			)
 		)
-		(property "Value" "10R"
+		(property "Value" "68R"
 			(at 365.76 185.42 0)
 			(effects
 				(font
@@ -15695,7 +15725,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+		(property "Footprint" "Resistor_SMD:R_1210_3225Metric"
 			(at 365.76 190.5 0)
 			(hide yes)
 			(effects
@@ -15713,7 +15743,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25077"
+		(property "LCSC" "TBD-F22"
 			(at 365.76 190.5 0)
 			(hide yes)
 			(effects
@@ -15744,7 +15774,7 @@
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(dnp yes)
+		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "b1e7aded-7512-5868-ad47-98e9d96981a8")
 		(property "Reference" "C83"
@@ -15845,6 +15875,113 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:C")
+		(at 358.14 185.42 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "f1de7362-3bf2-558b-bbfb-3527c503456e")
+		(property "Reference" "C85"
+			(at 358.14 182.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10nF"
+			(at 358.14 180.34 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
+			(at 358.14 185.42 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 358.14 185.42 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "TBD-F22"
+			(at 358.14 185.42 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "963058fe-0aa5-55f7-a806-d051b438abc2")
+		)
+		(pin "2"
+			(uuid "a487b0d6-e28b-5585-914a-8930628b6619")
+		)
+		(instances
+			(project "telematics-tracker"
+				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68/70fac1b9-7bfc-5985-a8dc-ae866bd73e38"
+					(reference "C85")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 358.14 191.77 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "485b8152-6f0d-55a5-ac44-8a79251dc6eb")
+		(property "Reference" "#PWR148"
+			(at 358.14 184.15 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 358.14 191.77 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "15248323-553f-5235-82d3-5bc08b6ecaec")
+		)
+		(instances
+			(project "telematics-tracker"
+				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68/70fac1b9-7bfc-5985-a8dc-ae866bd73e38"
+					(reference "#PWR148")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "jlc:XY-IPEX1")
 		(at 312.42 193.04 0)
 		(unit 1)
@@ -15927,8 +16064,8 @@
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
-		(uuid "485b8152-6f0d-55a5-ac44-8a79251dc6eb")
-		(property "Reference" "#PWR148"
+		(uuid "2f66c142-c969-5af1-aca8-b23c2c6f83d7")
+		(property "Reference" "#PWR149"
 			(at 300.99 184.15 0)
 			(effects
 				(font
@@ -15946,12 +16083,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "15248323-553f-5235-82d3-5bc08b6ecaec")
+			(uuid "50c6a119-4f27-5988-9084-11ad1fbfeeb9")
 		)
 		(instances
 			(project "telematics-tracker"
 				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68/70fac1b9-7bfc-5985-a8dc-ae866bd73e38"
-					(reference "#PWR148")
+					(reference "#PWR149")
 					(unit 1)
 				)
 			)
@@ -15966,8 +16103,8 @@
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
-		(uuid "2f66c142-c969-5af1-aca8-b23c2c6f83d7")
-		(property "Reference" "#PWR149"
+		(uuid "83dd982e-19cd-584c-8273-89ec27c3740c")
+		(property "Reference" "#PWR150"
 			(at 300.99 186.69 0)
 			(effects
 				(font
@@ -15985,12 +16122,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "50c6a119-4f27-5988-9084-11ad1fbfeeb9")
+			(uuid "ac54d42b-04e7-551c-a2db-f07a4bab0005")
 		)
 		(instances
 			(project "telematics-tracker"
 				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68/70fac1b9-7bfc-5985-a8dc-ae866bd73e38"
-					(reference "#PWR149")
+					(reference "#PWR150")
 					(unit 1)
 				)
 			)

@@ -159,7 +159,22 @@ Verbatim, GNSS Antenna Application Note V1.0 §4.2.3:
 > vicinity of the antenna area. The minimum distance between antenna and
 > enclosure is 3 mm."
 
-### Adhesive will not hold at the top of the temperature range
+### Antenna temperature — the weakest link in the unit
+
+Both antennas are rated **−45 to +85 °C for operating AND storage** (the two
+ranges are identical in both datasheets). Against this product:
+
+| | product | antennas |
+|---|---|---|
+| operating max | +70 °C | +85 °C — 15 °C margin |
+| **survival max** | **+85 °C** | **+85 °C — ZERO margin** |
+
+Neither vendor publishes an excursion rating or a derating curve. **The
+antennas are the first thing that will fail in a hot install**, and they sit in
+the lid, which is the hottest part of the enclosure. This is the strongest
+practical reason to obey the shading rule in §1.
+
+### Antenna retention MUST be mechanical
 
 Quectel Antenna Design Guide V3.3 §3.1 note 3:
 > "As effectiveness of the adhesive (usually 3M adhesive is used) will be
@@ -167,10 +182,14 @@ Quectel Antenna Design Guide V3.3 §3.1 note 3:
 > methods should be used to fix the FPC antenna."
 
 This unit is rated to **+70 °C ambient** and the lid is the hottest part of the
-enclosure. **Do not rely on adhesive alone for the LTE FPC** — use heat staking,
-a clamp or a mechanical retainer. Note also that C496569's datasheet specifies
-its mount as **压扣 (crimp)**, not adhesive; a 3M backing on this part is
-**UNVERIFIED** and must be confirmed with the supplier before the build.
+enclosure. **Adhesive alone is not an acceptable retention method for either
+antenna.** Use heat staking, a moulded clamp or rib, a screwed retainer, or a
+captive pocket in the lid. C496569's own datasheet gives its mount as
+**压扣 (crimp)**, not adhesive; any 3M backing on that part is **UNVERIFIED**.
+
+If an antenna detaches in service it will hang on its coax, detune, and
+eventually break the U.FL — an intermittent-GNSS fault that is very hard to
+diagnose in the field. Retention is worth getting right.
 
 ## 6. Commissioning check
 

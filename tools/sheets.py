@@ -561,7 +561,20 @@ LCSC_SIM = "C53207808"         # JXTCONN NANO SIM 7P 1.37H PUSH (6 contacts + CD
 # capacitive at 1575 MHz. LQW15AN68NG80D is SRF 2.5 GHz, 320 mA, DCR 1.128 ohm.
 LCSC_C100P_RF = "C1546"        # 100pF C0G 50V 0402, JLC Basic - SERIES block
 LCSC_L68N_RF = "C3221844"      # Murata LQW15AN68NG80D 68nH wirewound, SRF 2.5GHz
-LCSC_R10_RF = "C25077"         # 10R 0402 1%, JLC Basic
+LCSC_R10_RF = "C25077"         # 10R 0402 1%, JLC Basic (unused - see R90)
+# F-22: R90 limits the 3V3 feed current if the GNSS antenna or its coax shorts.
+# 68R gives 47.7 mA fault current (3.3 / (68 + 1.128 L4 DCR)), against a 3V3
+# LDO (ME6211, 500 mA) already carrying ~150 mA - the rail cannot be pulled
+# down. Dissipation in the fault is 0.155 W, which a 1210 (500 mW) survives
+# indefinitely even derated ~50% at 70 C ambient.
+# Deliberately more conservative than the ~150 mA brief: 22R would hit 143 mA
+# but needs a 2512 and burns 0.448 W CONTINUOUSLY inside a sealed IP65 box at
+# 70 C, from a fault that does not clear itself.
+# Normal drop is 4.3 mA x 69.1 = 0.30 V, so the antenna sees 3.00 V against its
+# 1.8 V minimum. Bonus: 68R with C83 0.1uF puts the LNA supply corner at 23 kHz.
+GNSS_FEED_R = "68R"
+GNSS_FEED_R_FP = "Resistor_SMD:R_1210_3225Metric"
+LCSC_R_GNSS_FEED = "TBD-F22"   # C-number at BOM stage, like the other TBD-F5
 LCSC_UFL = "C53133524"         # XYECONN XY-IPEX1 (IPEX gen-1 / U.FL, 6 GHz 50R)
 LCSC_USBLC6 = "C7519"          # ST USBLC6-2SC6 (genuine)
 LCSC_SMF05C = "C15879"         # onsemi SMF05CT1G SOT-363
@@ -918,23 +931,34 @@ def build_modem_rf():
             sh.series("Device:C", "C84", "100pF C0G", (g(base + 10), g(yb)),
                       f"ANT_{tag}_C", f"ANT_{tag}_F",
                       "Capacitor_SMD:C_0402_1005Metric", LCSC_C100P_RF)
-            # bias-T proper - DNP, fitted only for an active antenna
+            # bias-T POPULATED ON ALL BUILDS (2026-09-05): the selected
+            # internal GNSS antenna C784386 is ACTIVE (LNA 21.5 dB,
+            # 1.8-3.6 V), because no passive 25x25 patch with a U.FL pigtail
+            # is in LCSC stock. The bias-T is therefore not optional.
             lb = sh.place("Device:L", "L4", "68nH", (g(base + 42), g(yb)),
-                          "Inductor_SMD:L_0402_1005Metric", LCSC_L68N_RF,
-                          dnp=True)
+                          "Inductor_SMD:L_0402_1005Metric", LCSC_L68N_RF)
             sh.net(lb, "1", f"ANT_{tag}_F", length=g(3))
             sh.net(lb, "2", "GNSS_BIAS", length=g(3))
-            sh.series("Device:R", "R90", "10R", (g(base + 58), g(yb - 10)),
+            # R90 is the antenna-short current limit - value and package set
+            # by the fault calculation in the design log, NOT an RF part.
+            sh.series("Device:R", "R90", GNSS_FEED_R, (g(base + 58), g(yb - 10)),
                       "3V3", "GNSS_BIAS",
-                      "Resistor_SMD:R_0402_1005Metric", LCSC_R10_RF, dnp=True)
+                      GNSS_FEED_R_FP, LCSC_R_GNSS_FEED)
             sh.series("Device:C", "C83", "100nF", (g(base + 46), g(yb - 14)),
                       "GNSS_BIAS", None,
                       "Capacitor_SMD:C_0402_1005Metric", LCSC_C100N,
-                      dnp=True, gnd_b=True)
-            sh.text("GNSS: C84 100pF SERIES DC BLOCK IS ALWAYS FITTED (Quectel "
-                    "fig 31). L4/R90/C83 are the bias-T, DNP - fit only for an "
-                    "active antenna. 68nH per Antenna Design Guide >=56nH; must "
-                    "be WIREWOUND (multilayer 0402 SRF is ~1.1GHz, useless).",
+                      gnd_b=True)
+            # 68R (vs Quectel's 10R) raises supply-noise coupling into the LNA,
+            # so a second, faster bypass sits at the injection node.
+            sh.series("Device:C", "C85", "10nF", (g(base + 52), g(yb - 14)),
+                      "GNSS_BIAS", None,
+                      "Capacitor_SMD:C_0402_1005Metric", "TBD-F22",
+                      gnd_b=True)
+            sh.text("GNSS bias-T POPULATED ON ALL BUILDS - antenna C784386 is "
+                    "ACTIVE (LNA 21.5dB, 1.8-3.6V). C84 100pF is the SERIES DC "
+                    "BLOCK (Quectel fig 31), always fitted. L4 68nH per Antenna "
+                    "Design Guide >=56nH, must be WIREWOUND. R90 is the "
+                    "antenna-short current limit - see design-log.",
                     (g(base + 30), g(yb - 22)))
         af = sh.place("jlc:XY-IPEX1", f"AF{1 + ref}", "U.FL",
                       (g(base + 16), g(yb - 8)), "jlc:CONN-SMD_XY-IPEX1",

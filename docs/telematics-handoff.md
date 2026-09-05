@@ -243,6 +243,56 @@ this — it is the package.
    coating requirement is ever dropped, that exception becomes invalid and U5
    must be reconsidered.
 
+### 6.2 F-23 — the antennas are the weakest thermal link (2026-09-05)
+
+Both selected antennas are rated **−45 to +85 °C for OPERATING *and* STORAGE**
+— the two ranges are identical, verified verbatim in both datasheets:
+
+| | operating | storage |
+|---|---|---|
+| LTE C496569 (工作温度 / 存储温度) | −45…+85 °C | −45…+85 °C |
+| GNSS C784386 | −45…+85 °C | −45…+85 °C |
+
+Against the product spec (§1.1):
+
+| | product | antennas | margin |
+|---|---|---|---|
+| operating max | +70 °C | +85 °C | **+15 °C — OK** |
+| survival max | +85 °C | +85 °C | **ZERO** |
+
+**The 85 °C survival limit sits exactly on the antennas' rated maximum**, and
+neither vendor publishes an excursion rating, a derating curve or any
+life-versus-temperature data. A sealed IP65 ABS lid in Indian sun can exceed
+85 °C internally, and the antennas are mounted *in the lid* — the hottest part
+of the enclosure.
+
+This makes the antennas the weakest thermal link in the design and reinforces
+two existing requirements rather than adding a new one: the housing **must** be
+shaded or light-coloured (§1.1), and antenna retention **must** be mechanical
+(below). **Bench soak at 85 °C is required before release.**
+
+*Decision open: accept the zero survival margin, narrow the survival spec, or
+treat the antennas as a serviceable item like BT1.*
+
+### 6.3 Antenna retention — mechanical, not adhesive
+
+**Antennas must be mechanically retained in the lid. Adhesive alone is not
+acceptable.** Quectel Antenna Design Guide V3.3 §3.1 note 3:
+
+> "As effectiveness of the adhesive (usually 3M adhesive is used) will be
+> weakened under high ambient temperature, heat staking or other mounting
+> methods should be used to fix the FPC antenna."
+
+At +70 °C rated ambient — and with the lid the hottest surface — a 3M-backed
+FPC will creep and eventually detach. Acceptable methods: heat staking, a
+moulded clamp or rib, a screwed retainer, or a captive pocket in the lid.
+Note also that **C496569's own datasheet gives its mount as 压扣 (crimp)**, not
+adhesive; any 3M backing on that part is unverified.
+
+**This is a housing selection criterion**, not just an assembly instruction: the
+chosen enclosure must provide the retention features, so it cannot be a plain
+smooth-lidded box.
+
 ## 7. PCB & housing
 
 4-layer, ~60 × 80 mm, rules per skill file §PCB. HV zone (VIN, dividers,
@@ -251,7 +301,8 @@ clearance and silkscreen boundary. Both U.FL at antenna end, ≥15 mm apart,
 GND keepout under FPC antenna region per antenna datasheet. Battery pocket
 marked; 4× M3 mounting holes. Housing: off-the-shelf IP65 ABS ≈120×80×40 mm
 (Indian supplier, e.g. Hylec/Sunbox class) + PG7 cable gland; lid carries
-FPC LTE antenna and GNSS patch on adhesive; alternate drill template for
+FPC LTE antenna and GNSS patch **mechanically retained — heat stake, clamp or
+captive pocket, NOT adhesive alone (see §6.3)**; alternate drill template for
 2× SMA bulkhead (steel-cabinet installs use external antennas).
 
 ## 8. Claude Code — setup and execution order
