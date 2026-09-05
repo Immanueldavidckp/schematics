@@ -159,7 +159,7 @@ Verbatim, GNSS Antenna Application Note V1.0 §4.2.3:
 > vicinity of the antenna area. The minimum distance between antenna and
 > enclosure is 3 mm."
 
-### Antenna temperature — the weakest link in the unit
+### Antennas are service items
 
 Both antennas are rated **−45 to +85 °C for operating AND storage** (the two
 ranges are identical in both datasheets). Against this product:
@@ -170,9 +170,14 @@ ranges are identical in both datasheets). Against this product:
 | **survival max** | **+85 °C** | **+85 °C — ZERO margin** |
 
 Neither vendor publishes an excursion rating or a derating curve. **The
-antennas are the first thing that will fail in a hot install**, and they sit in
-the lid, which is the hottest part of the enclosure. This is the strongest
-practical reason to obey the shading rule in §1.
+antennas are among the first things that will age in a hot install**, and they
+sit in the lid, which is the hottest part of the enclosure.
+
+**Both antennas are field-replaceable service items**, like the battery. They
+are on U.FL pigtails and can be swapped without unsoldering anything. If GNSS
+fix quality degrades over time in a hot installation, the antenna is the first
+thing to replace — not the board. This is also the strongest practical reason
+to obey the shading rule in §1.
 
 ### Antenna retention MUST be mechanical
 

@@ -59,8 +59,12 @@ user: confirm this is acceptable, or narrow the product rating to +60 °C.
 
 1. No electrolytic or tantalum capacitors. Ceramic X7R/X7S only, voltage
    derated ≥2:1 (100 V rail parts rated 100 V minimum with TVS clamping).
-2. Backup battery is field-replaceable: 1S Li-ion on a JST-PH-2+NTC (3-pin
-   JST-XH) connector, never soldered. Battery is a 2–3 year service item.
+2. **Field-replaceable / service items — three parts, all temperature-limited:**
+   the backup battery (1S Li-ion on a JST-PH-2+NTC 3-pin JST-XH connector,
+   never soldered, 2–3 year interval) **and both antennas** (lid-mounted on
+   U.FL pigtails, F-23). These are the parts whose life is set by temperature
+   rather than by design margin, and all three are reachable without
+   unsoldering anything.
 3. MCU can hard power-cycle the modem: high-side P-FET switch on modem VBAT
    driven by MCU GPIO. A hung modem must never brick a deployed unit.
 4. Independent watchdog (IWDG) always on; brown-out detector enabled.
@@ -243,7 +247,7 @@ this — it is the package.
    coating requirement is ever dropped, that exception becomes invalid and U5
    must be reconsidered.
 
-### 6.2 F-23 — the antennas are the weakest thermal link (2026-09-05)
+### 6.2 F-23 — antennas in the 85 °C survival tier (ACCEPTED 2026-09-05)
 
 Both selected antennas are rated **−45 to +85 °C for OPERATING *and* STORAGE**
 — the two ranges are identical, verified verbatim in both datasheets:
@@ -271,8 +275,17 @@ two existing requirements rather than adding a new one: the housing **must** be
 shaded or light-coloured (§1.1), and antenna retention **must** be mechanical
 (below). **Bench soak at 85 °C is required before release.**
 
-*Decision open: accept the zero survival margin, narrow the survival spec, or
-treat the antennas as a serviceable item like BT1.*
+**ACCEPTED.** The antennas join the **85 °C survival tier already set by U1**,
+whose extended range tops out at the same +85 °C — so the tier is defined
+consistently by three parts, not by the antennas alone. Two consequences,
+both now binding:
+
+1. **Both antennas are field-replaceable service items** alongside BT1
+   (rule 2).
+2. **85 °C soak is part of prototype qualification, with GNSS C/N0 measured
+   before and after.** C/N0 is the right metric because it is what an ageing
+   patch or a degraded LNA actually loses; a pass/fail "does it still get a
+   fix" would miss gradual degradation.
 
 ### 6.3 Antenna retention — mechanical, not adhesive
 
