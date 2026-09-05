@@ -29,7 +29,14 @@ HV = ["VIN", "/power/VIN_F", "/power/VIN_P", "/power/VIN_B",
       "/io/IGN", "/io/IGN_D0", "/io/IGN_D1",
       "/io/DI1_IN", "/io/DI1_M1", "/io/DI1_M2", "/io/DI1_LED",
       "/io/DI2_IN", "/io/DI2_M1", "/io/DI2_M2", "/io/DI2_LED",
-      "/io/J1_SPARE1", "/io/J1_SPARE2"]
+      "/io/J1_SPARE1", "/io/J1_SPARE2",
+      # The buck switching node swings between GND and VIN on every cycle, so
+      # it is a 100 V net with fast edges - it was sitting in Default (0.20 mm
+      # track, 0.15 mm clearance). Found because the HV maze router treated it
+      # as LV and walled U5's own VIN pins off behind a 1.50 mm halo, making
+      # /power/VIN_B unroutable (0/4). U5_VB is the bootstrap, referenced to
+      # SW_BUCK, so it rides to VIN + VCC and is HV for the same reason.
+      "/power/SW_BUCK", "/power/U5_VB"]
 RF = ["/modem_rf/ANT_GNSS_M", "/modem_rf/ANT_GNSS_C",
       "/modem_rf/ANT_MAIN_M", "/modem_rf/ANT_MAIN_C"]
 PWR = ["5V0", "SYS", "3V3", "/mcu/3V3A", "/modem_rf/VDD_EXT_1V8"]
@@ -74,8 +81,36 @@ def cls(name, priority, clearance, track, vd, vdr):
     }
 
 
+# Board-level minima. KiCad reset min_clearance from 0.15 to 0.0 during one of
+# its project round-trips - the same silent-regression class as G2 wiping
+# net_settings. A zero minimum clearance means the board-wide floor stops
+# existing, so it is asserted here and verified after the round trip.
+BOARD_RULES = {
+    "min_clearance": 0.15,              # JLCPCB 4-layer floor
+    "min_track_width": 0.20,
+    "min_via_diameter": 0.50,
+    "min_via_annular_width": 0.10,
+    "min_through_hole_diameter": 0.30,
+    "min_hole_to_hole": 0.50,           # matches the .kicad_dru rule
+    "min_copper_edge_clearance": 0.50,
+}
+
+
+def _assert_floors():
+    """Every class must meet the board floor: track >= 0.20, annulus >= 0.10."""
+    for name, _prio, _clr, track, vd, vdr in CLASSES:
+        assert track >= 0.20, f"{name}: track {track} < 0.20 board floor"
+        ann = (vd - vdr) / 2
+        assert ann >= 0.10 - 1e-9, f"{name}: via annulus {ann:.3f} < 0.10"
+    print("all net classes meet the board floors (track >= 0.20, annulus >= 0.10)")
+
+
 def apply():
+    _assert_floors()
     d = json.load(open(PRO))
+    rules = d.setdefault("board", {}).setdefault("design_settings", {}) \
+             .setdefault("rules", {})
+    rules.update(BOARD_RULES)
     ns = d["net_settings"]
     default = [c for c in ns["classes"] if c["name"] == "Default"]
     ns["classes"] = default + [cls(*c) for c in CLASSES]
@@ -104,6 +139,17 @@ def verify():
     ok = set(names) == want and len(pats) == len(RF) + len(HV) + len(BULK) + len(PWR) + 1
     print(f"after kicad round trip: classes={names}")
     print(f"                        patterns={len(pats)}")
+    # board minima must survive too
+    got = d.get("board", {}).get("design_settings", {}).get("rules", {})
+    bad = {k: (v, got.get(k)) for k, v in BOARD_RULES.items()
+           if abs(float(got.get(k, -1)) - v) > 1e-9}
+    if bad:
+        print("FAILED: board minima did not survive:")
+        for k, (want_v, got_v) in sorted(bad.items()):
+            print(f"    {k}: want {want_v}, got {got_v}")
+        return 1
+    print(f"                        board minima: {len(BOARD_RULES)} verified "
+          f"(min_clearance={got.get('min_clearance')})")
     if not ok:
         print("FAILED: KiCad discarded net class data - schema mismatch")
         return 1

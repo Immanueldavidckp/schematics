@@ -70,7 +70,6 @@ def build_mcu():
         "10": ("IGN_SENSE", "input"),
         "11": ("VIN_SENSE", "input"),
         "18": ("VBAT_SENSE", "input"),
-        "19": ("ADC_SPARE", "passive"),
         "14": ("FLASH_CS", "output"),
         "15": ("SPI1_SCK", "output"),
         "16": ("SPI1_MISO", "input"),
@@ -112,6 +111,12 @@ def build_mcu():
 
     for pin in ("8", "23", "35", "47"):          # VSSA, VSS_1..3
         sh.gnd(u2, pin, length=g(3))
+
+    # PB1 was the spare ADC divider input. The divider (R40/R41/C30, all DNP)
+    # was removed to recover HV area, so the pin is explicitly no-connected.
+    # It remains a free ADC-capable pin at the package if a future variant
+    # wants a divider - nothing about the MCU changed, only the parts fitted.
+    sh.nc(u2, "19")
 
     # --- 8 MHz HSE crystal (Crystal_GND24: pins 1/3 = terminals, 2/4 = case)
     y1 = sh.place("Device:Crystal_GND24", "Y1", "8MHz",
@@ -339,10 +344,10 @@ def build_io():
             sh.net(j1, pin, net, length=g(6))
     sh.text("J1 pinout: 1 VIN, 2 GND, 3 IGN, 4 CANH, 5 CANL, 6 GND, 7 DI1, "
             "8 DI2, 9 DO1, 10 DO2, 11/12 spare.", (g(20), g(104)))
-    for i, net in (("8", "J1_SPARE1"), ("9", "J1_SPARE2")):
-        tp = sh.place("Connector:TestPoint", f"TP{i}", net,
-                      (g(20 + (0 if net.endswith('1') else 8)), g(96)), TP)
-        sh.net(tp, "1", net, length=g(3))
+    # TP8/TP9 on the J1 spares are removed: handoff section 2 rule 8 asks for
+    # test points on rails, SWD, both UARTs and CAN - a spare connector pin is
+    # none of those, and both landed inside HV_ZONE where they blocked the
+    # J1_SPARE routing at the 1.5 mm HV-to-LV clearance.
 
     # ---------------- CAN: choke + TVS at connector, transceiver, split term
     # TDK ACT45B circuit diagram: winding A = pins 1->4, winding B = pins 2->3
@@ -512,10 +517,6 @@ def build_io():
         sh.net(bav, "3", f"{tag}_SENSE", length=g(4))
         sh.net(bav, "1", "3V3", length=g(4))
         sh.gnd(bav, "2", length=g(3))
-        shape = "output"
-        sh.hier(sh.place("Connector:TestPoint", f"TP{10 if tag == 'VIN' else 11}",
-                         f"{tag}_SENSE", (g(304), g(ysense)), TP),
-                "1", f"{tag}_SENSE", shape, length=g(4))
     sh.text("VIN and IGN sensing: 300k (3x100k 0805) : 9.1k, 100nF, BAV99 "
             "clamp to 3V3/GND.  IGN also serves as the EXTI wake input.",
             (g(224), g(30)))
@@ -527,25 +528,18 @@ def build_io():
               R0805, LCSC_R1M, gnd_b=True)
     sh.series("Device:C", "C29", "100nF", (g(254), g(108)), "VBAT_SENSE", None,
               C0603, LCSC_C100N, gnd_b=True)
-    bs = sh.place("Connector:TestPoint", "TP12", "VBAT_SENSE",
-                  (g(266), g(108)), TP)
-    sh.hier(bs, "1", "VBAT_SENSE", "output", length=g(4))
     sh.hier(sh.place("Connector:TestPoint", "TP13", "SYS", (g(218), g(116)), TP),
             "1", "SYS", "input", length=g(4))
     sh.text("Battery sense 1M:1M from SYS (~2 uA standing drain).",
             (g(224), g(102)))
 
-    # spare ADC divider footprint, fitted DNP
-    sh.series("Device:R", "R40", "100k", (g(230), g(140)), "VIN", "ADC_SPARE",
-              R0805, LCSC_R100K, dnp=True)
-    sh.series("Device:R", "R41", "9.1k", (g(242), g(140)), "ADC_SPARE", None,
-              R0805, LCSC_R9K1, dnp=True, gnd_b=True)
-    sp = sh.place("Device:C", "C30", "100nF", (g(254), g(140)), C0603,
-                  LCSC_C100N, dnp=True)
-    sh.hier(sp, "1", "ADC_SPARE", "output", length=g(5))
-    sh.gnd(sp, "2", length=g(3))
-    sh.text("Spare ADC divider footprint - fitted DNP (handoff section 5, PB1).",
-            (g(224), g(134)))
+    # The spare ADC divider (R40 100k / R41 9.1k / C30, all DNP) is REMOVED.
+    # It cost three courtyards plus an HV-classified 100k in the front end -
+    # R40 sat at 91.66 V and needed its own .kicad_dru clearance exception -
+    # and the board has no area to spare: at 82 x 62 mm with 69% courtyard
+    # density FreeRouting plateaued at 183 unconnected nets. A DNP footprint
+    # that is never fitted is not worth HV area. handoff section 5 PB1 is
+    # withdrawn accordingly.
 
     return sh
 
@@ -755,9 +749,6 @@ def build_modem_rf():
     r61 = sh.place("Device:R", "R61", "47k", (g(118), g(112)), R0805, LCSC_R47K)
     sh.hier(r61, "1", "3V3", "input", length=g(5))   # brings 3V3 onto this sheet
     sh.net(r61, "2", "MODEM_STATUS", length=g(3))
-    tp = sh.place("Connector:TestPoint", "TP14", "MODEM_STATUS",
-                  (g(130), g(120)), TP)
-    sh.net(tp, "1", "MODEM_STATUS", length=g(4))
     sh.text("STATUS per Quectel Fig 28 NPN stage. NOTE: MODEM_STATUS at the "
             "MCU is INVERTED (low = modem running) - firmware note logged.",
             (g(92), g(136)))
@@ -1125,8 +1116,6 @@ def build_power():
     for i, x in enumerate((148, 158)):
         sh.series("Device:C", f"C{65 + i}", "10uF", (g(x), g(148)), "SYS",
                   None, C0805, LCSC_C10U, gnd_b=True)
-    tps = sh.place("Connector:TestPoint", "TP20", "SYS", (g(168), g(140)), TP)
-    sh.hier(tps, "1", "SYS", "output", length=g(5))
     sh.net(u6, "13", "VBAT_BT", length=g(4))
     sh.net(u6, "14", "VBAT_BT", length=g(4))
     sh.series("Device:C", "C67", "10uF", (g(120), g(178)), "VBAT_BT", None,
@@ -1147,11 +1136,8 @@ def build_power():
     sh.nc(u6, "3"); sh.nc(u6, "4")               # D+/D- float -> unknown adapter
     sh.nc(u6, "12")                              # VSET float -> 4.208 V
     sh.nc(u6, "2")
-    for i, (pin, net) in enumerate((("5", "U6_STAT"), ("7", "U6_PG"))):
+    for pin, net in (("5", "U6_STAT"), ("7", "U6_PG")):
         sh.net(u6, pin, net, length=g(4))
-        tpx = sh.place("Connector:TestPoint", f"TP{21 + i}", net,
-                       (g(36 + 8 * i), g(186)), TP)
-        sh.net(tpx, "1", net, length=g(3))
     # TS network: REGN -> 5.23k -> TS -> 30.1k -> GND, NTC (in battery) on TS
     sh.series("Device:R", "R88", "5.23k", (g(90), g(186)), "REGN", "U6_TS",
               R0805, "TBD-F5")

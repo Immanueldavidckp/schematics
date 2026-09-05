@@ -14,7 +14,7 @@ PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SEC5 = {
     "10": "IGN_SENSE", "11": "VIN_SENSE", "12": "DBG_TX", "13": "DBG_RX",
     "14": "FLASH_CS", "15": "SPI1_SCK", "16": "SPI1_MISO", "17": "SPI1_MOSI",
-    "18": "VBAT_SENSE", "19": "ADC_SPARE", "21": "MODEM_PWR_EN",
+    "18": "VBAT_SENSE", "21": "MODEM_PWR_EN",
     "22": "NET_STATUS_LED", "25": "DI1", "26": "DI2", "27": "DO1_GATE",
     "28": "DO2_GATE", "29": "MODEM_PWRKEY", "30": "MODEM_TX", "31": "MODEM_RX",
     "32": "MODEM_RI", "33": "MODEM_DTR", "34": "SWDIO", "37": "SWCLK",

@@ -105,6 +105,17 @@ ANCHORS = {
     "X2":  (65.5, 50.5, 0, 0),
 
     # --- HV end ---------------------------------------------------------
+    # The series chains are anchored as ORDERED, ADJACENT clusters. Left to the
+    # packer they were interleaved - R30 landed at x=9.22 and R31 at x=17.23,
+    # 8 mm apart with the DI2 chain in between - and the HV maze router could
+    # not connect them at the required 1.5 mm HV-to-LV clearance. Keeping each
+    # chain together makes each hop a short, local run.
+    # Band BELOW J1. The band above it is not available: mounting hole H1 is
+    # at (3.50, 3.50), F1 spans y 7.2..19.8 and D1 y 10.0..16.8. The first
+    # attempt anchored R30 straight onto H1 and the relaxation reported it.
+    # J1 ends at y 44.77 and H5's keepout starts at y 51.88, so two rows fit.
+    "R30": (4.0, 47.0, 0, 0), "R31": (8.0, 47.0, 0, 0), "R32": (12.0, 47.0, 0, 0),
+    "R33": (4.0, 50.3, 0, 0), "R34": (8.0, 50.3, 0, 0), "R35": (12.0, 50.3, 0, 0),
     # J1 rotated so its 23.2 mm length runs up the 60 mm edge.
     "J1":  (7.5, 30.0, 90, 0),
     "F1":  (16.0, 8.0, 90, 0),
@@ -508,6 +519,11 @@ def coating_inspection_marks(board):
     print("F-20: U5 marked as a coating inspection point on F.Fab")
 
 
+# The buck primary side, brought inside HV_ZONE. Covers U5 (35.41..42.33),
+# C73 (..43.09), C74 (33.16..), D16 (..42.85) and the L1 input side.
+BUCK_X, BUCK_Y = 44.0, 20.0
+
+
 def hv_rule_area(board):
     """The HV keepout, as a named rule area the .kicad_dru can reference.
 
@@ -527,13 +543,21 @@ def hv_rule_area(board):
                    "SetDoNotAllowFootprints"):
         if hasattr(z, setter):
             getattr(z, setter)(False)
+    # L-shaped, not a plain left strip. The first version stopped at HV_X and
+    # so EXCLUDED the buck primary side - U5 sits at x 35.4..42.3, with C73,
+    # C74, D16 and the VIN_B run beside it. That left the highest-energy node
+    # on the board outside the HV rule area, which also meant the U5 package
+    # exception written for F-20 was dead code: it is conditioned on
+    # insideArea('HV_ZONE') and U5 was never inside. VIN_B runs 22 mm from R80
+    # to U5, so the HV domain is the left strip PLUS the buck primary.
     pts = pcbnew.VECTOR_VECTOR2I()
-    for x, y in ((0.5, 0.5), (HV_X, 0.5), (HV_X, BH - 0.5), (0.5, BH - 0.5)):
+    for x, y in ((0.5, 0.5), (BUCK_X, 0.5), (BUCK_X, BUCK_Y),
+                 (HV_X, BUCK_Y), (HV_X, BH - 0.5), (0.5, BH - 0.5)):
         pts.append(pcbnew.VECTOR2I(mm(x), mm(y)))
     z.AddPolygon(pts)
     board.Add(z)
-    print(f"HV keepout: named rule area 'HV_ZONE' over x = 0.5 to {HV_X} mm, "
-          f"all copper layers")
+    print(f"HV keepout: named rule area 'HV_ZONE', L-shaped - left strip "
+          f"x 0.5..{HV_X} plus buck primary x {HV_X}..{BUCK_X} y 0.5..{BUCK_Y}")
 
 
 # The handoff specifies L3 as "power pours (5V0 / SYS / 3V3 islands; VIN routed

@@ -92,6 +92,18 @@
 	(constraint clearance (min 0.3mm))
 	(condition "A.insideCourtyard('U5') && B.insideCourtyard('U5')"))
 
+# SW_BUCK is now in the HV netclass - it swings from GND to VIN on every cycle,
+# which the earlier Default classification missed. That makes the 1.5 mm rule
+# apply between L1's two pads, SW_BUCK and 5V0, which is the inductor's own
+# body: the winding IS the transition from the switching node to the output
+# rail. Both terminals are inside one certified part, so this is intra-package
+# spacing, not a layout-controlled separation. The electrical minimum still
+# applies via the HV netclass clearance (0.60 mm). D16 needs no equivalent
+# rule: its other terminal is GND, already excepted above.
+(rule "L1 winding internal HV spacing"
+	(constraint clearance (min 0.3mm))
+	(condition "A.insideCourtyard('L1') && B.insideCourtyard('L1')"))
+
 # --- CHECK 3: intra-component HV->LV exemption at <= 40 V -----------------
 # Agreed policy: a pad pair INSIDE one component is exempt from the 1.5 mm
 # zone-separation rule where the voltage across that part is <= 40 V, because
