@@ -2713,3 +2713,88 @@ Recorded because they govern every future autorouter run, not just this one:
    closest LV approach.
 5. **Thermal vias under the U1 paddle and the U5 exposed pad are counted and
    logged** after import, since the router may add or disturb vias.
+
+---
+
+# FreeRouting cannot route this board within the agreed constraints — 2026-09-05
+
+**Result NOT imported into the repo.** Everything below was measured on a
+scratch copy. Two full runs, 38m40s and 37m47s, both plateaued.
+
+| | run 1 (L3 pours present) | run 2 (L3 pours removed) |
+|---|---|---|
+| SMD pins needing fanout | 633 total | **726 total** |
+| fanout escaped | 551/633 (87 %) | similar |
+| items to auto-route | 245 | 250 |
+| **final unrouted** | **143** | **130** |
+| FreeRouting's own violations | 65 | 65 |
+| layers it put tracks on | F.Cu, B.Cu only | **F.Cu, B.Cu only** |
+
+## What the diagnosis actually was, and where I was wrong
+
+I first assumed the inner layers were unavailable because they carried planes,
+and that freeing L3 would unlock a third routing layer. **That was wrong**, and
+the log says so plainly:
+
+> `Layer 'GND_L2' has been automatically configured as a dedicated power plane
+> because it contains a large conduction area covering >50% of the board.`
+
+Only **GND_L2** was reclassified. **PWR_L3 was available as a signal layer the
+whole time and FreeRouting simply never used it** — zero tracks on it in either
+run. Removing the L3 pours was worse than neutral: the fanout population went
+**633 → 726 SMD pins**, because those pours were doing real connectivity work
+for 5V0 / SYS / 3V3, and removing them added roughly a hundred connections for
+no benefit.
+
+## The imported result, measured
+
+Importing `routed2.ses` onto a scratch board adds **1532 tracks/vias
+(80 → 1612)** and then fails DRC on four counts:
+
+| count | violation |
+|---|---|
+| **183** | unconnected items, across **81 distinct nets** |
+| **30** | clearance against the **HV netclass** — the 100 V nets |
+| **20** | `track_width` — 0.150 mm used where the board minimum is 0.200 mm |
+| **11** | `annular_width` — 0.050 mm ring where the minimum is 0.100 mm |
+| 12 | other clearance |
+
+Worst-affected nets by unconnected pads: GND (17), VIN (12), VBAT_MODEM (10),
+VIN_SENSE (7), 3V3A (6), DI1_LED (6), DI2_LED (6), CANL (6), VIN_P (5).
+
+**FreeRouting v2.4.1 did not honour the constraints in the DSN.** It undercut
+the board's minimum track width and minimum annular ring, and it violated the
+HV netclass clearance 30 times. Those are not near-misses on a preference —
+0.15 mm where 0.20 mm is the floor, and HV clearance on the 100 V front end.
+
+Per the standing import rules, **the only way to make this result "pass" would
+be to loosen the netclasses, which rule 1 forbids.** So it is rejected rather
+than patched.
+
+## What this board actually needs
+
+The routing problem: **223 components, 726 SMD pins, 69 % courtyard density,
+82 × 62 mm, and effectively two usable signal layers** — L2 is a solid GND
+plane (correct and non-negotiable for the RF return path) and the autorouter
+will not use L3. Two signal layers is not enough for this pin count.
+
+Options, in the order I would recommend them:
+
+1. **Interactive routing in KiCad, by hand.** The placement is verified —
+   8/8 floorplan checks, 0 clearance/shorts/mask-bridge/crossing DRC — and the
+   critical nets are already routed and locked. This is the realistic path for
+   a board of this density, and it is what the remaining work actually is.
+2. **Go to 6 layers** (L1 sig, L2 GND, L3 sig, L4 sig, L5 PWR, L6 sig) and
+   retry the autorouter with 4 signal layers. This is the standard answer at
+   this density; it raises fab cost, which is a budget decision.
+3. **Shrink the routing problem** — X2 (MFF2, DNP), R40/R41/C30 (spare ADC
+   divider, DNP) and some of the 28 test points are all candidates, and the
+   outline could grow again.
+4. **A different autorouter.** Given v2.4.1 ignored explicit DSN width and
+   clearance rules here, I would not trust it on the HV front end regardless
+   of completion rate.
+
+**Repo state is unchanged and clean:** the committed board has the 23
+hand-routed RF tracks and 57 vias, DRC 0 clearance / 0 shorting / 0 mask bridge
+/ 0 crossing / 0 starved thermal / 0 dangling via, with 329 unconnected (the
+bulk nets, still unrouted) and 13 waivable silk items.

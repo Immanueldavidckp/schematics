@@ -536,6 +536,18 @@ def hv_rule_area(board):
           f"all copper layers")
 
 
+# The handoff specifies L3 as "power pours (5V0 / SYS / 3V3 islands; VIN routed
+# thick)" - ISLANDS. Implementing it as three large rectangles committed only
+# 16% of L3 to copper but cost the whole layer as a routing surface, because
+# FreeRouting treats a plane-bearing inner layer as non-routing. That left just
+# F.Cu and B.Cu for 245 connections and the autorouter stalled at 42%.
+#
+# With SKIP_L3_POURS=1 the L3 power zones are omitted so L3 exports as a clean
+# signal layer. The islands are added back after the session is imported, where
+# the zone filler flows them around whatever got routed.
+SKIP_L3_POURS = os.environ.get("SKIP_L3_POURS") == "1"
+
+
 def planes(board):
     """L2 solid GND, L3 power pours.
 
@@ -561,7 +573,7 @@ def planes(board):
     # HV island on L3 under U5, for the exposed-pad thermal vias
     u5 = _fp(board, "U5")
     vinb = board.FindNet("/power/VIN_B")
-    if u5 is not None and vinb is not None:
+    if u5 is not None and vinb is not None and not SKIP_L3_POURS:
         uw, uh = size_of(u5)
         ux = pcbnew.ToMM(u5.GetPosition().x)
         uy = pcbnew.ToMM(u5.GetPosition().y)
@@ -572,6 +584,10 @@ def planes(board):
         print(f"  L3: VIN_B thermal island under U5 "
               f"({uw + 2*m:.1f} x {uh + 2*m:.1f} mm) - F-20, EP is at line voltage")
 
+    if SKIP_L3_POURS:
+        print("  L3: power islands SKIPPED (routing pass - L3 is a signal "
+              "layer; islands are re-added after SES import)")
+        return
     for netname, layer, x0, y0, x1, y1 in POWER_POURS:
         n = board.FindNet(netname)
         if n is None:
