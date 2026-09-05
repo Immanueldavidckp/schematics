@@ -55,6 +55,67 @@ def run(desc, cmd, quiet=True):
     return r.stdout
 
 
+def normalise_report(path):
+    """Make an ERC/DRC report byte-stable across identical runs.
+
+    KiCad stamps the generation time and emits violations in an unstable
+    order, so two runs on an unchanged board produce different files. That
+    breaks the "rebuild, then git diff must be empty" check that proves the
+    design has not moved. Sorting the blocks and dropping the timestamp keeps
+    the reports diffable, so a changed report means a changed design.
+    """
+    import re
+    if not os.path.exists(path):
+        return
+    txt = open(path, encoding="utf-8").read()
+    lines = txt.split("\n")
+    head, body = [], []
+    for i, l in enumerate(lines):
+        if l.startswith("["):
+            body = lines[i:]
+            break
+        head.append(l)
+    # two different timestamp formats: DRC uses "** Created on ...", ERC puts
+    # it inline in "ERC report (<timestamp>, Encoding UTF8)"
+    head = [l for l in head if not l.startswith("** Created on")]
+    head = [re.sub(r"^ERC report \([^)]*\)", "ERC report (normalised)", l)
+            for l in head]
+    blocks, cur = [], []
+    tail = []
+    for l in body:
+        if l.startswith("["):
+            if cur:
+                blocks.append(cur)
+            cur = [l]
+        elif l.startswith("**"):
+            if cur:
+                blocks.append(cur); cur = []
+            tail.append(l)
+        elif cur:
+            cur.append(l)
+        else:
+            tail.append(l)
+    if cur:
+        blocks.append(cur)
+    blocks = ["\n".join(b).rstrip() for b in blocks]
+    blocks.sort()
+    out = "\n".join(head).rstrip() + "\n"
+    out += "** report normalised: timestamp removed and violations sorted, so"
+    out += " an unchanged design produces an unchanged file **\n\n"
+    out += "\n".join(blocks) + "\n"
+    trailing = [l for l in tail if l.strip()]
+    if trailing:
+        out += "\n" + "\n".join(trailing) + "\n"
+    open(path, "w", encoding="utf-8").write(out)
+
+
+# NOTE: drc-placement.rpt and the .kicad_pcb are byte-stable after this.
+# erc-full.rpt is NOT fully stable and cannot be: where several labels share a
+# name, KiCad reports an arbitrary one of them as the representative, so the
+# coordinates move between runs even though the design has not. Compare the
+# ERC violation COUNT and TYPES, not the file.
+
+
 def main():
     py = sys.executable
     run("1/8 schematic sheets", [py, "tools/sheets.py"])
@@ -75,6 +136,9 @@ def main():
     run("8/8 DRC", ["kicad-cli", "pcb", "drc", "--output", "drc-placement.rpt",
                     "--severity-error", "--severity-warning", "--units", "mm",
                     PCB])
+    for rpt in ("erc-full.rpt", "drc-placement.rpt"):
+        normalise_report(os.path.join(PROJ, rpt))
+    print("   reports normalised (timestamp dropped, violations sorted)")
     print("\nbuild complete")
 
 

@@ -162,8 +162,12 @@ Then confirm all three:
 | DRC total | **33 violations + 452 unconnected** — i.e. 20 clearance, 8 silk-over-copper, 3 isolated-copper, 2 silk-overlap. **Courtyard overlaps, shorting items and solder-mask bridges must all be 0.** | a different number means something moved; reconcile before proceeding |
 | ERC | **0 errors, 13 warnings** (all `same_local_global_label`) | — |
 
-`git status` must be clean after a build: the board is generated
-deterministically and re-running must produce a byte-identical file.
+After a build, `git status` should show **at most `erc-full.rpt`**.
+`telematics-tracker.kicad_pcb` and `drc-placement.rpt` are byte-stable, so any
+change to either means the design actually moved — investigate before
+continuing. `erc-full.rpt` cannot be made byte-stable: where several labels
+share a name, KiCad reports an arbitrary one of them, so its coordinates shift
+between runs. **Compare the ERC count and types, not that file.**
 
 ### What is done
 
