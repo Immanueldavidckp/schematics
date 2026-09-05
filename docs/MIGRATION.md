@@ -47,12 +47,19 @@ low-speed nets, after which its output is reviewed to DRC-clean.
 |---|---|
 | Upstream | https://github.com/freerouting/freerouting |
 | Artefact | `freerouting-<version>.jar` from the GitHub Releases page |
-| Version | **TO BE RECORDED** — pin the exact release tag, jar filename and SHA-256 here before it is run against the board |
+| Version | **v2.4.1**, published **2026-09-03** |
+| Jar | `freerouting-2.4.1.jar`, 64,076,787 bytes |
+| Download | `https://github.com/freerouting/freerouting/releases/download/v2.4.1/freerouting-2.4.1.jar` |
+| **SHA-256** | **`251101c3eeac22d7e7dfcf6796603279e5d1000283eb82d8f093780f7afc6aa9`** |
+| Verified on | 2026-09-05, run headless under `/usr/bin/java` |
 | Runtime | `java` (present: /usr/bin/java) |
 | Interface | KiCad exports Specctra `.dsn`; FreeRouting returns `.ses` which KiCad imports |
 
 Rules for using it, so an autorouted result never silently becomes the design:
-- it runs **only after** the critical nets are hand-routed and locked;
+- it runs **only after** the critical nets are hand-routed and locked. In this
+  design that means the **RF runs only** — the HV chain, VBAT_MODEM and the U5
+  hot loop are FreeRouting's, because their constraints are width and clearance
+  (expressed in the netclasses) rather than path;
 - its `.ses` import is reviewed and DRC-checked before commit;
 - the exact jar version goes in this table, because routing output is not
   reproducible across FreeRouting versions.
