@@ -110,18 +110,62 @@ ANCHORS = {
     # 8 mm apart with the DI2 chain in between - and the HV maze router could
     # not connect them at the required 1.5 mm HV-to-LV clearance. Keeping each
     # chain together makes each hop a short, local run.
-    # Band BELOW J1. The band above it is not available: mounting hole H1 is
-    # at (3.50, 3.50), F1 spans y 7.2..19.8 and D1 y 10.0..16.8. The first
-    # attempt anchored R30 straight onto H1 and the relaxation reported it.
-    # J1 ends at y 44.77 and H5's keepout starts at y 51.88, so two rows fit.
-    "R30": (4.0, 47.0, 0, 0), "R31": (8.0, 47.0, 0, 0), "R32": (12.0, 47.0, 0, 0),
-    "R33": (4.0, 50.3, 0, 0), "R34": (8.0, 50.3, 0, 0), "R35": (12.0, 50.3, 0, 0),
+    # Tiled from MEASURED keepout boxes (J1's keepout is x 4.5..14.4,
+    # y 10.9..34.1 - centred on the box, not the origin, per G1).
+    # Dividers: vertical stack in the sliver LEFT of J1 (x 1..4.4), right
+    # beside the very pins they divide down. 0805 rot 90 keepout is
+    # 2.0 x 3.45, six fit at 3.5 mm pitch.
+    # x = 2.2 keeps 1.29 mm to J1's keepout edge at x 4.49 (no y constraint:
+    # the columns never overlap in x). Pitch 4.55 = keepout height 3.45 + the
+    # relaxer's 1.10 mm minimum gap.
+    "R30": (2.2, 12.0, 90, 0), "R31": (2.2, 16.55, 90, 0), "R32": (2.2, 21.1, 90, 0),
+    "R33": (2.2, 25.65, 90, 0), "R34": (2.2, 30.2, 90, 0), "R35": (2.2, 34.75, 90, 0),
     # J1 rotated so its 23.2 mm length runs up the 60 mm edge.
     "J1":  (7.5, 30.0, 90, 0),
-    "F1":  (16.0, 8.0, 90, 0),
-    "D1":  (16.0, 15.0, 90, 0),
-    "D2":  (15.5, 21.5, 90, 0),
-    "R80": (16.0, 27.5, 90, 0),
+    # Front-end chain. F1 (keepout 3.4 x 12.7) and D1 (3.7 x 6.8) take the
+    # column RIGHT of J1's keepout (x >= 15.5); D2 (6.8 x 9.9) is too wide
+    # for any column beside J1, so it and R80 sit BELOW J1 (free from
+    # y 34.1). F1/D1 y-tiling from the measured heights: F1 ctr y 7.9 spans
+    # 1.5..14.2, D1 ctr y 18.8 spans 15.4..22.2.
+    "F1":  (17.7, 8.1, 90, 0),
+    "D1":  (17.4, 18.9, 90, 0),
+    # D2's keepout centre sits 2.07 mm below its origin; anchor y chosen so
+    # the keepout top (35.2) clears J1's keepout bottom (34.12) by 1.1.
+    "D2":  (15.7, 38.1, 90, 0),
+    "R80": (4.0, 46.6, 90, 0),
+    # VIN_P filter caps. The packer had dropped them on B.Cu directly under
+    # U5 - 25 mm from R80/D2, the node they actually filter - and together
+    # with the VIN_B EP via field they sealed the bootstrap cap C76 into a
+    # 63-cell pocket (flood-fill measured), making SW_BUCK unroutable at 0/4.
+    # They belong beside R80, between it and D2.
+    "C70": (9.5, 37.6, 90, 0),
+    "C71": (9.5, 43.4, 90, 0),
+    "C72": (9.5, 49.2, 90, 0),
+    # DO clamps: above J1 (F and B mirror positions - the only remaining
+    # 7.1 mm-wide slots). DO FETs: the strip below D2.
+    "D7":  (10.5, 7.9, 0, 0),
+    "D8":  (10.5, 7.9, 0, 1),
+    "Q1":  (13.6, 48.9, 0, 0),
+    "Q2":  (17.7, 48.9, 0, 0),
+    # bootstrap cap and IS link: tight to U5's pin row, B side - these are
+    # buck cluster parts, not strip parts
+    "C76": (40.3, 7.28, 0, 1),
+    "R82": (33.0, 15.0, 90, 1),
+    # DI chains as ORDERED clusters (same reasoning as R30-R35: scattered
+    # chain parts are unroutable at HV/MV clearances). The F side above J1
+    # could not hold them - 1206 courtyards at the relaxer's 1.10 mm gap need
+    # a 4.8 mm pitch and the row collided with F1/H1 - so they go on B.Cu
+    # BELOW J1, which is open: J1's own THT pads end at y 44.8 and the H5
+    # keepout starts at y 51.9 / x 8.7. J1.7/J1.8 -> 3 x 12k -> BAV99 -> opto,
+    # flowing left to right; the optos sit just outside the strip where their
+    # LV output faces the digital zone.
+    # 1206 keepouts are 4.65 wide: pitch 5.2. BAV99s beside their optos.
+    "R14": (3.4, 46.4, 0, 1), "R15": (8.6, 46.4, 0, 1), "R16": (13.8, 46.4, 0, 1),
+    "D5":  (21.4, 39.8, 0, 1), "OK1": (21.3, 46.6, 0, 1),
+    "R17": (3.4, 50.2, 0, 1), "R18": (8.6, 50.2, 0, 1), "R19": (13.8, 50.2, 0, 1),
+    "D6":  (26.6, 39.8, 0, 1), "OK2": (26.6, 46.6, 0, 1),
+    # VIN entry test point above J1, clear of F1's column
+    "TP23": (11.0, 2.5, 0, 0),
 
     # --- power block ----------------------------------------------------
     # Amendment (a): the hot loop is C73/C74 -> U5 VIN -> U5 SW -> D16, so the
@@ -242,7 +286,10 @@ FIXED = {"U1",              # the corridor width depends on exactly this x
          "AF1", "AF2",      # U.FL in the corridor
          "C84", "L4",       # series DC block and bias choke, on the RF line
          "C40", "C41", "C81", "C82",   # VBAT bulk, <= 5 mm from pads 57-60
-         "U3"}              # amendment (c): must stay beside H5
+         "U3",              # amendment (c): must stay beside H5
+         "J1"}              # the harness interface. Not pinning it let the
+                            # relaxer walk it to x = 4.0, half its keepout off
+                            # the board edge, while shuffling the HV strip.
 
 
 # sheet -> zone for everything not anchored
@@ -524,6 +571,36 @@ def coating_inspection_marks(board):
 BUCK_X, BUCK_Y = 44.0, 20.0
 
 
+def buck_hv_area(board):
+    """BUCK_HV: the approved rescope of the 1.5 mm rule at the buck cluster.
+
+    Inside this area the HV-to-LV minimum is the electrical one, 0.60 mm
+    (IPC-2221 B4 coated basis; conformal coating is mandatory per F-20). The
+    1.5 mm separation remains in force in the REST of HV_ZONE. Justification,
+    as approved: 1.5 mm is defence-in-depth for externally-wired nets exposed
+    to harness transients and contamination; the buck cluster (U5, L1, D16,
+    bootstrap cap, output caps, SW_BUCK / VIN_B / U5_VB) is internal,
+    post-TVS/R80, coated, and compact by construction - SW_BUCK cannot be
+    1.5 mm from U5's own FB/VCC pins in any package on earth.
+    """
+    z = pcbnew.ZONE(board)
+    z.SetIsRuleArea(True)
+    z.SetZoneName("BUCK_HV")
+    z.SetLayerSet(pcbnew.LSET.AllCuMask())
+    for setter in ("SetDoNotAllowTracks", "SetDoNotAllowVias",
+                   "SetDoNotAllowPads", "SetDoNotAllowZoneFills",
+                   "SetDoNotAllowFootprints"):
+        if hasattr(z, setter):
+            getattr(z, setter)(False)
+    pts = pcbnew.VECTOR_VECTOR2I()
+    for x, y in ((HV_X, 0.5), (BUCK_X, 0.5), (BUCK_X, BUCK_Y), (HV_X, BUCK_Y)):
+        pts.append(pcbnew.VECTOR2I(mm(x), mm(y)))
+    z.AddPolygon(pts)
+    board.Add(z)
+    print(f"BUCK_HV rescope area: x {HV_X}..{BUCK_X}, y 0.5..{BUCK_Y} "
+          f"(HV-to-LV 0.60 mm inside, 1.5 mm elsewhere in HV_ZONE)")
+
+
 def hv_rule_area(board):
     """The HV keepout, as a named rule area the .kicad_dru can reference.
 
@@ -558,6 +635,7 @@ def hv_rule_area(board):
     board.Add(z)
     print(f"HV keepout: named rule area 'HV_ZONE', L-shaped - left strip "
           f"x 0.5..{HV_X} plus buck primary x {HV_X}..{BUCK_X} y 0.5..{BUCK_Y}")
+    buck_hv_area(board)
 
 
 # The handoff specifies L3 as "power pours (5V0 / SYS / 3V3 islands; VIN routed
@@ -798,6 +876,12 @@ def main():
         hcx, hcy, hw, hh = keepout_abs(f)
         abox[r] = dict(x=hcx, y=hcy, w=hw, h=hh, side=0, ox=0.0, oy=0.0)
         bounds[r] = (hcx, hcy, hcx, hcy)
+    if os.environ.get("RELAX_DEBUG"):
+        for r in sorted(abox):
+            A = abox[r]
+            print(f"    RELAX {r:5} ctr=({A['x']:6.2f},{A['y']:6.2f}) "
+                  f"w={A['w']:5.2f} h={A['h']:5.2f} side={A['side']} "
+                  f"bounds={bounds[r]}")
     relaxed_box = relax_anchors(abox, bounds)
     relaxed = {r: (round(bx - abox[r]["ox"], 3), round(by - abox[r]["oy"], 3))
                for r, (bx, by) in relaxed_box.items() if r in ANCHORS}

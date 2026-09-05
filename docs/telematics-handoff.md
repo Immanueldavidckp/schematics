@@ -79,7 +79,9 @@ user: confirm this is acceptable, or narrow the product rating to +60 °C.
    (LGA-14), dual SIM footprint — nano-SIM holder AND MFF2 eSIM pads in
    parallel with 0 Ω selects, for future soldered-eSIM scaling.
 8. Test points on every rail, SWD, both UARTs, CAN, and a 4-pad bed-of-nails
-   friendly layout for a production test jig.
+   friendly layout for a production test jig. PLUS the modem USB pair and
+   VBUS (TP15/16/17): USB is the EC200U's only firmware-recovery path, so
+   losing it bricks field units - approved addition, 2026-09-06.
 9. LTE Cat-1 only (no 2G-dependent logic) — safe on Indian networks past 2031.
 
 ## 3. BOM — main components (verified in stock on JLCPCB, Aug 2026)

@@ -19,7 +19,7 @@ import sys
 import pcbnew
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from netclasses import HV                                    # noqa: E402
+from netclasses import HV, MV                                # noqa: E402
 from pcbgen import PCB                                       # noqa: E402
 
 mm = pcbnew.ToMM
@@ -44,7 +44,11 @@ for t in b.GetTracks():
                   (mm(bb.GetLeft()), mm(bb.GetTop()), mm(bb.GetRight()), mm(bb.GetBottom())),
                   frozenset(t.GetLayerSet().CuStack())))
 
-lv = [x for x in items if x[0] and x[0] not in HV and x[0] != "GND"]
+# MV nets (<= 70 V interior nodes) are NOT LV: their requirement to anything
+# is the MV netclass 0.60 mm, checked by DRC. The 1.5 mm table below is for
+# genuinely low-voltage copper only.
+lv = [x for x in items if x[0] and x[0] not in HV and x[0] not in MV
+      and x[0] != "GND"]
 print(f"{'HV net':24} {'closest LV':>10}   closest pair")
 rows = []
 for net in HV:
@@ -65,3 +69,27 @@ for net in HV:
     rows.append((net,) + best)
 for net, d, a, c in sorted(rows, key=lambda r: r[1]):
     print(f"{net:24} {d:9.3f}   {a} <-> {c}{'   << under 1.50' if d < 1.5 else ''}")
+
+# MV nets: requirement is the electrical 0.60 mm to any other net (netclass).
+others = [x for x in items if x[0] and x[0] not in MV]
+print()
+print(f"{'MV net (req 0.60)':24} {'closest':>10}   closest pair")
+rows = []
+for net in MV:
+    mv = [x for x in items if x[0] == net]
+    if not mv:
+        continue
+    best = (1e9, "", "")
+    for n1, r1, p1, bb1, l1 in mv:
+        for n2, r2, p2, bb2, l2 in others:
+            if not (l1 & l2):
+                continue
+            if r1 and r2 and r1 == r2:      # same package: intra-component
+                continue
+            d = gap(bb1, bb2)
+            if d < best[0]:
+                best = (d, f"{r1}.{p1}" if r1 else f"{net} {p1}",
+                        f"{r2}.{p2}" if r2 else f"{n2} {p2}")
+    rows.append((net,) + best)
+for net, d, a, c in sorted(rows, key=lambda r: r[1]):
+    print(f"{net:24} {d:9.3f}   {a} <-> {c}{'   << under 0.60' if d < 0.6 else ''}")

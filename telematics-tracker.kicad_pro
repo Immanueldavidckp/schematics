@@ -140,12 +140,12 @@
       },
       "rules": {
         "max_error": 0.005,
-        "min_clearance": 0.15,
+        "min_clearance": 0.0,
         "min_connection": 0.0,
         "min_copper_edge_clearance": 0.5,
         "min_groove_width": 0.0,
         "min_hole_clearance": 0.25,
-        "min_hole_to_hole": 0.5,
+        "min_hole_to_hole": 0.25,
         "min_microvia_diameter": 0.2,
         "min_microvia_drill": 0.1,
         "min_resolved_spokes": 2,
@@ -287,101 +287,6 @@
         "via_diameter": 0.6,
         "via_drill": 0.3,
         "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "clearance": 0.15,
-        "diff_pair_gap": 0.25,
-        "diff_pair_via_gap": 0.25,
-        "diff_pair_width": 0.2,
-        "line_style": 0,
-        "microvia_diameter": 0.3,
-        "microvia_drill": 0.1,
-        "name": "GND",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 4,
-        "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "track_width": 0.5,
-        "tuning_profile": "",
-        "via_diameter": 0.6,
-        "via_drill": 0.3,
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "clearance": 0.6,
-        "diff_pair_gap": 0.25,
-        "diff_pair_via_gap": 0.25,
-        "diff_pair_width": 0.2,
-        "line_style": 0,
-        "microvia_diameter": 0.3,
-        "microvia_drill": 0.1,
-        "name": "HV",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 1,
-        "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "track_width": 0.5,
-        "tuning_profile": "",
-        "via_diameter": 0.8,
-        "via_drill": 0.4,
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "clearance": 0.2,
-        "diff_pair_gap": 0.25,
-        "diff_pair_via_gap": 0.25,
-        "diff_pair_width": 0.2,
-        "line_style": 0,
-        "microvia_diameter": 0.3,
-        "microvia_drill": 0.1,
-        "name": "MODEM_BULK",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 2,
-        "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "track_width": 2.0,
-        "tuning_profile": "",
-        "via_diameter": 0.8,
-        "via_drill": 0.4,
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "clearance": 0.2,
-        "diff_pair_gap": 0.25,
-        "diff_pair_via_gap": 0.25,
-        "diff_pair_width": 0.2,
-        "line_style": 0,
-        "microvia_diameter": 0.3,
-        "microvia_drill": 0.1,
-        "name": "PWR",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 3,
-        "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "track_width": 0.5,
-        "tuning_profile": "",
-        "via_diameter": 0.8,
-        "via_drill": 0.4,
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "clearance": 0.3,
-        "diff_pair_gap": 0.25,
-        "diff_pair_via_gap": 0.25,
-        "diff_pair_width": 0.2,
-        "line_style": 0,
-        "microvia_diameter": 0.3,
-        "microvia_drill": 0.1,
-        "name": "RF",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 0,
-        "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "track_width": 0.4,
-        "tuning_profile": "",
-        "via_diameter": 0.6,
-        "via_drill": 0.3,
-        "wire_width": 6
       }
     ],
     "meta": {
@@ -389,144 +294,7 @@
     },
     "net_colors": null,
     "netclass_assignments": null,
-    "netclass_patterns": [
-      {
-        "netclass": "RF",
-        "pattern": "/modem_rf/ANT_GNSS_M"
-      },
-      {
-        "netclass": "RF",
-        "pattern": "/modem_rf/ANT_GNSS_C"
-      },
-      {
-        "netclass": "RF",
-        "pattern": "/modem_rf/ANT_MAIN_M"
-      },
-      {
-        "netclass": "RF",
-        "pattern": "/modem_rf/ANT_MAIN_C"
-      },
-      {
-        "netclass": "HV",
-        "pattern": "VIN"
-      },
-      {
-        "netclass": "HV",
-        "pattern": "/power/VIN_F"
-      },
-      {
-        "netclass": "HV",
-        "pattern": "/power/VIN_P"
-      },
-      {
-        "netclass": "HV",
-        "pattern": "/power/VIN_B"
-      },
-      {
-        "netclass": "HV",
-        "pattern": "/io/VIN_D0"
-      },
-      {
-        "netclass": "HV",
-        "pattern": "/io/VIN_D1"
-      },
-      {
-        "netclass": "HV",
-        "pattern": "/io/DO1_OUT"
-      },
-      {
-        "netclass": "HV",
-        "pattern": "/io/DO2_OUT"
-      },
-      {
-        "netclass": "HV",
-        "pattern": "/io/IGN"
-      },
-      {
-        "netclass": "HV",
-        "pattern": "/io/IGN_D0"
-      },
-      {
-        "netclass": "HV",
-        "pattern": "/io/IGN_D1"
-      },
-      {
-        "netclass": "HV",
-        "pattern": "/io/DI1_IN"
-      },
-      {
-        "netclass": "HV",
-        "pattern": "/io/DI1_M1"
-      },
-      {
-        "netclass": "HV",
-        "pattern": "/io/DI1_M2"
-      },
-      {
-        "netclass": "HV",
-        "pattern": "/io/DI1_LED"
-      },
-      {
-        "netclass": "HV",
-        "pattern": "/io/DI2_IN"
-      },
-      {
-        "netclass": "HV",
-        "pattern": "/io/DI2_M1"
-      },
-      {
-        "netclass": "HV",
-        "pattern": "/io/DI2_M2"
-      },
-      {
-        "netclass": "HV",
-        "pattern": "/io/DI2_LED"
-      },
-      {
-        "netclass": "HV",
-        "pattern": "/io/J1_SPARE1"
-      },
-      {
-        "netclass": "HV",
-        "pattern": "/io/J1_SPARE2"
-      },
-      {
-        "netclass": "HV",
-        "pattern": "/power/SW_BUCK"
-      },
-      {
-        "netclass": "HV",
-        "pattern": "/power/U5_VB"
-      },
-      {
-        "netclass": "MODEM_BULK",
-        "pattern": "/modem_rf/VBAT_MODEM"
-      },
-      {
-        "netclass": "PWR",
-        "pattern": "5V0"
-      },
-      {
-        "netclass": "PWR",
-        "pattern": "SYS"
-      },
-      {
-        "netclass": "PWR",
-        "pattern": "3V3"
-      },
-      {
-        "netclass": "PWR",
-        "pattern": "/mcu/3V3A"
-      },
-      {
-        "netclass": "PWR",
-        "pattern": "/modem_rf/VDD_EXT_1V8"
-      },
-      {
-        "netclass": "GND",
-        "pattern": "GND"
-      }
-    ]
+    "netclass_patterns": []
   },
   "pcbnew": {
     "last_paths": {
@@ -543,13 +311,7 @@
     "bus_aliases": {},
     "legacy_lib_dir": "",
     "legacy_lib_list": [],
-    "top_level_sheets": [
-      {
-        "filename": "telematics-tracker.kicad_sch",
-        "name": "telematics-tracker",
-        "uuid": "00000000-0000-0000-0000-000000000000"
-      }
-    ]
+    "top_level_sheets": []
   },
   "sheets": [],
   "text_variables": {},

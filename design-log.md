@@ -2798,3 +2798,75 @@ Options, in the order I would recommend them:
 hand-routed RF tracks and 57 vias, DRC 0 clearance / 0 shorting / 0 mask bridge
 / 0 crossing / 0 starved thermal / 0 dangling via, with 329 unconnected (the
 bulk nets, still unrouted) and 13 waivable silk items.
+
+---
+
+# HV rule rescope (APPROVED) + step-2 routing — 2026-09-06
+
+## The rescope, as approved
+
+Two changes to how the 1.5 mm HV-to-LV separation is scoped. **The 1.5 mm
+rule itself is unchanged** where it applies; no clearance value was reduced
+anywhere. Both rescopes are encoded in `telematics-tracker.kicad_dru` and in
+`tools/netclasses.py`, and enforced identically by `tools/pcbroute_hv.py`.
+
+### 1. BUCK_HV named area (buck cluster: 0.60 mm to LV)
+
+`BUCK_HV` rule area covers x 20..44, y 0.5..20 — U5, L1, D16, the bootstrap
+cap C76, the output caps, and the SW_BUCK / VIN_B / U5_VB copper. Inside it
+the HV-to-LV minimum is the electrical 0.60 mm (IPC-2221 table 6-1; B4 coated
+basis with conformal coating MANDATORY per F-20).
+
+Justification as approved: the 1.5 mm figure is defence-in-depth for
+externally-wired nets exposed to harness transients and contamination. The
+buck cluster is internal, post-TVS/post-R80, coated, and compact by
+construction — SW_BUCK cannot sit 1.5 mm from U5's own FB/VCC pins in any
+package. Discovered as a hard blocker when SW_BUCK was correctly reclassified
+into HV (it had been sitting in Default — the buck switching node swings
+GND-to-VIN every cycle) and instantly became unroutable at 0/4.
+
+### 2. MV netclass (interior nodes <= 70 V: 0.60 mm, 0.20 mm track)
+
+Nets: VIN_D0/D1, IGN_D0/D1, DI1/2_M1, DI1/2_M2, DI1/2_LED.
+Calculated worst-case node voltages at VIN = 100 V (logged in netclasses.py):
+
+    dividers (3 x 100k : 9.1k, I = 0.324 mA): D0 nodes 67.6 V, D1 nodes 35.3 V
+    DI chains (3 x 12k -> EL357N LED, I = 2.74 mA): M1 67.1 V, M2 34.2 V,
+    LED ~1.2 V (clamped)
+
+All <= 70 V. These are interior chain nodes on the same current path as their
+HV parents: the potential between an HV net and its own MV node is one
+resistor drop (~33 V), and a 1.5 mm wall between them just walls off the
+divider it feeds. MV-to-anything is 0.60 mm via the MV netclass — the same
+electrical minimum the design uses for 100 V — so even rated as if they sat at
+the full bus voltage, they clear uncoated.
+
+HV class now = connector-side nets only: VIN, VIN_F, VIN_P, VIN_B, IGN,
+DI1/2_IN, DO1/2_OUT, J1_SPARE1/2, plus SW_BUCK and U5_VB (inside BUCK_HV).
+
+### TP15/16/17 kept
+
+USB DP/DM/VBUS test points stay (modem firmware recovery path); handoff §2
+rule 8 amended accordingly.
+
+## What step-2 routing surfaced (all fixed, none by loosening a rule)
+
+1. **SW_BUCK/U5_VB misclassification** (Default -> HV), found because the
+   router walled U5's own VIN pins behind an LV halo.
+2. **HV_ZONE excluded the buck primary** — and with it the F-20 U5 exception
+   (conditioned on insideArea) had been dead code. Zone is now L-shaped.
+3. **Router defects**: via-sized halos blocking track-legal lanes (split into
+   separate track/via grids); round-to-nearest halo quantisation admitting
+   0.075 mm encroachment (now floor/ceil outward); global exemption where the
+   DRU is courtyard-scoped (now clipped to courtyards). 128 of 129 clearance
+   violations traced to these.
+4. **Placement defects**: VIN_P filter caps C70-C72 packed on B.Cu under U5,
+   25 mm from the node they filter, sealing the bootstrap cap C76 into a
+   63-cell pocket (flood-fill measured); DI chains and dividers scattered by
+   the packer; J1 not pinned (the relaxer walked it half off the board).
+   The whole HV strip is now tiled from MEASURED keepout boxes: dividers in
+   the sliver left of J1, front-end chain in the right column and below J1,
+   DI chains as ordered B-side rows below J1, VIN_P caps beside R80.
+5. **Greedy route-order matters**: VIN_P routed first walled C73 into a
+   626-cell pocket. Constrained-first ORDER is now explicit in the router,
+   with the reasoning in a comment.

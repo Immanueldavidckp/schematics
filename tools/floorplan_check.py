@@ -14,7 +14,7 @@ import sys
 import pcbnew
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from netclasses import HV as HV_NETS                      # noqa: E402
+from netclasses import HV as HV_NETS, MV as MV_NETS       # noqa: E402
 
 PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PCB = os.path.join(PROJ, "telematics-tracker.kicad_pcb")
@@ -272,6 +272,22 @@ def main():
         return not (r[2] < u5box[0] or r[0] > u5box[2]
                     or r[3] < u5box[1] or r[1] > u5box[3])
 
+    # BUCK_HV rescope area (approved): inside it the HV-to-LV minimum is the
+    # electrical 0.60 mm, not 1.5 mm. Read from the board's named rule area so
+    # this check cannot drift from what DRC actually enforces.
+    buckbox = None
+    for z in board.Zones():
+        if z.GetZoneName() == "BUCK_HV":
+            b = z.GetBoundingBox()
+            buckbox = (mm(b.GetLeft()), mm(b.GetTop()),
+                       mm(b.GetRight()), mm(b.GetBottom()))
+
+    def in_buck(r):
+        if not buckbox:
+            return False
+        return not (r[2] < buckbox[0] or r[0] > buckbox[2]
+                    or r[3] < buckbox[1] or r[1] > buckbox[3])
+
     hv, lv = [], []
     for f in board.GetFootprints():
         for p in f.Pads():
@@ -284,9 +300,12 @@ def main():
             lset = frozenset(p.GetLayerSet().CuStack())
             tag = f"{f.GetReference()}.{p.GetNumber()}[{n or 'nc'}]"
             if n in HV_NETS:
-                hv.append((r, tag, in_u5(r), lset))
+                # inside U5's courtyard OR the BUCK_HV rescope: 0.60 mm floor
+                hv.append((r, tag, in_u5(r) or in_buck(r), lset))
+            elif n in MV_NETS:
+                pass    # <= 70 V interior nodes: 0.60 mm electrical, not 1.5
             elif n and n != "GND":
-                lv.append((r, tag, in_u5(r), lset))
+                lv.append((r, tag, in_u5(r) or in_buck(r), lset))
     worst, pair = 1e9, None          # any pair
     wbetween, pbetween = 1e9, None   # different footprints only
     for hr, ht, hu, hl in hv:

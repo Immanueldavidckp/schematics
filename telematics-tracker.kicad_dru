@@ -23,9 +23,21 @@
 # everywhere else. The universal electrical minimum is the HV netclass
 # clearance (0.60 mm, IPC-2221 table 6-1 external uncoated at 100 V), which
 # does apply everywhere. See design-log F-20.
+# Two approved rescopes (see design-log):
+#   BUCK_HV - inside the buck cluster area the minimum is the electrical
+#     0.60 mm (IPC-2221 B4 coated; coating mandatory per F-20). The 1.5 mm is
+#     defence-in-depth for externally-wired nets exposed to harness transients
+#     and contamination; the buck cluster is internal, post-TVS/R80, coated,
+#     and compact by construction - SW_BUCK cannot sit 1.5 mm from U5's own
+#     FB/VCC pins in any package.
+#   MV - interior chain/divider nodes at <= 70 V (voltages logged in
+#     tools/netclasses.py). They are on the same current path as their HV
+#     parents: the potential between an HV net and its own MV node is one
+#     resistor drop (~33 V), and requiring 1.5 mm between them just walls off
+#     the divider it feeds. MV-to-anything keeps the MV netclass 0.60 mm.
 (rule "HV to signal 1.5mm"
 	(constraint clearance (min 1.5mm))
-	(condition "A.insideArea('HV_ZONE') && A.NetClass == 'HV' && B.NetClass != 'HV' && B.NetClass != 'GND'"))
+	(condition "A.insideArea('HV_ZONE') && !A.insideArea('BUCK_HV') && A.NetClass == 'HV' && B.NetClass != 'HV' && B.NetClass != 'MV' && B.NetClass != 'GND'"))
 
 # Board-edge standoff for HV nets: creepage to a cut edge, and to whatever the
 # housing presents beyond it.

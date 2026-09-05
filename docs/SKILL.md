@@ -155,3 +155,27 @@ conventions before release.
 - 3D render reviewed (antenna keepouts, connector orientation, housing fit
   vs. 58 × 78 mm usable area, battery pocket)
 - `design-log.md` complete
+
+## HV scoping (approved policy, 2026-09-06)
+
+- The 1.5 mm HV-to-LV separation is defence-in-depth for EXTERNALLY-WIRED
+  nets. It is scoped: full force in HV_ZONE outside BUCK_HV; 0.60 mm
+  electrical minimum (IPC-2221, coated per F-20) inside BUCK_HV and across
+  the MV class (interior <= 70 V chain nodes, voltages logged in
+  netclasses.py). Never silently re-widen the scope — and never narrow it
+  without the same approval trail this one has (design-log 2026-09-06).
+- Netclass membership is load-bearing: SW_BUCK sat in Default and the error
+  was invisible until a router treated it as LV. When adding a net, ask what
+  voltage it SWINGS to, not what rail it nominally belongs to.
+
+## Router guards (pcbroute_hv.py)
+
+- Halos must be quantised OUTWARD (floor/ceil), never round-to-nearest:
+  round() admits RES/2 encroachment, which at RES 0.15 is exactly the
+  0.545..0.594 mm shortfall band DRC reported against 0.600 mm.
+- Track cells and via sites need SEPARATE blocked grids: a 0.80 mm via is
+  illegal where a 0.50 mm track is legal, and one merged grid blocks the
+  single-cell escape lanes between fine-pitch pins.
+- DRU courtyard exemptions are insideCourtyard(X) && insideCourtyard(X) —
+  INSIDE one package. A router exemption keyed only on the footprint
+  reference relaxes copper in open field and DRC will (correctly) fail it.

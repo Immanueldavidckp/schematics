@@ -11,10 +11,13 @@ Why a maze router and not straight lines: the first attempt drew L-shapes
 between HV pads and ploughed through D2, U5 and J1 - 13 shorts. A real router
 has to see obstacles.
 
-Clearances applied per cell, from the agreed policy:
-  HV copper -> non-HV, non-GND copper   1.50 mm   (handoff section 7)
-  HV copper -> other HV / GND copper    0.60 mm   (HV netclass, IPC-2221 100 V)
-  HV copper -> board edge               1.00 mm   (.kicad_dru rule)
+Clearances applied per cell, from the agreed policy (and its two approved
+rescopes - BUCK_HV area and the MV class, see telematics-tracker.kicad_dru):
+  HV copper -> LV copper                1.50 mm   (handoff section 7)
+     ... except inside BUCK_HV or an exempt courtyard:  0.60 mm
+  HV copper -> HV / MV / GND copper     0.60 mm   (netclass, IPC-2221 100 V)
+  MV copper -> anything                 0.60 mm   (MV netclass)
+  HV/MV copper -> board edge            1.00 mm   (.kicad_dru rule)
 
 Run:  PYTHONPATH=tools python3 tools/pcbroute_hv.py
 """
@@ -27,16 +30,21 @@ import pcbnew
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from pcbgen import PCB, mm, pt, canonicalise                # noqa: E402
-from netclasses import HV as HV_NETS                        # noqa: E402
+from netclasses import HV as HV_NETS, MV as MV_NETS         # noqa: E402
+from pcbplace import BUCK_X, BUCK_Y                          # noqa: E402
+from pcbgen import HV_X                                      # noqa: E402
 
 to_mm = pcbnew.ToMM
 
-RES = 0.15            # mm per cell
+RES = 0.10            # mm per cell. 0.15 left the single-cell escape lane
+                      # out of U5.6 (between pins 5 and 7) too coarse to enter
 HV_W = 0.50           # HV netclass track width
-CLR_LV = 1.50         # to non-HV, non-GND
-CLR_HV = 0.60         # to other HV, and to GND copper
+MV_W = 0.30           # MV runs (class minimum 0.20; 0.30 for a little margin)
+CLR_LV = 1.50         # HV to LV, outside BUCK_HV / exempt courtyards
+CLR_HV = 0.60         # electrical minimum: HV/MV to anything
 CLR_EDGE = 1.00       # to the board edge
 VIA_D, VIA_DRILL = 0.80, 0.40      # HV netclass via
+MV_VIA_D, MV_VIA_DRILL = 0.50, 0.30
 VIA_COST = 14         # in cell units, discourages layer hopping
 LAYERS = None         # filled in main()
 
@@ -127,29 +135,27 @@ def main():
                 to_mm(bb.GetLeft()), to_mm(bb.GetTop()),
                 to_mm(bb.GetRight()), to_mm(bb.GetBottom()))
 
-    def build_blocked(netname):
-        """bytearray per layer: 1 = this net's track centre may not sit here."""
+    def build_blocked(netname, half, hv_rules):
+        """bytearray per layer: 1 = this net's track centre may not sit here.
+
+        half     - half-width of the copper being placed
+        hv_rules - True when routing an HV-class net: LV obstacles then get
+                   the 1.5 mm halo outside BUCK_HV / exempt courtyards. MV
+                   nets route at the electrical 0.60 mm to everything.
+
+        Called TWICE per net: once with the track half-width and once with the
+        via radius. Sizing one grid for the larger of the two blocked the
+        axial escape lane out of U5's SOIC pins: at 1.27 mm pitch a 0.50 mm
+        track exits along the pad axis with 0.72 mm to the neighbouring pins
+        (legal, > 0.60), but a 0.80 mm via in the same cell would not be - and
+        banning both made SW_BUCK unroutable at 0/4.
+        """
         grids = [bytearray(NX * NY) for _ in LAYERS]
-        # Sized for the LARGEST item we place, not the track: a via is 0.80 mm
-        # across, so a cell legal for a 0.50 mm track is illegal for a via
-        # dropped at the same cell. Most of the 128 clearance violations were
-        # on vias for exactly this reason.
-        half = max(HV_W, VIA_D) / 2
+        buck = (HV_X, 0.5, BUCK_X, BUCK_Y)      # the approved rescope area
         for onet, lays, ox, oy, hw, hh, oref in obst + placed:
             if onet == netname:
                 continue
-            if onet in HV_NETS or onet == "GND":
-                clr = CLR_HV
-            elif onet == "" or onet is None:
-                clr = CLR_HV          # netless pad: treat as HV-grade
-            elif oref in EXEMPT_FOOTPRINTS:
-                clr = CLR_HV          # transition device, see EXEMPT_FOOTPRINTS
-            else:
-                clr = CLR_LV
-            # Quantise the halo OUTWARD. cell() rounds to nearest, so a cell
-            # centre could sit up to RES/2 = 0.075 mm inside the forbidden
-            # region - which is exactly the size of the 0.545..0.594 mm
-            # shortfalls DRC reported against the 0.600 mm HV clearance.
+
             def box(clr_):
                 rx, ry = hw + clr_ + half, hh + clr_ + half
                 return (int(math.floor((ox - rx - x0) / RES)),
@@ -157,34 +163,37 @@ def main():
                         int(math.ceil((ox + rx - x0) / RES)),
                         int(math.ceil((oy + ry - y0) / RES)))
 
-            # An exempt package relaxes to CLR_HV only INSIDE its own
-            # courtyard; beyond it the full CLR_LV separation still applies.
-            court = exempt_court.get(oref) if clr == CLR_HV and \
-                oref in exempt_court and onet not in HV_NETS and onet != "GND" \
-                else None
-            regions = [box(clr)]
-            if court is not None:
-                cx0, cy0, cx1, cy1 = court
-                regions.append((box(CLR_LV), (cx0, cy0, cx1, cy1)))
+            is_lv = (onet not in HV_NETS and onet not in MV_NETS
+                     and onet != "GND" and onet != "" and onet is not None)
+            # Every pair has the electrical 0.60 mm floor (HV/MV netclass).
+            hard = box(CLR_HV)
+            # The 1.5 mm ring applies only HV -> LV, and is relaxed to the
+            # electrical floor inside BUCK_HV and inside the obstacle's own
+            # courtyard when the .kicad_dru exempts that package.
+            soft = box(CLR_LV) if (hv_rules and is_lv) else None
+            relaxed = [buck]
+            if soft is not None and oref in exempt_court:
+                relaxed.append(exempt_court[oref])
             for li, lay in enumerate(LAYERS):
                 if lay not in lays:
                     continue
                 g = grids[li]
-                i0, j0, i1, j1 = regions[0]
+                i0, j0, i1, j1 = hard
                 for j in range(max(0, j0), min(NY - 1, j1) + 1):
                     row = j * NX
                     for i in range(max(0, i0), min(NX - 1, i1) + 1):
                         g[row + i] = 1
-                if court is None:
+                if soft is None:
                     continue
-                (li0, lj0, li1, lj1), (cx0, cy0, cx1, cy1) = regions[1]
-                for j in range(max(0, lj0), min(NY - 1, lj1) + 1):
+                i0, j0, i1, j1 = soft
+                for j in range(max(0, j0), min(NY - 1, j1) + 1):
                     row = j * NX
                     py = y0 + j * RES
-                    for i in range(max(0, li0), min(NX - 1, li1) + 1):
+                    for i in range(max(0, i0), min(NX - 1, i1) + 1):
                         px = x0 + i * RES
-                        if cx0 <= px <= cx1 and cy0 <= py <= cy1:
-                            continue          # inside the package: relaxed
+                        if any(rx0 <= px <= rx1 and ry0 <= py <= ry1
+                               for rx0, ry0, rx1, ry1 in relaxed):
+                            continue      # inside a rescoped region
                         g[row + i] = 1
         # board edge
         e = int((CLR_EDGE + half) / RES) + 1
@@ -196,8 +205,12 @@ def main():
                         g[row + i] = 1
         return grids
 
-    def astar(grids, starts, goals):
-        """8-connected A* across both layers. starts/goals are (li,ix,iy)."""
+    def astar(tgrids, vgrids, starts, goals):
+        """8-connected A* across both layers. starts/goals are (li,ix,iy).
+
+        Lateral moves consult the track grid; a layer change needs the via
+        grid free on BOTH layers, because a through via lands on both.
+        """
         goalset = set(goals)
         if not goalset:
             return None
@@ -230,7 +243,7 @@ def main():
                 nx_, ny_ = ix + dx, iy + dy
                 if not (0 <= nx_ < NX and 0 <= ny_ < NY):
                     continue
-                if grids[li][ny_ * NX + nx_]:
+                if tgrids[li][ny_ * NX + nx_]:
                     continue
                 nxt = (li, nx_, ny_)
                 ng = g + w
@@ -239,7 +252,8 @@ def main():
                     heapq.heappush(openh, (ng + h(*nxt), ng, nxt, cur))
             # layer change
             for lj in range(len(LAYERS)):
-                if lj == li or grids[lj][iy * NX + ix]:
+                if lj == li or vgrids[lj][iy * NX + ix] \
+                        or vgrids[li][iy * NX + ix]:
                     continue
                 nxt = (lj, ix, iy)
                 ng = g + VIA_COST
@@ -266,9 +280,32 @@ def main():
                         out.append((li, i, j))
         return out or [(0,) + cell(cx, cy)]
 
-    # ---- route each HV net -------------------------------------------
+    # ---- route nets, most-constrained first ----------------------------
+    # Order is not cosmetic. Routed greedily in declaration order, VIN_P (an
+    # open-field net: D2, C71, C72, R80) routed FIRST and its locked copper
+    # walled C73.1 into a 626-cell pocket - flood-fill measured - making
+    # VIN_B 0/4 even though every endpoint was reachable on the empty board.
+    # So: the buck cluster (tightest area on the board) routes first, then the
+    # chain nets, and the long-haul VIN/VIN_P/VIN_F nets last - they have the
+    # whole left strip to work around whatever is already down.
+    ORDER = ["/power/SW_BUCK", "/power/U5_VB", "/power/VIN_B",
+             # VIN_P is all short local hops around R80/D2/C70-C72 now that
+             # the caps are anchored beside their source node - route it
+             # before the DI/DO copper can wall the area
+             "/power/VIN_P", "/power/VIN_F",
+             "/io/DI1_IN", "/io/DI1_M1", "/io/DI1_M2", "/io/DI1_LED",
+             "/io/DI2_IN", "/io/DI2_M1", "/io/DI2_M2", "/io/DI2_LED",
+             "/io/VIN_D0", "/io/VIN_D1", "/io/IGN", "/io/IGN_D0",
+             "/io/IGN_D1", "/io/DO1_OUT", "/io/DO2_OUT",
+             "/io/J1_SPARE1", "/io/J1_SPARE2",
+             "VIN"]
+    assert set(ORDER) == set(HV_NETS) | set(MV_NETS), \
+        "ORDER must cover exactly the HV + MV nets"
     results = {}
-    for netname in HV_NETS:
+    for netname in ORDER:
+        hv_rules = netname in HV_NETS
+        w = HV_W if hv_rules else MV_W
+        vd, vdr = (VIA_D, VIA_DRILL) if hv_rules else (MV_VIA_D, MV_VIA_DRILL)
         net = board.FindNet(netname)
         if net is None:
             continue
@@ -279,13 +316,45 @@ def main():
                     pads.append((f"{f.GetReference()}.{p.GetNumber()}", p))
         if len(pads) < 2:
             continue
-        grids = build_blocked(netname)
+        tgrids = build_blocked(netname, w / 2, hv_rules)     # track cells
+        vgrids = build_blocked(netname, vd / 2, hv_rules)    # via sites
+        if os.environ.get("HV_DEBUG") == netname:
+            for nm_, p_ in pads:
+                cs_ = pad_cells(p_)
+                fr_ = sum(1 for li_, i_, j_ in cs_ if not tgrids[li_][j_ * NX + i_])
+                print(f"    DEBUG {nm_}: {fr_}/{len(cs_)} free")
+            print(f"    DEBUG grid sums t={sum(tgrids[0])},{sum(tgrids[1])} "
+                  f"v={sum(vgrids[0])},{sum(vgrids[1])} NX={NX} NY={NY}")
         connected = list(pad_cells(pads[0][1]))
         made, failed = 0, []
         for name, p in pads[1:]:
             goals = pad_cells(p)
-            path = astar(grids, connected, goals)
+            path = astar(tgrids, vgrids, connected, goals)
             if path is None:
+                if os.environ.get("HV_DEBUG") == netname:
+                    from collections import deque
+                    seen = set(); dq = deque()
+                    for c in connected:
+                        li_, i_, j_ = c
+                        if not tgrids[li_][j_ * NX + i_]:
+                            seen.add(c); dq.append(c)
+                    while dq:
+                        li_, i_, j_ = dq.popleft()
+                        for dx_, dy_ in ((1,0),(-1,0),(0,1),(0,-1),
+                                         (1,1),(1,-1),(-1,1),(-1,-1)):
+                            ni_, nj_ = i_ + dx_, j_ + dy_
+                            if 0 <= ni_ < NX and 0 <= nj_ < NY and \
+                                    not tgrids[li_][nj_ * NX + ni_] and \
+                                    (li_, ni_, nj_) not in seen:
+                                seen.add((li_, ni_, nj_)); dq.append((li_, ni_, nj_))
+                        lj_ = 1 - li_
+                        if not vgrids[lj_][j_ * NX + i_] and \
+                                not vgrids[li_][j_ * NX + i_] and \
+                                (lj_, i_, j_) not in seen:
+                            seen.add((lj_, i_, j_)); dq.append((lj_, i_, j_))
+                    hit = any(c in seen for c in goals)
+                    print(f"    DEBUG astar=None for {name}: flood {len(seen)} "
+                          f"cells, goal reachable={hit}")
                 failed.append(name)
                 continue
             # emit
@@ -295,26 +364,30 @@ def main():
                     if prev[0] != li:
                         v = pcbnew.PCB_VIA(board)
                         v.SetPosition(pt(*pos(ix, iy)))
-                        v.SetWidth(mm(VIA_D)); v.SetDrill(mm(VIA_DRILL))
+                        v.SetWidth(mm(vd)); v.SetDrill(mm(vdr))
                         v.SetNet(net); v.SetLayerPair(pcbnew.F_Cu, pcbnew.B_Cu)
                         v.SetLocked(True); board.Add(v)
                         placed.append((netname, LAYERS, *pos(ix, iy),
-                                       VIA_D / 2, VIA_D / 2, ""))
+                                       vd / 2, vd / 2, ""))
                     else:
                         t = pcbnew.PCB_TRACK(board)
                         t.SetStart(pt(*pos(*prev[1:])))
                         t.SetEnd(pt(*pos(ix, iy)))
-                        t.SetWidth(mm(HV_W)); t.SetLayer(LAYERS[li])
+                        t.SetWidth(mm(w)); t.SetLayer(LAYERS[li])
                         t.SetNet(net); t.SetLocked(True); board.Add(t)
                         placed.append((netname, [LAYERS[li]],
-                                       *pos(ix, iy), HV_W / 2, HV_W / 2, ""))
+                                       *pos(ix, iy), w / 2, w / 2, ""))
                 prev = (li, ix, iy)
             connected += path
+            connected += goals        # the whole pad is now copper, not just
+                                      # the cell the path happened to enter on
             made += 1
-            grids = build_blocked(netname)     # refresh with own copper
+            tgrids = build_blocked(netname, w / 2, hv_rules)   # own copper
+            vgrids = build_blocked(netname, vd / 2, hv_rules)
         results[netname] = (made, len(pads) - 1, failed)
         flag = "" if not failed else f"  FAILED: {', '.join(failed)}"
-        print(f"  {netname:24} {made}/{len(pads)-1} connections{flag}")
+        cls = "HV" if hv_rules else "MV"
+        print(f"  {cls} {netname:24} {made}/{len(pads)-1} connections{flag}")
 
     tot = sum(r[0] for r in results.values())
     need = sum(r[1] for r in results.values())
