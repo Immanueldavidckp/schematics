@@ -374,10 +374,13 @@ def main(single_net=None):
             extra = [byid[c] for c in comp
                      if byid[c].Type() in (pcbnew.PCB_TRACE_T,
                                            pcbnew.PCB_VIA_T)]
-            out.append((group or [byid[comp[0]]], extra))
-        # clusters WITH pads first (pad-less pour clusters sort last)
-        out.sort(key=lambda ge: -len([p for p in ge[0]
-                                      if p.Type() == pcbnew.PCB_PAD_T]))
+            has_zone = any(byid[c].Type() == pcbnew.PCB_ZONE_T for c in comp)
+            out.append((group or [byid[comp[0]]], extra, has_zone))
+        # the pour-connected cluster first, then by pad count. The tap loop
+        # must SKIP zone-connected clusters: without the flag it re-tapped
+        # the already-merged cluster every round (all size-1 clusters sort
+        # arbitrarily) and the count never dropped.
+        out.sort(key=lambda ge: (not ge[2], -len(ge[0])))
         return out
 
     # ---- emit helpers -----------------------------------------------------
@@ -570,6 +573,10 @@ def main(single_net=None):
             cl = clusters(netname)
             if len(cl) <= 1:
                 return True, "", nv_net, tl_net, man_net
+            if os.environ.get("LV_DEBUG"):
+                sizes = [len(g) for g, _e, _z in cl][:8]
+                print(f"    DEBUG round {_round}: {len(cl)} clusters "
+                      f"(pad counts {sizes})")
             if best_cl is None or len(cl) < best_cl:
                 best_cl, stagnant = len(cl), 0
             else:
@@ -580,9 +587,26 @@ def main(single_net=None):
             vg = build(netname, my_clr, vd / 2)
             open_pad_entries(netname, tg, w / 2)
             tapped = False
-            for group, _extra in cl[1:]:
+            for group, _extra, hz in cl[1:]:
+                if hz:
+                    continue          # already reaches the pour
                 r = tap_pour(netname, group, tg, vg, vd, vdr, w, net)
                 if r is not None:
+                    if os.environ.get("LV_DEBUG"):
+                        gp = group[0]
+                        nm = "?"
+                        try:
+                            nm = (gp.GetParentFootprint().GetReference()
+                                  + "." + gp.GetPadNumber())
+                        except Exception:
+                            nm = gp.GetClass()
+                        items2, _mk = r
+                        vpos = [f"({to_mm(t.GetPosition().x):.1f},"
+                                f"{to_mm(t.GetPosition().y):.1f})"
+                                for t in items2
+                                if isinstance(t, pcbnew.PCB_VIA)]
+                        print(f"    DEBUG tapped {nm} vias at "
+                              f"{vpos}")
                     nv_net += 1
                     tapped = True
                     break
