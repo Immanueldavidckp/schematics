@@ -50,6 +50,8 @@ low-speed nets, after which its output is reviewed to DRC-clean.
 | Version | **v2.4.1**, published **2026-09-03** |
 | Jar | `freerouting-2.4.1.jar`, 64,076,787 bytes |
 | Download | `https://github.com/freerouting/freerouting/releases/download/v2.4.1/freerouting-2.4.1.jar` |
+| Local cache | `~/.cache/pcb-tools/freerouting-2.4.1.jar` (SHA verified before every run) |
+| KNOWN DEFECT | v2.4.1 NPE-crashloops on this board (`SearchTreeObject.shapeLayer` on null, event thread, 5% CPU duty). First triggered by per-cell locked segments; persists on coalesced input during auto-routing. Step-4 STOP report in design-log 2026-09-06. Do not burn another budget window on this version without a fix upstream. |
 | **SHA-256** | **`251101c3eeac22d7e7dfcf6796603279e5d1000283eb82d8f093780f7afc6aa9`** |
 | Verified on | 2026-09-05, run headless under `/usr/bin/java` |
 | Runtime | `java` (present: /usr/bin/java) |
