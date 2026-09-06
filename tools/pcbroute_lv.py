@@ -248,14 +248,28 @@ def main(single_net=None):
         for (onet, lays, cx, cy, hw, hh, ref), _r in mypads:
             vert = hh >= hw
             both = abs(hh - hw) < 0.2      # round/square (THT) pads: 2 lanes
-            # sibling pads are excluded from lane blocking (their axial
-            # geometry is legal at class clearance) EXCEPT when the sibling
-            # carries an HV net in the strip: the 1.5 mm rule applies across
-            # J1's own pin column (no courtyard exception exists for J1) and
-            # a lane 0.2 mm from an HV pin is a violation, not an entry.
+            # Sibling pads are excluded from lane blocking ONLY when they are
+            # LATERAL neighbours - offset perpendicular to the lane axis, the
+            # single-row case where the axial geometry is legal at class
+            # clearance by construction. A sibling AHEAD along the lane must
+            # still block: on U3's LGA grid the 3V3 lane extended straight
+            # through the IMU's GND and NC pads (measured: shorting_items).
+            # HV-in-strip siblings always block (1.5 mm rule, no exception).
+            def lateral(o):
+                if vert or both:
+                    if abs(o[3] - cy) <= hh + 0.15 and \
+                            abs(o[2] - cx) > hw:
+                        return True
+                if (not vert) or both:
+                    if abs(o[2] - cx) <= hw + 0.15 and \
+                            abs(o[3] - cy) > hh:
+                        return True
+                return False
+
             near = [o for o in obst + placed
                     if o[0] != netname
-                    and (o[6] != ref or (o[0] in HV and o[2] < 20.0))
+                    and (o[6] != ref or (o[0] in HV and o[2] < 20.0)
+                         or not lateral(o))
                     and abs(o[2] - cx) < 4.0 and abs(o[3] - cy) < 4.0]
 
             def lane_cell_ok(px, py, lay):

@@ -1,28 +1,12 @@
 ** Drc report for telematics-tracker.kicad_pcb **
-** Created on 2026-09-07T03:47:36 **
+** Created on 2026-09-07T04:42:47 **
 ** Report includes: Errors **
 
-** Found 7 DRC violations **
+** Found 3 DRC violations **
 [solder_mask_bridge]: Front solder mask aperture bridges items with different nets
     Rule: board setup solder mask min width; error
     @(62.3500 mm, 4.5500 mm): Track [/modem_rf/USIM_VDD] on F.Cu, length 2.1000 mm
     @(63.7500 mm, 4.5450 mm): Pad 2 [GND] of D14 on F.Cu
-[clearance]: Clearance violation (rule 'L1 winding internal HV spacing' clearance 0.3000 mm; actual 0.2950 mm)
-    Rule: L1 winding internal HV spacing; error
-    @(34.1200 mm, 6.1450 mm): Pad 2 [GND] of C74 on B.Cu
-    @(33.1500 mm, 5.7500 mm): Track [/modem_rf/USIM_VDD] on B.Cu, length 5.5154 mm
-[clearance]: Clearance violation (rule 'L1 winding internal HV spacing' clearance 0.3000 mm; actual 0.2000 mm)
-    Rule: L1 winding internal HV spacing; error
-    @(30.0625 mm, 10.4950 mm): Pad 2 [/power/U5_EN] of R81 on B.Cu
-    @(29.2500 mm, 9.6500 mm): Track [/modem_rf/USIM_VDD] on B.Cu, length 3.0000 mm
-[clearance]: Clearance violation (rule 'L1 winding internal HV spacing' clearance 0.3000 mm; actual 0.2950 mm)
-    Rule: L1 winding internal HV spacing; error
-    @(34.1200 mm, 6.1450 mm): Pad 2 [GND] of C74 on B.Cu
-    @(33.1500 mm, 4.7500 mm): Track [/modem_rf/USIM_VDD] on B.Cu, length 1.0000 mm
-[clearance]: Clearance violation (rule 'L1 winding internal HV spacing' clearance 0.3000 mm; actual 0.2624 mm)
-    Rule: L1 winding internal HV spacing; error
-    @(27.9500 mm, 13.9500 mm): Via [/modem_rf/USIM_VDD] on F.Cu - B.Cu
-    @(27.1950 mm, 14.5875 mm): Pad 5 [3V3] of U9 on B.Cu
 [clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1500 mm)
     Rule: netclass 'Default'; error
     @(63.7500 mm, 4.5450 mm): Pad 2 [GND] of D14 on F.Cu
@@ -32,7 +16,7 @@
     @(63.7500 mm, 4.5450 mm): Pad 2 [GND] of D14 on F.Cu
     @(62.3500 mm, 4.5500 mm): Track [/modem_rf/USIM_VDD] on F.Cu, length 2.1000 mm
 
-** Found 263 unconnected pads **
+** Found 266 unconnected pads **
 [unconnected_items]: Missing connection between items
     Local override; error
     @(22.3200 mm, 46.2700 mm): Pad 1 [CAN1_TX] of U4 on F.Cu
@@ -43,15 +27,11 @@
     @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
 [unconnected_items]: Missing connection between items
     Local override; error
+    @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
+    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
+[unconnected_items]: Missing connection between items
+    Local override; error
     @(24.8900 mm, 24.3300 mm): Pad 47 [GND] of U2 on F.Cu
-    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(26.2450 mm, 16.8875 mm): Pad 2 [GND] of U9 on B.Cu
-    @(26.7500 mm, 17.9700 mm): Pad 35 [GND] of U2 on F.Cu
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
     @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
 [unconnected_items]: Missing connection between items
     Local override; error
@@ -59,31 +39,39 @@
     @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
 [unconnected_items]: Missing connection between items
     Local override; error
-    @(29.5000 mm, 56.0100 mm): Pad 7 [GND] of U3 on F.Cu
+    @(26.7500 mm, 17.9700 mm): Pad 35 [GND] of U2 on F.Cu
+    @(26.2450 mm, 16.8875 mm): Pad 2 [GND] of U9 on B.Cu
+[unconnected_items]: Missing connection between items
+    Local override; error
+    @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
+    @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
+[unconnected_items]: Missing connection between items
+    Local override; error
+    @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
+    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
+[unconnected_items]: Missing connection between items
+    Local override; error
+    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
+    @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
+[unconnected_items]: Missing connection between items
+    Local override; error
     @(29.0000 mm, 56.0100 mm): Pad 6 [GND] of U3 on F.Cu
+    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
+[unconnected_items]: Missing connection between items
+    Local override; error
+    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
+    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
 [unconnected_items]: Missing connection between items
     Local override; error
     @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
     @(29.7500 mm, 26.1900 mm): Pad 8 [GND] of U2 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
-    @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
-    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
     @(30.0200 mm, 48.0500 mm): Pad 9 [GND] of U6 on F.Cu
+    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
 [unconnected_items]: Missing connection between items
     Local override; error
     @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
-    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
-    @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
     @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
 [unconnected_items]: Missing connection between items
     Local override; error
@@ -91,12 +79,28 @@
     @(32.3100 mm, 45.2500 mm): Pad 17 [GND] of U6 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
-    @(33.1100 mm, 19.8300 mm): Pad 23 [GND] of U2 on F.Cu
+    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
+    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
+[unconnected_items]: Missing connection between items
+    Local override; error
+    @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
+    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
+[unconnected_items]: Missing connection between items
+    Local override; error
+    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
+    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
+[unconnected_items]: Missing connection between items
+    Local override; error
+    @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
+    @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
+[unconnected_items]: Missing connection between items
+    Local override; error
+    @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
+    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
+[unconnected_items]: Missing connection between items
+    Local override; error
     @(36.0625 mm, 13.9950 mm): Pad 2 [GND] of R87 on B.Cu
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
-    @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
+    @(33.1100 mm, 19.8300 mm): Pad 23 [GND] of U2 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
     @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
@@ -115,12 +119,16 @@
     @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
 [unconnected_items]: Missing connection between items
     Local override; error
-    @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
     @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
+    @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
 [unconnected_items]: Missing connection between items
     Local override; error
-    @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
     @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
+    @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
+[unconnected_items]: Missing connection between items
+    Local override; error
+    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
+    @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
 [unconnected_items]: Missing connection between items
     Local override; error
     @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
@@ -152,15 +160,15 @@
 [unconnected_items]: Missing connection between items
     Local override; error
     @(63.7500 mm, 4.5450 mm): Pad 2 [GND] of D14 on F.Cu
-    @(63.8000 mm, 2.2750 mm): Pad 2 [GND] of C45 on F.Cu
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
-    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
-[unconnected_items]: Missing connection between items
-    Local override; error
     @(66.5050 mm, 6.3360 mm): Pad 2 [GND] of D15 on F.Cu
+[unconnected_items]: Missing connection between items
+    Local override; error
+    @(63.8000 mm, 2.2750 mm): Pad 2 [GND] of C45 on F.Cu
     @(63.7500 mm, 4.5450 mm): Pad 2 [GND] of D14 on F.Cu
+[unconnected_items]: Missing connection between items
+    Local override; error
+    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
+    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
 [unconnected_items]: Missing connection between items
     Local override; error
     @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
@@ -471,18 +479,6 @@
     @(73.2750 mm, 17.4000 mm): Pad 1 [/modem_rf/VBAT_MODEM] of C82 on B.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
-    @(27.4450 mm, 4.5250 mm): Pad 1 [/power/VBAT_BT] of C67 on B.Cu
-    @(32.3100 mm, 46.7500 mm): Pad 14 [/power/VBAT_BT] of U6 on F.Cu
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(32.3100 mm, 46.7500 mm): Pad 14 [/power/VBAT_BT] of U6 on F.Cu
-    @(32.3100 mm, 47.2500 mm): Pad 13 [/power/VBAT_BT] of U6 on F.Cu
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(32.3100 mm, 47.2500 mm): Pad 13 [/power/VBAT_BT] of U6 on F.Cu
-    @(35.0100 mm, 56.9950 mm): PTH pad 1 [/power/VBAT_BT] of J2
-[unconnected_items]: Missing connection between items
-    Local override; error
     @(23.3875 mm, 14.4950 mm): Pad 1 [/power/U6_TS] of R89 on B.Cu
     @(31.0200 mm, 48.0500 mm): Pad 11 [/power/U6_TS] of U6 on F.Cu
 [unconnected_items]: Missing connection between items
@@ -556,7 +552,7 @@
 [unconnected_items]: Missing connection between items
     Local override; error
     @(48.9000 mm, 45.6270 mm): Pad C3 [/modem_rf/SIM_CLK] of X1 on F.Cu
-    @(56.5500 mm, 3.7500 mm): Track [/modem_rf/SIM_CLK] on B.Cu, length 0.1414 mm
+    @(62.8500 mm, 3.7500 mm): Track [/modem_rf/SIM_CLK] on B.Cu, length 6.3000 mm
 [unconnected_items]: Missing connection between items
     Local override; error
     @(51.4400 mm, 45.6270 mm): Pad C2 [/modem_rf/SIM_RST] of X1 on F.Cu
@@ -880,7 +876,7 @@
 [unconnected_items]: Missing connection between items
     Local override; error
     @(72.4750 mm, 2.0050 mm): Pad 1 [/modem_rf/ANT_GNSS_M] of C50 on F.Cu
-    @(76.5500 mm, 28.6000 mm): Pad 47 [/modem_rf/ANT_GNSS_M] of U1 on F.Cu
+    @(76.5500 mm, 28.6000 mm): Track [/modem_rf/ANT_GNSS_M] on F.Cu, length 1.4500 mm
 [unconnected_items]: Missing connection between items
     Local override; error
     @(40.4500 mm, 26.1500 mm): Pad 4 [/modem_rf/MRI_1V8] of U8 on F.Cu

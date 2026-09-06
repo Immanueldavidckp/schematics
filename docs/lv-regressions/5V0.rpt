@@ -1,110 +1,38 @@
 ** Drc report for telematics-tracker.kicad_pcb **
-** Created on 2026-09-07T03:40:03 **
+** Created on 2026-09-07T04:35:12 **
 ** Report includes: Errors **
 
-** Found 25 DRC violations **
-[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(28.9500 mm, 44.7500 mm): Track [5V0] on F.Cu, length 0.1414 mm
-    @(30.2700 mm, 46.0000 mm): Pad 25 [GND] of U6 on F.Cu
+** Found 7 DRC violations **
 [solder_mask_bridge]: Front solder mask aperture bridges items with different nets
     Rule: board setup solder mask min width; error
     @(29.0500 mm, 44.6500 mm): Track [5V0] on F.Cu, length 1.4000 mm
     @(30.2700 mm, 46.0000 mm): Pad 25 [GND] of U6 on F.Cu
 [solder_mask_bridge]: Front solder mask aperture bridges items with different nets
     Rule: board setup solder mask min width; error
+    @(28.9500 mm, 44.7500 mm): Track [5V0] on F.Cu, length 0.1414 mm
+    @(30.2700 mm, 46.0000 mm): Pad 25 [GND] of U6 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
     @(28.5500 mm, 44.7500 mm): Track [5V0] on F.Cu, length 0.4000 mm
     @(30.2700 mm, 46.0000 mm): Pad 25 [GND] of U6 on F.Cu
-[clearance]: Clearance violation (rule 'L1 winding internal HV spacing' clearance 0.3000 mm; actual 0.2379 mm)
-    Rule: L1 winding internal HV spacing; error
-    @(25.5675 mm, 9.5800 mm): Pad 2 [/power/SYS] of L3 on B.Cu
-    @(24.1500 mm, 10.7500 mm): Track [5V0] on B.Cu, length 0.7071 mm
-[clearance]: Clearance violation (rule 'L1 winding internal HV spacing' clearance 0.3000 mm; actual 0.2950 mm)
-    Rule: L1 winding internal HV spacing; error
-    @(24.6500 mm, 11.2500 mm): Track [5V0] on B.Cu, length 3.3000 mm
-    @(27.3875 mm, 12.4950 mm): Pad 1 [/power/U6_ILIM] of R86 on B.Cu
-[clearance]: Clearance violation (rule 'L1 winding internal HV spacing' clearance 0.3000 mm; actual 0.2416 mm)
-    Rule: L1 winding internal HV spacing; error
-    @(27.9075 mm, 9.5800 mm): Pad 1 [/power/SW_CHG] of L3 on B.Cu
-    @(24.5500 mm, 11.1500 mm): Track [5V0] on B.Cu, length 2.5000 mm
-[clearance]: Clearance violation (rule 'L1 winding internal HV spacing' clearance 0.3000 mm; actual 0.2000 mm)
-    Rule: L1 winding internal HV spacing; error
-    @(31.8875 mm, 10.4950 mm): Pad 1 [/power/U5_VCC] of R81 on B.Cu
-    @(32.8500 mm, 9.5500 mm): Track [5V0] on B.Cu, length 2.1000 mm
-[clearance]: Clearance violation (rule 'L1 winding internal HV spacing' clearance 0.3000 mm; actual 0.2950 mm)
-    Rule: L1 winding internal HV spacing; error
-    @(24.6500 mm, 11.2500 mm): Track [5V0] on B.Cu, length 3.3000 mm
-    @(27.3875 mm, 12.4950 mm): Pad 1 [/power/U6_ILIM] of R86 on B.Cu
-[clearance]: Clearance violation (rule 'L1 winding internal HV spacing' clearance 0.3000 mm; actual 0.2000 mm)
-    Rule: L1 winding internal HV spacing; error
-    @(28.3500 mm, 11.5500 mm): Track [5V0] on B.Cu, length 7.4000 mm
-    @(27.3875 mm, 12.4950 mm): Pad 1 [/power/U6_ILIM] of R86 on B.Cu
-[clearance]: Clearance violation (rule 'L1 winding internal HV spacing' clearance 0.3000 mm; actual 0.2500 mm)
-    Rule: L1 winding internal HV spacing; error
-    @(25.5675 mm, 9.5800 mm): Pad 2 [/power/SYS] of L3 on B.Cu
-    @(23.8500 mm, 8.3500 mm): Track [5V0] on B.Cu, length 0.5657 mm
-[clearance]: Clearance violation (rule 'L1 winding internal HV spacing' clearance 0.3000 mm; actual 0.2379 mm)
-    Rule: L1 winding internal HV spacing; error
-    @(25.5675 mm, 9.5800 mm): Pad 2 [/power/SYS] of L3 on B.Cu
-    @(24.2500 mm, 10.8500 mm): Track [5V0] on B.Cu, length 0.4243 mm
-[clearance]: Clearance violation (rule 'L1 winding internal HV spacing' clearance 0.3000 mm; actual 0.2000 mm)
-    Rule: L1 winding internal HV spacing; error
-    @(28.3500 mm, 11.5500 mm): Track [5V0] on B.Cu, length 7.4000 mm
-    @(27.3875 mm, 12.4950 mm): Pad 1 [/power/U6_ILIM] of R86 on B.Cu
-[clearance]: Clearance violation (rule 'L1 winding internal HV spacing' clearance 0.3000 mm; actual 0.2379 mm)
-    Rule: L1 winding internal HV spacing; error
-    @(25.5675 mm, 9.5800 mm): Pad 2 [/power/SYS] of L3 on B.Cu
-    @(24.2500 mm, 10.8500 mm): Track [5V0] on B.Cu, length 0.5657 mm
-[clearance]: Clearance violation (rule 'L1 winding internal HV spacing' clearance 0.3000 mm; actual 0.2950 mm)
-    Rule: L1 winding internal HV spacing; error
-    @(27.1500 mm, 11.2500 mm): Track [5V0] on B.Cu, length 0.8000 mm
-    @(27.3875 mm, 12.4950 mm): Pad 1 [/power/U6_ILIM] of R86 on B.Cu
-[clearance]: Clearance violation (rule 'L1 winding internal HV spacing' clearance 0.3000 mm; actual 0.2000 mm)
-    Rule: L1 winding internal HV spacing; error
-    @(28.3500 mm, 11.5500 mm): Track [5V0] on B.Cu, length 7.4000 mm
-    @(27.3875 mm, 12.4950 mm): Pad 1 [/power/U6_ILIM] of R86 on B.Cu
-[clearance]: Clearance violation (rule 'L1 winding internal HV spacing' clearance 0.3000 mm; actual 0.2950 mm)
-    Rule: L1 winding internal HV spacing; error
-    @(27.0500 mm, 11.1500 mm): Track [5V0] on B.Cu, length 0.1414 mm
-    @(27.3875 mm, 12.4950 mm): Pad 1 [/power/U6_ILIM] of R86 on B.Cu
-[clearance]: Clearance violation (rule 'L1 winding internal HV spacing' clearance 0.3000 mm; actual 0.2500 mm)
-    Rule: L1 winding internal HV spacing; error
-    @(25.5675 mm, 9.5800 mm): Pad 2 [/power/SYS] of L3 on B.Cu
-    @(24.2500 mm, 8.7500 mm): Track [5V0] on B.Cu, length 2.1000 mm
-[clearance]: Clearance violation (rule 'L1 winding internal HV spacing' clearance 0.3000 mm; actual 0.2550 mm)
-    Rule: L1 winding internal HV spacing; error
-    @(24.4500 mm, 3.6500 mm): Track [5V0] on B.Cu, length 4.5000 mm
-    @(23.4450 mm, 4.5250 mm): Pad 1 [/power/SYS] of C66 on B.Cu
-[clearance]: Clearance violation (rule 'L1 winding internal HV spacing' clearance 0.3000 mm; actual 0.2500 mm)
-    Rule: L1 winding internal HV spacing; error
-    @(24.2500 mm, 8.3500 mm): Track [5V0] on B.Cu, length 2.5000 mm
-    @(25.5675 mm, 9.5800 mm): Pad 2 [/power/SYS] of L3 on B.Cu
-[clearance]: Clearance violation (rule 'L1 winding internal HV spacing' clearance 0.3000 mm; actual 0.2096 mm)
-    Rule: L1 winding internal HV spacing; error
-    @(24.4500 mm, 8.1500 mm): Track [5V0] on B.Cu, length 0.2828 mm
-    @(25.5675 mm, 9.5800 mm): Pad 2 [/power/SYS] of L3 on B.Cu
-[clearance]: Clearance violation (rule 'L1 winding internal HV spacing' clearance 0.3000 mm; actual 0.2500 mm)
-    Rule: L1 winding internal HV spacing; error
-    @(27.9075 mm, 9.5800 mm): Pad 1 [/power/SW_CHG] of L3 on B.Cu
-    @(27.8500 mm, 7.8500 mm): Via [5V0] on F.Cu - B.Cu
+[clearance]: Clearance violation (netclass 'PWR' clearance 0.2000 mm; actual 0.1000 mm)
+    Rule: netclass 'PWR'; error
+    @(28.2300 mm, 45.2500 mm): Pad 2 [<no net>] of U6 on F.Cu
+    @(28.5500 mm, 44.7500 mm): Track [5V0] on F.Cu, length 0.4000 mm
 [clearance]: Clearance violation (netclass 'PWR' clearance 0.2000 mm; actual 0.1884 mm)
     Rule: netclass 'PWR'; error
     @(29.5200 mm, 43.9500 mm): Pad 23 [/power/PMID] of U6 on F.Cu
     @(29.0500 mm, 43.2500 mm): Track [5V0] on F.Cu, length 1.6971 mm
-[clearance]: Clearance violation (netclass 'PWR' clearance 0.2000 mm; actual 0.1000 mm)
-    Rule: netclass 'PWR'; error
-    @(28.5500 mm, 44.7500 mm): Track [5V0] on F.Cu, length 0.4000 mm
-    @(28.2300 mm, 45.2500 mm): Pad 2 [<no net>] of U6 on F.Cu
-[clearance]: Clearance violation (netclass 'PWR' clearance 0.2000 mm; actual 0.0700 mm)
-    Rule: netclass 'PWR'; error
-    @(29.0500 mm, 44.6500 mm): Track [5V0] on F.Cu, length 1.4000 mm
-    @(29.5200 mm, 43.9500 mm): Pad 23 [/power/PMID] of U6 on F.Cu
 [clearance]: Clearance violation (netclass 'PWR' clearance 0.2000 mm; actual 0.1886 mm)
     Rule: netclass 'PWR'; error
     @(28.9500 mm, 44.7500 mm): Track [5V0] on F.Cu, length 0.1414 mm
     @(29.5200 mm, 43.9500 mm): Pad 23 [/power/PMID] of U6 on F.Cu
+[clearance]: Clearance violation (netclass 'PWR' clearance 0.2000 mm; actual 0.0700 mm)
+    Rule: netclass 'PWR'; error
+    @(29.0500 mm, 44.6500 mm): Track [5V0] on F.Cu, length 1.4000 mm
+    @(29.5200 mm, 43.9500 mm): Pad 23 [/power/PMID] of U6 on F.Cu
 
-** Found 255 unconnected pads **
+** Found 258 unconnected pads **
 [unconnected_items]: Missing connection between items
     Local override; error
     @(22.3200 mm, 46.2700 mm): Pad 1 [CAN1_TX] of U4 on F.Cu
@@ -116,19 +44,27 @@
 [unconnected_items]: Missing connection between items
     Local override; error
     @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
+    @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
+[unconnected_items]: Missing connection between items
+    Local override; error
     @(24.8900 mm, 24.3300 mm): Pad 47 [GND] of U2 on F.Cu
+    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
 [unconnected_items]: Missing connection between items
     Local override; error
-    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
+    @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
     @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
 [unconnected_items]: Missing connection between items
     Local override; error
-    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
-    @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(26.7500 mm, 17.9700 mm): Pad 35 [GND] of U2 on F.Cu
     @(26.2450 mm, 16.8875 mm): Pad 2 [GND] of U9 on B.Cu
+    @(26.7500 mm, 17.9700 mm): Pad 35 [GND] of U2 on F.Cu
+[unconnected_items]: Missing connection between items
+    Local override; error
+    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
+    @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
+[unconnected_items]: Missing connection between items
+    Local override; error
+    @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
+    @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
 [unconnected_items]: Missing connection between items
     Local override; error
     @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
@@ -147,6 +83,10 @@
     @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
 [unconnected_items]: Missing connection between items
     Local override; error
+    @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
+    @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
+[unconnected_items]: Missing connection between items
+    Local override; error
     @(32.3100 mm, 45.2500 mm): Pad 17 [GND] of U6 on F.Cu
     @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
 [unconnected_items]: Missing connection between items
@@ -155,20 +95,20 @@
     @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
 [unconnected_items]: Missing connection between items
     Local override; error
-    @(33.1100 mm, 19.8300 mm): Pad 23 [GND] of U2 on F.Cu
     @(36.0625 mm, 13.9950 mm): Pad 2 [GND] of R87 on B.Cu
+    @(33.1100 mm, 19.8300 mm): Pad 23 [GND] of U2 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
     @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
+    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
+[unconnected_items]: Missing connection between items
+    Local override; error
+    @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
     @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
 [unconnected_items]: Missing connection between items
     Local override; error
     @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
     @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
-    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
 [unconnected_items]: Missing connection between items
     Local override; error
     @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
@@ -904,7 +844,7 @@
 [unconnected_items]: Missing connection between items
     Local override; error
     @(72.4750 mm, 2.0050 mm): Pad 1 [/modem_rf/ANT_GNSS_M] of C50 on F.Cu
-    @(76.5500 mm, 28.6000 mm): Track [/modem_rf/ANT_GNSS_M] on F.Cu, length 1.4500 mm
+    @(76.5500 mm, 28.6000 mm): Pad 47 [/modem_rf/ANT_GNSS_M] of U1 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
     @(40.4500 mm, 26.1500 mm): Pad 4 [/modem_rf/MRI_1V8] of U8 on F.Cu
