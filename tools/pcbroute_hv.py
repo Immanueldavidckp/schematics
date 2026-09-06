@@ -205,27 +205,53 @@ def route_attempt(order):
             relaxed = [buck]
             if soft is not None and oref in exempt_court:
                 relaxed.append(exempt_court[oref])
+            # EXACT distance to the copper rectangle, not the inflated box:
+            # box corners overestimate by (sqrt(2)-1)*reach, and at U5's
+            # 1.27 mm pin pitch that error is the entire escape window
+            # (0.23 mm) - U5.6/U5.7 measured 0 free pad cells under boxes.
             for li, lay in enumerate(LAYERS):
                 if lay not in lays:
                     continue
                 g = grids[li]
                 i0, j0, i1, j1 = hard
-                for j in range(max(0, j0), min(NY - 1, j1) + 1):
-                    row = j * NX
-                    for i in range(max(0, i0), min(NX - 1, i1) + 1):
-                        g[row + i] = 1
-                if soft is None:
-                    continue
-                i0, j0, i1, j1 = soft
+                r0 = CLR_HV + half        # the electrical floor ring
+                r0sq = r0 * r0
                 for j in range(max(0, j0), min(NY - 1, j1) + 1):
                     row = j * NX
                     py = y0 + j * RES
+                    dy = abs(py - oy) - hh
+                    if dy < 0:
+                        dy = 0.0
+                    dy2 = dy * dy
+                    for i in range(max(0, i0), min(NX - 1, i1) + 1):
+                        px = x0 + i * RES
+                        dx = abs(px - ox) - hw
+                        if dx < 0:
+                            dx = 0.0
+                        if dx * dx + dy2 < r0sq - 1e-12:
+                            g[row + i] = 1
+                if soft is None:
+                    continue
+                i0, j0, i1, j1 = soft
+                r1 = CLR_LV + half
+                r1sq = r1 * r1
+                for j in range(max(0, j0), min(NY - 1, j1) + 1):
+                    row = j * NX
+                    py = y0 + j * RES
+                    dy = abs(py - oy) - hh
+                    if dy < 0:
+                        dy = 0.0
+                    dy2 = dy * dy
                     for i in range(max(0, i0), min(NX - 1, i1) + 1):
                         px = x0 + i * RES
                         if any(rx0 <= px <= rx1 and ry0 <= py <= ry1
                                for rx0, ry0, rx1, ry1 in relaxed):
                             continue      # inside a rescoped region
-                        g[row + i] = 1
+                        dx = abs(px - ox) - hw
+                        if dx < 0:
+                            dx = 0.0
+                        if dx * dx + dy2 < r1sq - 1e-12:
+                            g[row + i] = 1
         # board edge. ceil with an epsilon, NOT int(): (1.0 + 0.4) / 0.1
         # is 13.999999999999998 in floats, int() truncates to 13, and the
         # margin loses a whole cell - measured as a via 0.95 mm from the
