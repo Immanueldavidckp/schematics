@@ -1,7 +1,7 @@
 ** Drc report for telematics-tracker.kicad_pcb **
 ** Report includes: Errors, Warnings **
 
-** Found 12 DRC violations **
+** Found 13 DRC violations **
 ** report normalised: timestamp removed and violations sorted, so an unchanged design produces an unchanged file **
 
 [isolated_copper]: Isolated copper fill
@@ -13,6 +13,9 @@
 [isolated_copper]: Isolated copper fill
     Local override; warning
     @(20.7500 mm, 48.5000 mm): Zone 'L3_3V3' [3V3] on PWR_L3, priority 0
+[isolated_copper]: Isolated copper fill
+    Local override; warning
+    @(62.0000 mm, 7.0000 mm): Zone 'L3_/modem_rf/VBAT_MODEM' [/modem_rf/VBAT_MODEM] on PWR_L3, priority 0
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
     @(62.0400 mm, 47.5000 mm): Segment of X2 on F.Silkscreen

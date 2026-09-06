@@ -349,6 +349,12 @@ POWER_POURS = [
     ("5V0", "In2.Cu", HV_X + 0.75, 27.5, 43.0, 39.0),
     ("SYS", "In2.Cu", HV_X + 0.75, 39.5, 43.0, 48.0),
     ("3V3", "In2.Cu", HV_X + 0.75, 48.5, 43.0, BH - EDGE),
+    # CHECK 4 as approved: "VBAT_MODEM pour on L3 ties them" - the four F-13
+    # bulk caps (C40/C41 top, C81/C82 bottom) and U1 pads 57-60. This island
+    # was in the approved design but never emitted; found when the LV router
+    # enumerated the board's pours and VBAT_MODEM was not among them. Spans
+    # the cap cluster and Q3, stops at x 76 clear of the RF corridor (77.8+).
+    ("/modem_rf/VBAT_MODEM", "In2.Cu", 62.0, 7.0, 76.0, 21.0),
 ]
 
 # The EG11752 exposed pad is VIN_B (F-20), and the skill file requires the
