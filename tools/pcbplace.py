@@ -189,11 +189,12 @@ ANCHORS = {
     # (measured: 3 -> 2 and 3 -> 1 overlaps respectively); putting the cluster
     # in its own column beside L1 is what actually resolves it.
     "L1":  (27.65, 12.0, 180, 0),  # pad 1 (SW) must face U5    # amendment (b): left end, far from ANT_GNSS
-    # D16 shifted 1.8 west: its pad spanned x 36.0..38.5 directly north of
-    # pins 6/7, sealing U5.7's only escape (measured 0/133 free cells - the
-    # pin's window between its neighbours' halos is 0.23 mm wide and D16
-    # capped it). At 37.0 the window clears; SW gains ~2 mm of loop, logged.
-    "D16": (37.0, 2.8, 0, 0),
+    # D16 at 37.0 overlapped L1's courtyard (keepouts 33.45..40.55 vs
+    # ..34.55, a real DRC courtyards_overlap). 38.6 clears L1 by ~0.5 and
+    # stays clear of U5's keepout in y; with the routers' exact-distance
+    # halos the U5.6/U5.7 escape columns survive D16's pad at this x
+    # (verified: HV 42/42 must hold after this move).
+    "D16": (38.6, 2.79, 0, 0),
     "U5":  (38.3, 9.0, 0, 0),
     "C73": (38.3, 16.2, 0, 0),   # nearest U5 VIN: this is the loop-critical one
     # U6 charger and U9 LDO are low-voltage and do not belong in the buck

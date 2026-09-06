@@ -641,17 +641,20 @@ def main(single_net=None):
             if tapped:
                 last_cl = len(cl)
                 continue
-            bestpair, bestd = None, 1e18
+            pairs = []
             for i in range(len(cl)):
                 for j in range(i + 1, len(cl)):
                     for pa in cl[i][0]:
                         for pb in cl[j][0]:
                             d = (pa.GetPosition() - pb.GetPosition()).EuclideanNorm()
-                            if d < bestd:
-                                bestd, bestpair = d, (i, j, pa, pb)
-            if bestpair is None:
+                            pairs.append((d, i, j, pa, pb))
+            if not pairs:
                 return fail("no pad pair")
-            i, j, pa, pb = bestpair
+            pairs.sort(key=lambda t: t[0])
+            # try up to 4 candidate pairs: the closest pair's endpoint can
+            # be pocketed while another cluster pair routes fine
+            path = None
+            for _d, i, j, pa, pb in pairs[:4]:
             # A 2.0 mm MODEM_BULK track cannot ENTER a 1210 pad cluster at
             # 0.2 clearance (measured: C81.1 goals 0/286 free). The last
             # approach is physically capped by the endpoint pad's own width -
@@ -660,21 +663,28 @@ def main(single_net=None):
             # min() of the endpoint caps: the hop must ENTER BOTH pads, and
             # a 1.5 mm track cannot enter an 0603 (measured on C43.1). The
             # rail current rides the pour; the last approach is pad-limited.
-            w_hop = min(w, pad_cap(pa), pad_cap(pb))
-            if w_hop < w:
-                tg = build(netname, my_clr, w_hop / 2)
-                open_pad_entries(netname, tg, w_hop / 2)
-            starts = []
-            for p in cl[i][0]:
-                starts += pad_cells(p)
-            for it in cl[i][1]:
-                if isinstance(it, pcbnew.PCB_VIA):
-                    c = cell(to_mm(it.GetPosition().x), to_mm(it.GetPosition().y))
-                    starts += [(0, *c), (1, *c)]
-            goals = []
-            for p in cl[j][0]:
-                goals += pad_cells(p)
-            path = astar(tg, vg, starts, goals)
+                w_hop = min(w, pad_cap(pa), pad_cap(pb))
+                if w_hop < w:
+                    tg = build(netname, my_clr, w_hop / 2)
+                    open_pad_entries(netname, tg, w_hop / 2)
+                starts = []
+                for p in cl[i][0]:
+                    starts += pad_cells(p)
+                for it in cl[i][1]:
+                    if isinstance(it, pcbnew.PCB_VIA):
+                        c = cell(to_mm(it.GetPosition().x),
+                                 to_mm(it.GetPosition().y))
+                        starts += [(0, *c), (1, *c)]
+                goals = []
+                for p in cl[j][0]:
+                    goals += pad_cells(p)
+                path = astar(tg, vg, starts, goals)
+                if path is not None:
+                    break
+                if w_hop < w:
+                    # restore the class-width grid for the next candidate
+                    tg = build(netname, my_clr, w / 2)
+                    open_pad_entries(netname, tg, w / 2)
             if path is None and os.environ.get("LV_DEBUG"):
                 free_s = sum(1 for li, i, j in starts if not tg[li][j * NX + i])
                 free_g = sum(1 for li, i, j in goals if not tg[li][j * NX + i])
@@ -856,11 +866,30 @@ def orchestrate():
                 continue
             errs = drc_errors(PCB)
             if errs > baseline:
+                # keep the evidence: the mid-run board state that produced
+                # the regression is destroyed by the rollback, so capture
+                # the report (and the new violation types) NOW.
+                rpt = PCB + ".drc"
+                subprocess.run(["kicad-cli", "pcb", "drc",
+                                "--severity-error", "-o", rpt, PCB],
+                               capture_output=True)
+                text = open(rpt).read()
+                os.unlink(rpt)
+                kinds = {}
+                for k in re.findall(r"^\[([a-z_]+)\]", text, re.M):
+                    if k != "unconnected_items":
+                        kinds[k] = kinds.get(k, 0) + 1
+                keep = os.path.join(PROJ, "docs",
+                                    "lv-regressions",
+                                    netname.replace("/", "_") + ".rpt")
+                os.makedirs(os.path.dirname(keep), exist_ok=True)
+                with open(keep, "w") as fh:
+                    fh.write(text)
                 shutil.copyfile(LAST_GOOD, PCB)
-                failed[netname] = f"DRC regression (+{errs - baseline})"
+                failed[netname] = f"DRC regression (+{errs - baseline}: {kinds})"
                 next_queue.append(netname)
                 print(f"  FAIL {netname:28} DRC regression "
-                      f"(+{errs - baseline}) - rolled back")
+                      f"(+{errs - baseline}) {kinds} - report kept")
                 continue
             shutil.copyfile(PCB, LAST_GOOD)
             failed.pop(netname, None)

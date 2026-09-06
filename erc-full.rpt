@@ -37,7 +37,7 @@ Report includes: Errors, Warnings
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 27.94 mm): Global Label '3V3'
-    @(270.51 mm, 116.84 mm): Label '3V3'
+    @(71.12 mm, 73.66 mm): Label '3V3'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 38.10 mm): Global Label 'DI1'
@@ -45,7 +45,7 @@ Report includes: Errors, Warnings
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 40.64 mm): Global Label 'DI2'
-    @(185.42 mm, 213.36 mm): Label 'DI2'
+    @(170.18 mm, 220.98 mm): Label 'DI2'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 43.18 mm): Global Label 'DO1_GATE'
@@ -57,7 +57,7 @@ Report includes: Errors, Warnings
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 50.80 mm): Global Label 'IGN_SENSE'
-    @(322.58 mm, 101.60 mm): Label 'IGN_SENSE'
+    @(353.06 mm, 86.36 mm): Label 'IGN_SENSE'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 68.58 mm): Global Label 'MODEM_STATUS'
@@ -69,11 +69,11 @@ Report includes: Errors, Warnings
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 83.82 mm): Global Label 'VIN_SENSE'
-    @(370.84 mm, 73.66 mm): Label 'VIN_SENSE'
+    @(322.58 mm, 58.42 mm): Label 'VIN_SENSE'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(220.98 mm, 30.48 mm): Global Label '5V0'
-    @(96.52 mm, 297.18 mm): Label '5V0'
+    @(96.52 mm, 251.46 mm): Label '5V0'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(220.98 mm, 50.80 mm): Global Label 'SYS'
@@ -81,7 +81,7 @@ Report includes: Errors, Warnings
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(220.98 mm, 53.34 mm): Global Label 'VIN'
-    @(199.39 mm, 302.26 mm): Label 'VIN'
+    @(292.10 mm, 43.18 mm): Label 'VIN'
 
 ***** Sheet /mcu/
 ***** Sheet /storage/
