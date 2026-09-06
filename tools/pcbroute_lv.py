@@ -156,6 +156,10 @@ def main(single_net=None):
 
     def build(netname, my_clr, half):
         grids = [bytearray(NX * NY) for _ in LAYERS]
+        trace = None
+        if os.environ.get("LV_TRACE"):
+            tx, ty = map(float, os.environ["LV_TRACE"].split(","))
+            trace = cell(tx, ty)
 
         def block(g, ox, oy, rx, ry):
             i0 = int(math.floor((ox - rx - x0) / RES))
@@ -179,6 +183,12 @@ def main(single_net=None):
             for li, lay in enumerate(LAYERS):
                 if lay not in lays:
                     continue
+                if trace is not None and \
+                        abs(ox - (x0 + trace[0] * RES)) <= hw + clr + half and \
+                        abs(oy - (y0 + trace[1] * RES)) <= hh + clr + half:
+                    print(f"      TRACE L{li} blocked by [{onet}] ref={_oref!r} "
+                          f"at ({ox:.2f},{oy:.2f}) hw={hw:.2f} hh={hh:.2f} "
+                          f"clr={clr:.2f}")
                 block(grids[li], ox, oy, hw + clr + half, hh + clr + half)
         for gx0, gy0, gx1, gy1, _n in nogo:
             for g in grids:
@@ -210,8 +220,15 @@ def main(single_net=None):
                   for r in [o[6]] if o[0] == netname and o[6]]
         for (onet, lays, cx, cy, hw, hh, ref), _r in mypads:
             vert = hh >= hw
+            both = abs(hh - hw) < 0.2      # round/square (THT) pads: 2 lanes
+            # sibling pads are excluded from lane blocking (their axial
+            # geometry is legal at class clearance) EXCEPT when the sibling
+            # carries an HV net in the strip: the 1.5 mm rule applies across
+            # J1's own pin column (no courtyard exception exists for J1) and
+            # a lane 0.2 mm from an HV pin is a violation, not an entry.
             near = [o for o in obst + placed
-                    if o[0] != netname and o[6] != ref
+                    if o[0] != netname
+                    and (o[6] != ref or (o[0] in HV and o[2] < 20.0))
                     and abs(o[2] - cx) < 4.0 and abs(o[3] - cy) < 4.0]
 
             def lane_cell_ok(px, py, lay):
@@ -235,23 +252,24 @@ def main(single_net=None):
             for li, lay in enumerate(LAYERS):
                 if lay not in lays:
                     continue
-                if vert:
+                if vert or both:
                     ci = int(round((cx - x0) / RES))
                     j0 = int(round((cy - hh - y0) / RES)) - 12
                     j1 = int(round((cy + hh - y0) / RES)) + 12
                     for j in range(max(1, j0), min(NY - 2, j1) + 1):
                         px, py = pos(ci, j)
-                        on_pad = abs(py - cy) <= hh
-                        if on_pad or lane_cell_ok(px, py, lay):
+                        # every lane cell is verified - including on-pad
+                        # cells, because a track on J1.4's own pad can still
+                        # sit closer than 1.5 mm to the HV pin next to it
+                        if lane_cell_ok(px, py, lay):
                             tg[li][j * NX + ci] = 0
-                else:
+                if (not vert) or both:
                     cj = int(round((cy - y0) / RES))
                     i0 = int(round((cx - hw - x0) / RES)) - 12
                     i1 = int(round((cx + hw - x0) / RES)) + 12
                     for i in range(max(1, i0), min(NX - 2, i1) + 1):
                         px, py = pos(i, cj)
-                        on_pad = abs(px - cx) <= hw
-                        if on_pad or lane_cell_ok(px, py, lay):
+                        if lane_cell_ok(px, py, lay):
                             tg[li][cj * NX + i] = 0
 
     def astar(tg, vg, starts, goals):
@@ -312,32 +330,54 @@ def main(single_net=None):
                     out.append((li, i, j))
         return out
 
-    # ---- clusters via KiCad connectivity (zone-fill aware) ---------------
+    # ---- clusters: BFS over the connectivity graph's DIRECT edges --------
+    # GetConnectedItems(item) with no type filter returns just the item, and
+    # even typed queries return only DIRECTLY touching items (measured:
+    # C81.1 -> 1 via, not the cluster). So the cluster is computed here: BFS
+    # over per-type direct-edge queries, zone fills included.
+    CONN_TYPES = (pcbnew.PCB_PAD_T, pcbnew.PCB_TRACE_T,
+                  pcbnew.PCB_VIA_T, pcbnew.PCB_ZONE_T)
+
     def clusters(netname):
         conn = board.GetConnectivity()
-        pads = [p for f in board.GetFootprints() for p in f.Pads()
-                if p.GetNetname() == netname]
+        items = []
+        for f in board.GetFootprints():
+            for p in f.Pads():
+                if p.GetNetname() == netname:
+                    items.append(p)
+        for t in board.GetTracks():
+            if t.GetNetname() == netname:
+                items.append(t)
+        for z in board.Zones():
+            if not z.GetIsRuleArea() and z.GetNetname() == netname:
+                items.append(z)
+        byid = {i.m_Uuid.AsString(): i for i in items}
         seen, out = set(), []
-        for p in pads:
-            pid = p.m_Uuid.AsString()
-            if pid in seen:
+        for k in byid:
+            if k in seen:
                 continue
-            items = conn.GetConnectedItems(p)
-            group, extra = [], []
-            ids = set()
-            for it in items:
-                ids.add(it.m_Uuid.AsString())
-                if it.Type() == pcbnew.PCB_PAD_T and \
-                        it.GetNetname() == netname:
-                    group.append(pcbnew.Cast_to_PAD(it)
-                                 if hasattr(pcbnew, "Cast_to_PAD") else it)
-                elif it.Type() in (pcbnew.PCB_TRACE_T, pcbnew.PCB_VIA_T):
-                    extra.append(it)
-            if pid not in ids:
-                group.append(p)
-                ids.add(pid)
-            seen |= ids
-            out.append((group or [p], extra))
+            stack, comp = [k], []
+            while stack:
+                c = stack.pop()
+                if c in seen:
+                    continue
+                seen.add(c)
+                comp.append(c)
+                it = byid[c]
+                for T in CONN_TYPES:
+                    for j in conn.GetConnectedItems(it, T):
+                        jk = j.m_Uuid.AsString()
+                        if jk in byid and jk not in seen:
+                            stack.append(jk)
+            group = [byid[c] for c in comp
+                     if byid[c].Type() == pcbnew.PCB_PAD_T]
+            extra = [byid[c] for c in comp
+                     if byid[c].Type() in (pcbnew.PCB_TRACE_T,
+                                           pcbnew.PCB_VIA_T)]
+            out.append((group or [byid[comp[0]]], extra))
+        # clusters WITH pads first (pad-less pour clusters sort last)
+        out.sort(key=lambda ge: -len([p for p in ge[0]
+                                      if p.Type() == pcbnew.PCB_PAD_T]))
         return out
 
     # ---- emit helpers -----------------------------------------------------
@@ -483,6 +523,21 @@ def main(single_net=None):
                 print(f"TODO {n}")
         return
 
+    if single_net == "--spans--":
+        all_nets = {p.GetNetname() for f in board.GetFootprints()
+                    for p in f.Pads()
+                    if p.GetNetname() and p.GetNetname() not in PROTECTED}
+        for n in sorted(all_nets):
+            xs, ys = [], []
+            for f in board.GetFootprints():
+                for p in f.Pads():
+                    if p.GetNetname() == n:
+                        xs.append(to_mm(p.GetPosition().x))
+                        ys.append(to_mm(p.GetPosition().y))
+            if len(xs) > 1:
+                print(f"SPAN {max(xs)-min(xs)+max(ys)-min(ys):.1f} {n}")
+        return
+
     def route_net(netname):
         """Route one net to a single cluster. On failure ALL of this net's
         partial copper is REMOVED (board.Remove on tracks/vias is safe -
@@ -493,6 +548,10 @@ def main(single_net=None):
         w, my_clr, vd, vdr = GEO[cls]
         net = board.FindNet(netname)
         nv_net, tl_net, man_net = 0, 0.0, 0.0
+
+        def pad_cap(p):
+            b2 = p.GetBoundingBox()
+            return max(0.20, min(to_mm(b2.GetWidth()), to_mm(b2.GetHeight())))
 
         def fail(cause):
             # No in-memory rollback: board.Remove on many tracks crashed
@@ -541,6 +600,15 @@ def main(single_net=None):
             if bestpair is None:
                 return fail("no pad pair")
             i, j, pa, pb = bestpair
+            # A 2.0 mm MODEM_BULK track cannot ENTER a 1210 pad cluster at
+            # 0.2 clearance (measured: C81.1 goals 0/286 free). The last
+            # approach is physically capped by the endpoint pad's own width -
+            # the pad is the cross-section limit; the RAIL requirement is
+            # carried by the pour and the wide mid-run.
+            w_hop = min(w, max(pad_cap(pa), pad_cap(pb)))
+            if w_hop < w:
+                tg = build(netname, my_clr, w_hop / 2)
+                open_pad_entries(netname, tg, w_hop / 2)
             starts = []
             for p in cl[i][0]:
                 starts += pad_cells(p)
@@ -583,13 +651,74 @@ def main(single_net=None):
                           f"y {min(y for _,y in xs):.1f}..{max(y for _,y in xs):.1f}")
                 else:
                     print(f"    DEBUG flood 0 cells - ALL start cells blocked")
+                # name the walls: which nets' halos form the pocket boundary
+                cls = net_class(netname)
+                my_clr = GEO[cls][1]
+                half = GEO[cls][0] / 2
+                from collections import Counter
+                wall = Counter()
+                frontier = 0
+                for (li, i, j) in list(seen)[:60000]:
+                    for dx, dy in ((1,0),(-1,0),(0,1),(0,-1)):
+                        ni, nj = i + dx, j + dy
+                        if not (0 <= ni < NX and 0 <= nj < NY) or \
+                                not tg[li][nj * NX + ni]:
+                            continue
+                        frontier += 1
+                        if frontier > 4000:
+                            break
+                        px, py = pos(ni, nj)
+                        hit = None
+                        for on2, l2, ox, oy, ohw, ohh, oref in obst + placed:
+                            if on2 == netname or LAYERS[li] not in l2:
+                                continue
+                            oc = net_class(on2) if on2 else "HV"
+                            clr = max(my_clr, CLS_CLR.get(oc, 0.15))
+                            if on2 in HV and ox < 20.0:
+                                clr = 1.50
+                            if abs(px - ox) <= ohw + clr + half and \
+                                    abs(py - oy) <= ohh + clr + half:
+                                hit = f"{on2 or 'netless'}"
+                                break
+                        wall[hit or "edge/nogo"] += 1
+                    if frontier > 4000:
+                        break
+                print(f"    DEBUG pocket walls: "
+                      f"{dict(wall.most_common(8))}")
+                shown = 0
+                for (li, i, j) in list(seen)[:60000]:
+                    if shown >= 6:
+                        break
+                    for dx, dy in ((1,0),(-1,0),(0,1),(0,-1)):
+                        ni, nj = i + dx, j + dy
+                        if not (0 <= ni < NX and 0 <= nj < NY) or \
+                                not tg[li][nj * NX + ni]:
+                            continue
+                        px, py = pos(ni, nj)
+                        hit = None
+                        for on2, l2, ox, oy, ohw, ohh, oref in obst + placed:
+                            if on2 == netname or LAYERS[li] not in l2:
+                                continue
+                            oc = net_class(on2) if on2 else "HV"
+                            clr = max(my_clr, CLS_CLR.get(oc, 0.15))
+                            if on2 in HV and ox < 20.0:
+                                clr = 1.50
+                            if abs(px - ox) <= ohw + clr + half and \
+                                    abs(py - oy) <= ohh + clr + half:
+                                hit = on2
+                                break
+                        if hit is None:
+                            print(f"    DEBUG unknown wall cell L{li} "
+                                  f"({px:.2f},{py:.2f})")
+                            shown += 1
+                            break
             if path is None:
                 cause = (f"no path "
                          f"{pa.GetParentFootprint().GetReference()}.{pa.GetNumber()}"
                          f" -> "
                          f"{pb.GetParentFootprint().GetReference()}.{pb.GetNumber()}")
                 return fail(cause)
-            nv, tl = emit_path(path, net, w, vd, vdr)
+            nv, tl = emit_path(path, net, w_hop, vd, vdr)
             nv_net += nv
             tl_net += tl
             man_net += (abs(to_mm(pa.GetPosition().x - pb.GetPosition().x))
@@ -629,10 +758,20 @@ def orchestrate():
     baseline = drc_errors(PCB)
     print(f"baseline DRC errors (non-ratsnest): {baseline}")
 
+    # span per net, from a --spans child (longest first: the cross-board
+    # corridors are the scarce resource - CANH from J1 to the transceiver
+    # was walled in by its OWN termination nets routed before it)
+    r = child(["--spans"])
+    spans = {}
+    for l in r.stdout.splitlines():
+        if l.startswith("SPAN "):
+            _, v, n = l.split(None, 2)
+            spans[n] = float(v)
     metrics, failed = {}, {}
     done_ct = 0
     order = sorted(todo, key=lambda n: (net_class(n) != "MODEM_BULK",
-                                        net_class(n) != "PWR", n))
+                                        net_class(n) != "PWR",
+                                        -spans.get(n, 0.0), n))
     queue = list(order)
     for attempt in range(1, 4):
         print(f"--- pass {attempt}: {len(queue)} net(s)")
@@ -722,6 +861,8 @@ if __name__ == "__main__":
         main(single_net=sys.argv[sys.argv.index("--net") + 1])
     elif "--list" in sys.argv:
         main(single_net="--list--")
+    elif "--spans" in sys.argv:
+        main(single_net="--spans--")
     elif "--finish" in sys.argv:
         main(single_net="--finish--")
     else:
