@@ -127,7 +127,9 @@ ANCHORS = {
     # for any column beside J1, so it and R80 sit BELOW J1 (free from
     # y 34.1). F1/D1 y-tiling from the measured heights: F1 ctr y 7.9 spans
     # 1.5..14.2, D1 ctr y 18.8 spans 15.4..22.2.
-    "F1":  (17.7, 8.1, 90, 0),
+    "F1":  (17.4, 8.1, 90, 0),   # FIXED: the relaxer clamps F1 to the zone
+                                 # bound at 17.535, leaving F1.1 1.495 mm from
+                                 # L1.2 (5V0) - 5 um short of the 1.5 mm rule
     "D1":  (17.4, 18.9, 90, 0),
     # D2's keepout centre sits 2.07 mm below its origin; anchor y chosen so
     # the keepout top (35.2) clears J1's keepout bottom (34.12) by 1.1.
@@ -145,8 +147,12 @@ ANCHORS = {
     # 7.1 mm-wide slots). DO FETs: the strip below D2.
     "D7":  (10.5, 7.9, 0, 0),
     "D8":  (10.5, 7.9, 0, 1),
+    # NOT side by side: at 4.1 mm pitch Q1's LV gate pad sat 1.15 mm from
+    # Q2's HV drain pad - outside both courtyards, a genuine 1.5 mm rule
+    # violation the router correctly refused to route into. Q2 drops to the
+    # row below, clear of H5 (x < 20.3) and H3 (x > 6.65).
     "Q1":  (13.6, 48.9, 0, 0),
-    "Q2":  (17.7, 48.9, 0, 0),
+    "Q2":  (14.0, 53.8, 0, 0),
     # bootstrap cap and IS link: tight to U5's pin row, B side - these are
     # buck cluster parts, not strip parts
     "C76": (40.3, 7.28, 0, 1),
@@ -160,9 +166,13 @@ ANCHORS = {
     # flowing left to right; the optos sit just outside the strip where their
     # LV output faces the digital zone.
     # 1206 keepouts are 4.65 wide: pitch 5.2. BAV99s beside their optos.
-    "R14": (3.4, 46.4, 0, 1), "R15": (8.6, 46.4, 0, 1), "R16": (13.8, 46.4, 0, 1),
+    # rot 180: flipping to B mirrors x, which puts pad 1 on the EAST side -
+    # backwards to the west->east chain flow. Routed that way, DI2_M1 had to
+    # wrap around R18 and its locked copper sealed R18.2 into a 398-cell
+    # pocket (flood-fill measured). 180 restores pad 1 facing the feed.
+    "R14": (3.4, 46.4, 180, 1), "R15": (8.6, 46.4, 180, 1), "R16": (13.8, 46.4, 180, 1),
     "D5":  (21.4, 39.8, 0, 1), "OK1": (21.3, 46.6, 0, 1),
-    "R17": (3.4, 50.2, 0, 1), "R18": (8.6, 50.2, 0, 1), "R19": (13.8, 50.2, 0, 1),
+    "R17": (3.4, 50.2, 180, 1), "R18": (8.6, 50.2, 180, 1), "R19": (13.8, 50.2, 180, 1),
     "D6":  (26.6, 39.8, 0, 1), "OK2": (26.6, 46.6, 0, 1),
     # VIN entry test point above J1, clear of F1's column
     "TP23": (11.0, 2.5, 0, 0),
@@ -287,7 +297,8 @@ FIXED = {"U1",              # the corridor width depends on exactly this x
          "C84", "L4",       # series DC block and bias choke, on the RF line
          "C40", "C41", "C81", "C82",   # VBAT bulk, <= 5 mm from pads 57-60
          "U3",              # amendment (c): must stay beside H5
-         "J1"}              # the harness interface. Not pinning it let the
+         "J1",              # the harness interface (see note below)
+         "F1"}              # the harness interface. Not pinning it let the
                             # relaxer walk it to x = 4.0, half its keepout off
                             # the board edge, while shuffling the HV strip.
 

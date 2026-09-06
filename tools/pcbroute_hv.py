@@ -64,7 +64,38 @@ EXEMPT_FOOTPRINTS = {"R30", "R31", "R32", "R33", "R34", "R35",
                      "Q1", "Q2", "U5", "OK1", "OK2", "X1", "L1"}
 
 
-def main():
+# ---- route nets, most-constrained first ----------------------------
+# Order is not cosmetic. Routed greedily in declaration order, VIN_P (an
+# open-field net: D2, C71, C72, R80) routed FIRST and its locked copper
+# walled C73.1 into a 626-cell pocket - flood-fill measured - making
+# VIN_B 0/4 even though every endpoint was reachable on the empty board.
+# So: the buck cluster (tightest area on the board) routes first, then the
+# chain nets, and the long-haul VIN/VIN_P/VIN_F nets last - they have the
+# whole left strip to work around whatever is already down.
+ORDER = ["/power/SW_BUCK", "/power/U5_VB", "/power/VIN_B",
+         # VIN_P is all short local hops around R80/D2/C70-C72 now that
+         # the caps are anchored beside their source node - route it
+         # before the DI/DO copper can wall the area
+         "/power/VIN_P", "/power/VIN_F",
+         # DO nets span the whole strip (J1 -> clamps at the top -> FETs
+         # at the bottom): they need the north-south freeway before the
+         # DI/divider copper eats it. Routed second-to-last they failed;
+         # the same hop routed cleanly on a board that already carried
+         # the freeway copper.
+         "/io/DO1_OUT", "/io/DO2_OUT",
+         "/io/DI1_IN", "/io/DI1_M1", "/io/DI1_M2", "/io/DI1_LED",
+         "/io/DI2_IN", "/io/DI2_M1", "/io/DI2_M2", "/io/DI2_LED",
+         "/io/VIN_D0", "/io/VIN_D1", "/io/IGN", "/io/IGN_D0",
+         "/io/IGN_D1",
+         "/io/J1_SPARE1", "/io/J1_SPARE2",
+         "VIN"]
+
+
+def route_attempt(order):
+    """One full routing pass in the given net order, on a FRESH board loaded
+    from disk. Returns (board, results). The board is not saved here - the
+    caller keeps the best attempt. Fresh-load instead of undo because
+    board.Remove() segfaults (see SKILL.md)."""
     board = pcbnew.LoadBoard(PCB)
     global LAYERS
     LAYERS = [pcbnew.F_Cu, pcbnew.B_Cu]
@@ -195,8 +226,11 @@ def main():
                                for rx0, ry0, rx1, ry1 in relaxed):
                             continue      # inside a rescoped region
                         g[row + i] = 1
-        # board edge
-        e = int((CLR_EDGE + half) / RES) + 1
+        # board edge. ceil with an epsilon, NOT int(): (1.0 + 0.4) / 0.1
+        # is 13.999999999999998 in floats, int() truncates to 13, and the
+        # margin loses a whole cell - measured as a via 0.95 mm from the
+        # edge against the 1.0 mm rule.
+        e = int(math.ceil((CLR_EDGE + half) / RES - 1e-9)) + 1
         for g in grids:
             for j in range(NY):
                 row = j * NX
@@ -280,29 +314,8 @@ def main():
                         out.append((li, i, j))
         return out or [(0,) + cell(cx, cy)]
 
-    # ---- route nets, most-constrained first ----------------------------
-    # Order is not cosmetic. Routed greedily in declaration order, VIN_P (an
-    # open-field net: D2, C71, C72, R80) routed FIRST and its locked copper
-    # walled C73.1 into a 626-cell pocket - flood-fill measured - making
-    # VIN_B 0/4 even though every endpoint was reachable on the empty board.
-    # So: the buck cluster (tightest area on the board) routes first, then the
-    # chain nets, and the long-haul VIN/VIN_P/VIN_F nets last - they have the
-    # whole left strip to work around whatever is already down.
-    ORDER = ["/power/SW_BUCK", "/power/U5_VB", "/power/VIN_B",
-             # VIN_P is all short local hops around R80/D2/C70-C72 now that
-             # the caps are anchored beside their source node - route it
-             # before the DI/DO copper can wall the area
-             "/power/VIN_P", "/power/VIN_F",
-             "/io/DI1_IN", "/io/DI1_M1", "/io/DI1_M2", "/io/DI1_LED",
-             "/io/DI2_IN", "/io/DI2_M1", "/io/DI2_M2", "/io/DI2_LED",
-             "/io/VIN_D0", "/io/VIN_D1", "/io/IGN", "/io/IGN_D0",
-             "/io/IGN_D1", "/io/DO1_OUT", "/io/DO2_OUT",
-             "/io/J1_SPARE1", "/io/J1_SPARE2",
-             "VIN"]
-    assert set(ORDER) == set(HV_NETS) | set(MV_NETS), \
-        "ORDER must cover exactly the HV + MV nets"
     results = {}
-    for netname in ORDER:
+    for netname in order:
         hv_rules = netname in HV_NETS
         w = HV_W if hv_rules else MV_W
         vd, vdr = (VIA_D, VIA_DRILL) if hv_rules else (MV_VIA_D, MV_VIA_DRILL)
@@ -389,9 +402,47 @@ def main():
         cls = "HV" if hv_rules else "MV"
         print(f"  {cls} {netname:24} {made}/{len(pads)-1} connections{flag}")
 
-    tot = sum(r[0] for r in results.values())
+    return board, results
+
+
+def main():
+    """Route with failed-first retry.
+
+    A single greedy pass oscillates: DO2 routed second-to-last failed; moved
+    early it routed and DI2_IN failed instead. Each loser routes fine when
+    given priority, so the fix is systematic: re-run the whole pass with the
+    previous attempt's failed nets promoted to the front (after the buck
+    trio, whose order is geometrically forced), until a pass completes or
+    the failure set stops shrinking. Every pass obeys the same clearances -
+    retrying changes ORDER, never a rule.
+    """
+    assert set(ORDER) == set(HV_NETS) | set(MV_NETS), \
+        "ORDER must cover exactly the HV + MV nets"
+    FORCED = ORDER[:3]                     # SW_BUCK, U5_VB, VIN_B
+    order = list(ORDER)
+    best = None                            # (fails, tot, board, results)
+    for attempt in range(1, 5):
+        print(f"--- attempt {attempt}: {', '.join(n.split('/')[-1] for n in order[:6])} ...")
+        board, results = route_attempt(order)
+        tot = sum(r[0] for r in results.values())
+        need = sum(r[1] for r in results.values())
+        failed_nets = [n for n in order if results.get(n, (0, 0, []))[2]]
+        print(f"  attempt {attempt}: {tot}/{need} connections, "
+              f"{len(failed_nets)} net(s) incomplete")
+        if best is None or len(failed_nets) < best[0]:
+            best = (len(failed_nets), tot, board, results)
+        if not failed_nets:
+            break
+        promoted = [n for n in failed_nets if n not in FORCED]
+        order = FORCED + promoted + [n for n in order
+                                     if n not in FORCED and n not in promoted]
+    fails, tot, board, results = best
     need = sum(r[1] for r in results.values())
-    print(f"\nHV routed: {tot}/{need} connections")
+    print(f"\nHV routed: {tot}/{need} connections "
+          f"({fails} net(s) incomplete)")
+    for n, (made, total, failed) in results.items():
+        if failed:
+            print(f"  UNROUTED {n}: {', '.join(failed)}")
     board.BuildListOfNets()
     try:
         pcbnew.ZONE_FILLER(board).Fill(board.Zones())
