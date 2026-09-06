@@ -2870,3 +2870,63 @@ rule 8 amended accordingly.
 5. **Greedy route-order matters**: VIN_P routed first walled C73 into a
    626-cell pocket. Constrained-first ORDER is now explicit in the router,
    with the reasoning in a comment.
+
+---
+
+# Step 4 STOP report: FreeRouting plateaus — but as a TOOL failure — 2026-09-06
+
+## The runs (all on the pinned freerouting-2.4.1.jar, SHA verified)
+
+| run | input | passes | budget | outcome |
+|-----|-------|--------|--------|---------|
+| 1 | 3502 locked items (per-cell segments) | -mp 100 | 90 min | killed at budget, no .ses (v2.4.1 writes .ses only on completion) |
+| 2 | same | -mp 8 | 85 min | killed at budget, no .ses |
+| 3 | same, log captured | -mp 1 | 88 min | NPE crashloop in fanout: `SearchTreeObject.shapeLayer` on null, thrown continuously from the event thread |
+| 4 | COALESCED copper (517 locked items) | -mp 8 | 88 min* | fanout clean: 483/617 pins escaped in 7.1 min. Auto-routing pass #1 then ran 6.5 h; killed after the pass-1 report |
+
+*run 4's wall-clock guard failed operationally (the process detached from its
+wrapper), which is the only reason pass #1's full duration got measured.
+
+## Run 4, measured
+
+- Fanout: 483/617 SMD pins (78.3%) in 425 s, 0 errors.
+- Auto-routing pass #1: 23,328 s wall, **1,133 s CPU (5% duty)** — the
+  engine spent 95% of the time NOT routing. The same
+  `SearchTreeObject.shapeLayer` NullPointerException storm reappeared during
+  the pass, on input that was now clean long segments.
+- Pass #1 result: 188 of 252 items unrouted, **539 violations**, score 406.
+- No .ses was ever produced inside any budget window.
+
+## Reading
+
+The <95% plateau is real, but it is NOT yet evidence about the BOARD:
+v2.4.1 malfunctions on this input (NPE storm from its own search tree,
+5% CPU duty). The earlier rejected run (2026-09-05, 78 locked items) at
+least completed; with the full locked HV/RF field it does not. The 539
+violations echo the previous finding that FreeRouting undercuts the rules
+it is given. Nothing in these runs says a 4-layer board cannot be routed -
+our own maze router just completed 41/41 of the HARDEST nets (HV at 1.5 mm
+separation) with 0 DRC violations on this same board.
+
+## 6-layer cost delta (requested if plateaued)
+
+Not quantifiable without an account: JLCPCB's calculator is JS-gated, the
+official quotation API requires a registered API key, and no published
+figure for ~82 x 62 mm at 500 pcs exists that I would trust. Quote
+parameters for a 2-minute manual check: 82 x 62 mm, JLC7628 4-layer vs
+6-layer, 1.6 mm, 1 oz outer / 0.5 oz inner, HASL or ENIG as spec'd,
+qty 500. The marketing floor ("5 pcs from $2") says nothing at volume.
+
+## Options on the table (decision held for the user)
+
+a. Swap autorouter version (e.g. FreeRouting 1.9.x classic) - a pinned tool
+   dependency change, needs sign-off and re-verification.
+b. Extend tools/pcbroute_hv.py to route the remaining 269 low-speed
+   connections under their netclass rules (Default 0.20/0.15, PWR, GND,
+   MODEM_BULK), constrained-first with failed-first retry, DRC after each
+   net. The router has already demonstrated 41/41 under HARDER rules.
+   No rule change, no cost change, deterministic, and the tool is ours.
+c. 6-layer respin (cost delta pending the manual quote).
+
+Recommendation: (b), with (c) only if (b) plateaus - the same gate the
+user set for FreeRouting.
