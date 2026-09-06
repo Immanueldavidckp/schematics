@@ -57,14 +57,21 @@ def main():
 
     shutil.copyfile(PCB, SCRATCH)
 
-    cmd = ["java", "-jar", jar, "-de", DSN, "-do", SES, "-mp", "100"]
+    # -mp 8: v2.4.1 has no wall-clock option and only writes the .ses when
+    # it finishes, so a kill at the time budget yields NOTHING - measured:
+    # -mp 100 ran the full 90 minutes and was stopped empty-handed, while the
+    # earlier (harder, pre-shrink) board completed 8 passes in ~40 minutes.
+    # Fewer optimisation passes is a schedule choice, not a rule change.
+    passes = os.environ.get("FR_PASSES", "8")
+    cmd = ["java", "-jar", jar, "-de", DSN, "-do", SES, "-mp", passes]
     print("running:", " ".join(cmd))
     print(f"budget: {minutes} minutes")
+    log = open(os.path.join(PROJ, "autoroute.log"), "w")
     try:
-        subprocess.run(cmd, timeout=minutes * 60,
-                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(cmd, timeout=minutes * 60, stdout=log, stderr=log)
     except subprocess.TimeoutExpired:
         print(f"FreeRouting hit the {minutes}-minute budget and was stopped")
+    log.close()
     if not os.path.exists(SES):
         sys.exit("no .ses produced - nothing to import")
     print(f"session file: {SES} ({os.path.getsize(SES)} bytes)")

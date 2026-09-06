@@ -370,27 +370,52 @@ def route_attempt(order):
                           f"cells, goal reachable={hit}")
                 failed.append(name)
                 continue
-            # emit
+            # emit - COALESCED. One PCB_TRACK per cell step produced ~3500
+            # collinear 0.10 mm stubs, and FreeRouting v2.4.1's search tree
+            # NPE-crashloops on that geometry (measured: two 90-minute runs
+            # died in the fanout stage throwing SearchTreeObject.shapeLayer
+            # NullPointerExceptions). Consecutive steps in the same direction
+            # on the same layer merge into one segment; electrically identical.
+            runs = []
             prev = None
-            for (li, ix, iy) in path:
+            for cur in path:
                 if prev is not None:
-                    if prev[0] != li:
-                        v = pcbnew.PCB_VIA(board)
-                        v.SetPosition(pt(*pos(ix, iy)))
-                        v.SetWidth(mm(vd)); v.SetDrill(mm(vdr))
-                        v.SetNet(net); v.SetLayerPair(pcbnew.F_Cu, pcbnew.B_Cu)
-                        v.SetLocked(True); board.Add(v)
-                        placed.append((netname, LAYERS, *pos(ix, iy),
-                                       vd / 2, vd / 2, ""))
+                    if prev[0] != cur[0]:
+                        runs.append(["via", cur, None, None])
                     else:
-                        t = pcbnew.PCB_TRACK(board)
-                        t.SetStart(pt(*pos(*prev[1:])))
-                        t.SetEnd(pt(*pos(ix, iy)))
-                        t.SetWidth(mm(w)); t.SetLayer(LAYERS[li])
-                        t.SetNet(net); t.SetLocked(True); board.Add(t)
+                        d = (cur[1] - prev[1], cur[2] - prev[2])
+                        if runs and runs[-1][0] == "seg" \
+                                and runs[-1][3] == (prev[0], d) \
+                                and runs[-1][2] == prev:
+                            runs[-1][2] = cur
+                        else:
+                            runs.append(["seg", prev, cur, (prev[0], d)])
+                prev = cur
+            for kind, a, b2, meta in runs:
+                if kind == "via":
+                    li, ix, iy = a
+                    v = pcbnew.PCB_VIA(board)
+                    v.SetPosition(pt(*pos(ix, iy)))
+                    v.SetWidth(mm(vd)); v.SetDrill(mm(vdr))
+                    v.SetNet(net); v.SetLayerPair(pcbnew.F_Cu, pcbnew.B_Cu)
+                    v.SetLocked(True); board.Add(v)
+                    placed.append((netname, LAYERS, *pos(ix, iy),
+                                   vd / 2, vd / 2, ""))
+                else:
+                    li = meta[0]
+                    t = pcbnew.PCB_TRACK(board)
+                    t.SetStart(pt(*pos(*a[1:])))
+                    t.SetEnd(pt(*pos(*b2[1:])))
+                    t.SetWidth(mm(w)); t.SetLayer(LAYERS[li])
+                    t.SetNet(net); t.SetLocked(True); board.Add(t)
+                    # obstacle samples along the merged run
+                    n_ = max(abs(b2[1] - a[1]), abs(b2[2] - a[2]), 1)
+                    for k in range(n_ + 1):
+                        fx = a[1] + (b2[1] - a[1]) * k / n_
+                        fy = a[2] + (b2[2] - a[2]) * k / n_
                         placed.append((netname, [LAYERS[li]],
-                                       *pos(ix, iy), w / 2, w / 2, ""))
-                prev = (li, ix, iy)
+                                       x0 + fx * RES, y0 + fy * RES,
+                                       w / 2, w / 2, ""))
             connected += path
             connected += goals        # the whole pad is now copper, not just
                                       # the cell the path happened to enter on

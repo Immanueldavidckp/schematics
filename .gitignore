@@ -11,3 +11,4 @@ erc-t*.rpt
 autoroute-scratch.kicad_pcb
 autoroute.dsn
 autoroute.ses
+autoroute.log
