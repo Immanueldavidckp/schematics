@@ -162,6 +162,7 @@ def main(single_net=None):
             trace = cell(tx, ty)
 
         def block(g, ox, oy, rx, ry):
+            # nogo/edge regions only: plain rectangles
             i0 = int(math.floor((ox - rx - x0) / RES))
             j0 = int(math.floor((oy - ry - y0) / RES))
             i1 = int(math.ceil((ox + rx - x0) / RES))
@@ -170,6 +171,32 @@ def main(single_net=None):
                 row = j * NX
                 for i in range(max(0, i0), min(NX - 1, i1) + 1):
                     g[row + i] = 1
+
+        def block_pad(g, ox, oy, hw, hh, reach):
+            # EXACT distance to the copper rectangle, like DRC measures it.
+            # A box halo overestimates the corners by (sqrt(2)-1)*reach - up
+            # to ~0.2 mm - and that inflation is precisely what erased the
+            # legal diagonal passages around the U5/U6/U7 pin fields
+            # (27/113 routed, everything else walled in).
+            r2 = reach * reach
+            i0 = int(math.floor((ox - hw - reach - x0) / RES))
+            j0 = int(math.floor((oy - hh - reach - y0) / RES))
+            i1 = int(math.ceil((ox + hw + reach - x0) / RES))
+            j1 = int(math.ceil((oy + hh + reach - y0) / RES))
+            for j in range(max(0, j0), min(NY - 1, j1) + 1):
+                row = j * NX
+                py = y0 + j * RES
+                dy = abs(py - oy) - hh
+                if dy < 0:
+                    dy = 0.0
+                dy2 = dy * dy
+                for i in range(max(0, i0), min(NX - 1, i1) + 1):
+                    px = x0 + i * RES
+                    dx = abs(px - ox) - hw
+                    if dx < 0:
+                        dx = 0.0
+                    if dx * dx + dy2 < r2 - 1e-12:
+                        g[row + i] = 1
 
         for onet, lays, ox, oy, hw, hh, _oref in obst + placed:
             if onet == netname:
@@ -189,7 +216,7 @@ def main(single_net=None):
                     print(f"      TRACE L{li} blocked by [{onet}] ref={_oref!r} "
                           f"at ({ox:.2f},{oy:.2f}) hw={hw:.2f} hh={hh:.2f} "
                           f"clr={clr:.2f}")
-                block(grids[li], ox, oy, hw + clr + half, hh + clr + half)
+                block_pad(grids[li], ox, oy, hw, hh, clr + half)
         for gx0, gy0, gx1, gy1, _n in nogo:
             for g in grids:
                 block(g, (gx0 + gx1) / 2, (gy0 + gy1) / 2,
@@ -240,8 +267,9 @@ def main(single_net=None):
                               CLS_CLR.get(oc, 0.15))
                     if on2 in HV and ox < 20.0:
                         clr = 1.50
-                    if abs(px - ox) <= ohw + clr + half and \
-                            abs(py - oy) <= ohh + clr + half:
+                    ddx = max(abs(px - ox) - ohw, 0.0)
+                    ddy = max(abs(py - oy) - ohh, 0.0)
+                    if ddx * ddx + ddy * ddy < (clr + half) ** 2 - 1e-12:
                         return False
                 for gx0, gy0, gx1, gy1, _n in nogo:
                     if gx0 - half <= px <= gx1 + half and \
@@ -254,8 +282,8 @@ def main(single_net=None):
                     continue
                 if vert or both:
                     ci = int(round((cx - x0) / RES))
-                    j0 = int(round((cy - hh - y0) / RES)) - 12
-                    j1 = int(round((cy + hh - y0) / RES)) + 12
+                    j0 = int(round((cy - hh - y0) / RES)) - 25
+                    j1 = int(round((cy + hh - y0) / RES)) + 25
                     for j in range(max(1, j0), min(NY - 2, j1) + 1):
                         px, py = pos(ci, j)
                         # every lane cell is verified - including on-pad
@@ -265,8 +293,8 @@ def main(single_net=None):
                             tg[li][j * NX + ci] = 0
                 if (not vert) or both:
                     cj = int(round((cy - y0) / RES))
-                    i0 = int(round((cx - hw - x0) / RES)) - 12
-                    i1 = int(round((cx + hw - x0) / RES)) + 12
+                    i0 = int(round((cx - hw - x0) / RES)) - 25
+                    i1 = int(round((cx + hw - x0) / RES)) + 25
                     for i in range(max(1, i0), min(NX - 2, i1) + 1):
                         px, py = pos(i, cj)
                         if lane_cell_ok(px, py, lay):
@@ -629,7 +657,10 @@ def main(single_net=None):
             # approach is physically capped by the endpoint pad's own width -
             # the pad is the cross-section limit; the RAIL requirement is
             # carried by the pour and the wide mid-run.
-            w_hop = min(w, max(pad_cap(pa), pad_cap(pb)))
+            # min() of the endpoint caps: the hop must ENTER BOTH pads, and
+            # a 1.5 mm track cannot enter an 0603 (measured on C43.1). The
+            # rail current rides the pour; the last approach is pad-limited.
+            w_hop = min(w, pad_cap(pa), pad_cap(pb))
             if w_hop < w:
                 tg = build(netname, my_clr, w_hop / 2)
                 open_pad_entries(netname, tg, w_hop / 2)
@@ -819,6 +850,9 @@ def orchestrate():
                 failed[netname] = cause
                 next_queue.append(netname)
                 print(f"  FAIL {netname:28} {cause}")
+                for l in r.stdout.splitlines():
+                    if "DEBUG" in l:
+                        print(f"   {l}")
                 continue
             errs = drc_errors(PCB)
             if errs > baseline:

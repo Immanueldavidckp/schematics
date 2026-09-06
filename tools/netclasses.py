@@ -37,7 +37,12 @@ HV = ["VIN", "/power/VIN_F", "/power/VIN_P", "/power/VIN_B",
       # /power/VIN_B unroutable (0/4). U5_VB is the bootstrap, referenced to
       # SW_BUCK, so it rides to VIN + VCC and is HV for the same reason. Both
       # live inside the BUCK_HV rescope area (0.60 mm to LV, see .kicad_dru).
-      "/power/SW_BUCK", "/power/U5_VB"]
+      # U5_IS is the current-sense pin tied to SW through R82 (0R, F-12):
+      # it RIDES the switching node, so it is HV for the same reason as
+      # SW_BUCK. Found when the LV router's U5.7 escape was walled in by the
+      # locked SW/VIN_B copper - the net must route in the HV pass, before
+      # SW_BUCK's copper goes down.
+      "/power/SW_BUCK", "/power/U5_VB", "/power/U5_IS"]
 
 # MV: interior chain/divider nodes at <= 70 V. They carry the same current
 # path as their HV parents but sit behind series resistance, are not exposed

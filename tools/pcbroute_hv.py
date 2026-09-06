@@ -72,7 +72,7 @@ EXEMPT_FOOTPRINTS = {"R30", "R31", "R32", "R33", "R34", "R35",
 # So: the buck cluster (tightest area on the board) routes first, then the
 # chain nets, and the long-haul VIN/VIN_P/VIN_F nets last - they have the
 # whole left strip to work around whatever is already down.
-ORDER = ["/power/SW_BUCK", "/power/U5_VB", "/power/VIN_B",
+ORDER = ["/power/U5_IS", "/power/SW_BUCK", "/power/U5_VB", "/power/VIN_B",
          # VIN_P is all short local hops around R80/D2/C70-C72 now that
          # the caps are anchored beside their source node - route it
          # before the DI/DO copper can wall the area
