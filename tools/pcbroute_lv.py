@@ -95,7 +95,7 @@ def git_progress(msg):
                     "<noreply@anthropic.com>"], capture_output=True)
 
 
-def main():
+def main(single_net=None):
     board = pcbnew.LoadBoard(PCB)
     LAYERS = [pcbnew.F_Cu, pcbnew.B_Cu]
 
@@ -135,12 +135,13 @@ def main():
             b2 = p.GetBoundingBox()
             obst.append((p.GetNetname(), [l for l in p.GetLayerSet().CuStack()],
                          to_mm(b2.GetCenter().x), to_mm(b2.GetCenter().y),
-                         to_mm(b2.GetWidth()) / 2, to_mm(b2.GetHeight()) / 2))
+                         to_mm(b2.GetWidth()) / 2, to_mm(b2.GetHeight()) / 2,
+                         f.GetReference()))
     for t in board.GetTracks():
         if isinstance(t, pcbnew.PCB_VIA):
             obst.append((t.GetNetname(), LAYERS,
                          to_mm(t.GetPosition().x), to_mm(t.GetPosition().y),
-                         to_mm(t.GetWidth()) / 2, to_mm(t.GetWidth()) / 2))
+                         to_mm(t.GetWidth()) / 2, to_mm(t.GetWidth()) / 2, ""))
         else:
             a, b2 = t.GetStart(), t.GetEnd()
             w = to_mm(t.GetWidth()) / 2
@@ -149,7 +150,7 @@ def main():
             for i in range(n + 1):
                 tt = i / n
                 obst.append((t.GetNetname(), [t.GetLayer()],
-                             ax + (bx - ax) * tt, ay + (by - ay) * tt, w, w))
+                             ax + (bx - ax) * tt, ay + (by - ay) * tt, w, w, ""))
     print(f"obstacles: {len(obst)}")
     placed = []
 
@@ -166,7 +167,7 @@ def main():
                 for i in range(max(0, i0), min(NX - 1, i1) + 1):
                     g[row + i] = 1
 
-        for onet, lays, ox, oy, hw, hh in obst + placed:
+        for onet, lays, ox, oy, hw, hh, _oref in obst + placed:
             if onet == netname:
                 continue
             oc = net_class(onet) if onet else "HV"
@@ -191,6 +192,67 @@ def main():
                     if i < e or i >= NX - e or j < e or j >= NY - e:
                         g[row + i] = 1
         return grids
+
+    def open_pad_entries(netname, tg, half):
+        """Unblock the legal axial entry lane into each of this net's pads.
+
+        A 0.5 mm-pitch LQFP pad has a legal entry: a track on the pad's long
+        axis keeps 0.5 - 0.15 - half >= class clearance to the neighbouring
+        pins. But that window is a +-0.05 mm line, and the box halos of the
+        neighbours bury it - measured: U2.44 had 0/48 free goal cells while
+        the flood reached 268k cells everywhere else. This opens the axis
+        lane ON the pad plus up to 12 cells beyond each tip, re-verifying
+        every lane cell against all obstacles EXCEPT sibling pads of the
+        same footprint (the axial geometry to siblings is legal by
+        construction; anything else - another part's pad, a via, a track -
+        still blocks)."""
+        mypads = [(o, r) for o in obst
+                  for r in [o[6]] if o[0] == netname and o[6]]
+        for (onet, lays, cx, cy, hw, hh, ref), _r in mypads:
+            vert = hh >= hw
+            near = [o for o in obst + placed
+                    if o[0] != netname and o[6] != ref
+                    and abs(o[2] - cx) < 4.0 and abs(o[3] - cy) < 4.0]
+
+            def lane_cell_ok(px, py, lay):
+                for on2, l2, ox, oy, ohw, ohh, _ in near:
+                    if lay not in l2:
+                        continue
+                    oc = net_class(on2) if on2 else "HV"
+                    clr = max(CLS_CLR.get(net_class(netname), 0.2),
+                              CLS_CLR.get(oc, 0.15))
+                    if on2 in HV and ox < 20.0:
+                        clr = 1.50
+                    if abs(px - ox) <= ohw + clr + half and \
+                            abs(py - oy) <= ohh + clr + half:
+                        return False
+                for gx0, gy0, gx1, gy1, _n in nogo:
+                    if gx0 - half <= px <= gx1 + half and \
+                            gy0 - half <= py <= gy1 + half:
+                        return False
+                return True
+
+            for li, lay in enumerate(LAYERS):
+                if lay not in lays:
+                    continue
+                if vert:
+                    ci = int(round((cx - x0) / RES))
+                    j0 = int(round((cy - hh - y0) / RES)) - 12
+                    j1 = int(round((cy + hh - y0) / RES)) + 12
+                    for j in range(max(1, j0), min(NY - 2, j1) + 1):
+                        px, py = pos(ci, j)
+                        on_pad = abs(py - cy) <= hh
+                        if on_pad or lane_cell_ok(px, py, lay):
+                            tg[li][j * NX + ci] = 0
+                else:
+                    cj = int(round((cy - y0) / RES))
+                    i0 = int(round((cx - hw - x0) / RES)) - 12
+                    i1 = int(round((cx + hw - x0) / RES)) + 12
+                    for i in range(max(1, i0), min(NX - 2, i1) + 1):
+                        px, py = pos(i, cj)
+                        on_pad = abs(px - cx) <= hw
+                        if on_pad or lane_cell_ok(px, py, lay):
+                            tg[li][cj * NX + i] = 0
 
     def astar(tg, vg, starts, goals):
         goalset = set(goals)
@@ -306,7 +368,7 @@ def main():
                 board.Add(v)
                 nv += 1
                 placed.append((net.GetNetname(), LAYERS, *pos(ix, iy),
-                               vd / 2, vd / 2))
+                               vd / 2, vd / 2, ""))
             else:
                 li = meta[0]
                 t = pcbnew.PCB_TRACK(board)
@@ -320,7 +382,7 @@ def main():
                     fx = a[1] + (b2[1] - a[1]) * k / n_
                     fy = a[2] + (b2[2] - a[2]) * k / n_
                     placed.append((net.GetNetname(), [LAYERS[li]],
-                                   x0 + fx * RES, y0 + fy * RES, w / 2, w / 2))
+                                   x0 + fx * RES, y0 + fy * RES, w / 2, w / 2, ""))
         stats["vias"] += nv
         return nv, tl
 
@@ -384,7 +446,7 @@ def main():
             v.SetNet(net); v.SetLayerPair(pcbnew.F_Cu, pcbnew.B_Cu)
             board.Add(v)
             stats["vias"] += 1
-            placed.append((netname, LAYERS, *pos(ix, iy), vd / 2, vd / 2))
+            placed.append((netname, LAYERS, *pos(ix, iy), vd / 2, vd / 2, ""))
         new_items = [t for t in board.GetTracks() if id(t) not in items_before]
         return new_items, mark
 
@@ -402,37 +464,24 @@ def main():
     def refresh_connectivity():
         board.BuildConnectivity()
 
+    if single_net == "--finish--":
+        refill()
+        pcbnew.SaveBoard(PCB, board)
+        canonicalise(PCB)
+        print("CHILD_FINISHED")
+        return
+
     refill()
     refresh_connectivity()
 
-    all_nets = sorted({p.GetNetname() for f in board.GetFootprints()
-                       for p in f.Pads()
-                       if p.GetNetname() and p.GetNetname() not in PROTECTED})
-    todo = []
-    for n in all_nets:
-        cl = clusters(n)
-        if len(cl) > 1:
-            todo.append(n)
-    print(f"nets needing work: {len(todo)}")
-
-    shutil.copyfile(PCB, LAST_GOOD)
-    baseline = drc_errors(PCB)
-    print(f"baseline DRC errors (non-ratsnest): {baseline}")
-
-    metrics = {}
-    failed = {}
-    done_ct = 0
-    total_ct = len(todo)
-
-    # Nets that caused a DRC regression in a previous invocation. The gate
-    # rolls the FILE back and re-execs this script; the skip file is what
-    # stops a pathological net from looping forever.
-    SKIP_FILE = os.path.join(PROJ, ".lv-route-skip")
-    skip = set()
-    if os.path.exists(SKIP_FILE):
-        skip = {l.strip() for l in open(SKIP_FILE) if l.strip()}
-        print(f"skipping {len(skip)} net(s) from a previous DRC regression: "
-              f"{', '.join(sorted(skip))}")
+    if single_net == "--list--":
+        all_nets = sorted({p.GetNetname() for f in board.GetFootprints()
+                           for p in f.Pads()
+                           if p.GetNetname() and p.GetNetname() not in PROTECTED})
+        for n in all_nets:
+            if len(clusters(n)) > 1:
+                print(f"TODO {n}")
+        return
 
     def route_net(netname):
         """Route one net to a single cluster. On failure ALL of this net's
@@ -444,39 +493,37 @@ def main():
         w, my_clr, vd, vdr = GEO[cls]
         net = board.FindNet(netname)
         nv_net, tl_net, man_net = 0, 0.0, 0.0
-        net_items = []
-        placed_mark = len(placed)
-        vias_mark = stats["vias"]
 
         def fail(cause):
-            for it in net_items:
-                board.Remove(it)
-            del placed[placed_mark:]
-            stats["vias"] = vias_mark
-            refresh_connectivity()
+            # No in-memory rollback: board.Remove on many tracks crashed
+            # pcbnew (SWIG leak storm then silent death). In child-per-net
+            # mode failure simply means the child exits WITHOUT saving, so
+            # the file never sees the partial copper.
             return False, cause, 0, 0.0, 0.0
 
-        def track_new(before_ids):
-            new = [t for t in board.GetTracks() if id(t) not in before_ids]
-            net_items.extend(new)
-
-        last_cl = None
-        for _round in range(16):
+        # The FIRST tap into a virgin pour does not reduce the pad-cluster
+        # count (it merges a cluster with the pour, not with another pad
+        # cluster) - the drop comes when the second cluster taps in. So the
+        # stagnation window is 3 rounds, not 1.
+        best_cl, stagnant = None, 0
+        for _round in range(40):
             refresh_connectivity()
             cl = clusters(netname)
             if len(cl) <= 1:
                 return True, "", nv_net, tl_net, man_net
-            if last_cl is not None and len(cl) >= last_cl:
-                return fail(f"cluster count stuck at {len(cl)} "
-                            f"(tap or path did not merge)")
+            if best_cl is None or len(cl) < best_cl:
+                best_cl, stagnant = len(cl), 0
+            else:
+                stagnant += 1
+                if stagnant >= 3:
+                    return fail(f"cluster count stuck at {len(cl)}")
             tg = build(netname, my_clr, w / 2)
             vg = build(netname, my_clr, vd / 2)
-            before_ids = set(id(t) for t in board.GetTracks())
+            open_pad_entries(netname, tg, w / 2)
             tapped = False
             for group, _extra in cl[1:]:
                 r = tap_pour(netname, group, tg, vg, vd, vdr, w, net)
                 if r is not None:
-                    track_new(before_ids)
                     nv_net += 1
                     tapped = True
                     break
@@ -505,6 +552,37 @@ def main():
             for p in cl[j][0]:
                 goals += pad_cells(p)
             path = astar(tg, vg, starts, goals)
+            if path is None and os.environ.get("LV_DEBUG"):
+                free_s = sum(1 for li, i, j in starts if not tg[li][j * NX + i])
+                free_g = sum(1 for li, i, j in goals if not tg[li][j * NX + i])
+                print(f"    DEBUG starts {free_s}/{len(starts)} free, "
+                      f"goals {free_g}/{len(goals)} free")
+                from collections import deque
+                seen, dq = set(), deque()
+                for c in starts:
+                    li, i, j = c
+                    if not tg[li][j * NX + i]:
+                        seen.add(c); dq.append(c)
+                while dq:
+                    li, i, j = dq.popleft()
+                    for dx, dy in ((1,0),(-1,0),(0,1),(0,-1),
+                                   (1,1),(1,-1),(-1,1),(-1,-1)):
+                        ni, nj = i + dx, j + dy
+                        if 0 <= ni < NX and 0 <= nj < NY and \
+                                not tg[li][nj * NX + ni] and \
+                                (li, ni, nj) not in seen:
+                            seen.add((li, ni, nj)); dq.append((li, ni, nj))
+                    lj = 1 - li
+                    if not vg[lj][j * NX + i] and not vg[li][j * NX + i] \
+                            and (lj, i, j) not in seen:
+                        seen.add((lj, i, j)); dq.append((lj, i, j))
+                xs = [pos(i, j) for li, i, j in list(seen)[:100000]]
+                if xs:
+                    print(f"    DEBUG flood {len(seen)} cells, x range "
+                          f"{min(x for x,_ in xs):.1f}..{max(x for x,_ in xs):.1f}, "
+                          f"y {min(y for _,y in xs):.1f}..{max(y for _,y in xs):.1f}")
+                else:
+                    print(f"    DEBUG flood 0 cells - ALL start cells blocked")
             if path is None:
                 cause = (f"no path "
                          f"{pa.GetParentFootprint().GetReference()}.{pa.GetNumber()}"
@@ -512,47 +590,85 @@ def main():
                          f"{pb.GetParentFootprint().GetReference()}.{pb.GetNumber()}")
                 return fail(cause)
             nv, tl = emit_path(path, net, w, vd, vdr)
-            track_new(before_ids)
             nv_net += nv
             tl_net += tl
             man_net += (abs(to_mm(pa.GetPosition().x - pb.GetPosition().x))
                         + abs(to_mm(pa.GetPosition().y - pb.GetPosition().y)))
             last_cl = len(cl)
-        return fail("cluster count did not converge in 16 rounds")
+        return fail("cluster count did not converge in 40 rounds")
 
-    # MODEM_BULK and PWR first (widest copper needs room), then by name.
-    order = [n for n in sorted(
-                todo, key=lambda n: (net_class(n) != "MODEM_BULK",
-                                     net_class(n) != "PWR", n))
-             if n not in skip]
+    # child mode: route exactly one net; save ONLY on success
+    ok, cause, nv, tl, man = route_net(single_net)
+    if ok:
+        refill()
+        pcbnew.SaveBoard(PCB, board)
+        print(f"CHILD_OK vias={nv} len={tl:.2f} man={man:.2f}")
+        return
+    print(f"CHILD_FAIL {cause}")
+    sys.exit(3)
+
+
+def orchestrate():
+    """Parent: per-net child processes. A child that fails (or crashes -
+    pcbnew has done that) exits without saving, so the board file only ever
+    contains fully-routed, gate-checked nets. No in-memory rollback exists
+    because none is needed."""
+    me = os.path.abspath(__file__)
+
+    def child(args, timeout=900):
+        return subprocess.run([sys.executable, "-u", me] + args,
+                              capture_output=True, text=True, timeout=timeout)
+
+    r = child(["--list"])
+    todo = [l.split(None, 1)[1] for l in r.stdout.splitlines()
+            if l.startswith("TODO ")]
+    total_ct = len(todo)
+    print(f"nets needing work: {total_ct}")
+
+    shutil.copyfile(PCB, LAST_GOOD)
+    baseline = drc_errors(PCB)
+    print(f"baseline DRC errors (non-ratsnest): {baseline}")
+
+    metrics, failed = {}, {}
+    done_ct = 0
+    order = sorted(todo, key=lambda n: (net_class(n) != "MODEM_BULK",
+                                        net_class(n) != "PWR", n))
     queue = list(order)
     for attempt in range(1, 4):
         print(f"--- pass {attempt}: {len(queue)} net(s)")
         next_queue = []
         for netname in queue:
-            ok, cause, nv, tl, man = route_net(netname)
-            if not ok:
+            try:
+                r = child(["--net", netname])
+            except subprocess.TimeoutExpired:
+                shutil.copyfile(LAST_GOOD, PCB)
+                failed[netname] = "child timeout (900 s)"
+                next_queue.append(netname)
+                print(f"  FAIL {netname:28} child timeout")
+                continue
+            m = re.search(r"CHILD_OK vias=(\d+) len=([\d.]+) man=([\d.]+)",
+                          r.stdout)
+            if not m:
+                fm = re.search(r"CHILD_FAIL (.*)", r.stdout)
+                cause = fm.group(1) if fm else \
+                    f"child crashed (rc={r.returncode})"
+                shutil.copyfile(LAST_GOOD, PCB)   # crash may have half-saved
                 failed[netname] = cause
                 next_queue.append(netname)
                 print(f"  FAIL {netname:28} {cause}")
                 continue
-            failed.pop(netname, None)
-            refill()
-            pcbnew.SaveBoard(PCB, board)
             errs = drc_errors(PCB)
             if errs > baseline:
-                # gate 1: the routed net broke a rule DRC can see but the
-                # grids could not (should not happen; belt-and-braces).
-                print(f"  DRC REGRESSION on {netname}: {errs} > {baseline}. "
-                      f"Rolling the file back and re-execing with the net "
-                      f"skipped.")
                 shutil.copyfile(LAST_GOOD, PCB)
-                with open(SKIP_FILE, "a") as fh:
-                    fh.write(netname + "\n")
-                os.execv(sys.executable, [sys.executable,
-                                          os.path.abspath(__file__)])
+                failed[netname] = f"DRC regression (+{errs - baseline})"
+                next_queue.append(netname)
+                print(f"  FAIL {netname:28} DRC regression "
+                      f"(+{errs - baseline}) - rolled back")
+                continue
             shutil.copyfile(PCB, LAST_GOOD)
+            failed.pop(netname, None)
             done_ct += 1
+            nv, tl, man = int(m.group(1)), float(m.group(2)), float(m.group(3))
             ratio = (tl / man) if man > 0.5 else 1.0
             metrics[netname] = (nv, tl, man, ratio)
             flags = []
@@ -565,16 +681,15 @@ def main():
                   f"ratio={ratio:4.2f} [{done_ct}/{total_ct} {pct:3.0f}%]"
                   f"{'  ' + ','.join(flags) if flags else ''}")
             if done_ct % 25 == 0:
-                git_progress(f"LV routing progress: {done_ct}/{total_ct} nets "
-                             f"({pct:.0f}%)")
-                print(f"== progress commit at {done_ct}/{total_ct} ({pct:.0f}%)")
+                git_progress(f"LV routing progress: {done_ct}/{total_ct} "
+                             f"nets ({pct:.0f}%)")
+                print(f"== progress commit at {done_ct}/{total_ct} "
+                      f"({pct:.0f}%)")
         queue = next_queue
         if not queue:
             break
 
-    refill()
-    pcbnew.SaveBoard(PCB, board)
-    canonicalise(PCB)
+    child(["--finish"], timeout=600)
     tot_v = sum(m[0] for m in metrics.values())
     flagged_v = [n for n, m in metrics.items() if m[0] > 4]
     flagged_r = [n for n, m in metrics.items() if m[3] > 2.5]
@@ -592,10 +707,6 @@ def main():
             fh.write("\nUNROUTED:\n")
             for n, c in failed.items():
                 fh.write(f"  {n}: {c}\n")
-        if skip:
-            fh.write("\nSKIPPED (previous DRC regression):\n")
-            for n in sorted(skip):
-                fh.write(f"  {n}\n")
     print(f"\nROUTED {done_ct}/{total_ct} nets  vias {tot_v}  "
           f"via-flags {len(flagged_v)}  ratio-flags {len(flagged_r)}")
     if failed:
@@ -607,4 +718,11 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    if "--net" in sys.argv:
+        main(single_net=sys.argv[sys.argv.index("--net") + 1])
+    elif "--list" in sys.argv:
+        main(single_net="--list--")
+    elif "--finish" in sys.argv:
+        main(single_net="--finish--")
+    else:
+        orchestrate()
