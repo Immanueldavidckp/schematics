@@ -47,13 +47,17 @@ PROTECTED = set(HV) | set(MV) | set(RF)
 
 # (track_width, clearance, via_dia, via_drill) per class
 GEO = {
-    "Default":    (0.20, 0.15, 0.50, 0.30),
+    # Default clearance is 0.20: that is what the board's stock Default
+    # netclass carries, and the first run used 0.15 here - DRC (correctly)
+    # rejected 12 nets against the class rule. Gate 1 works; the constant
+    # was wrong.
+    "Default":    (0.20, 0.20, 0.50, 0.30),
     "PWR":        (0.50, 0.20, 0.80, 0.40),
     "MODEM_BULK": (2.00, 0.20, 0.80, 0.40),
     "GND":        (0.50, 0.15, 0.50, 0.30),
 }
 CLS_CLR = {"HV": 0.60, "MV": 0.60, "RF": 0.30, "GND": 0.15,
-           "PWR": 0.20, "MODEM_BULK": 0.20, "Default": 0.15}
+           "PWR": 0.20, "MODEM_BULK": 0.20, "Default": 0.20}
 
 
 def net_class(n):
@@ -321,77 +325,74 @@ def main():
         return nv, tl
 
     # ---- pour taps ---------------------------------------------------------
-    pours = defaultdict(list)      # net -> [(x0,y0,x1,y1)] usable via windows
+    # net -> [(zone, inner_layer, window)] - the FILLED polygon is what a tap
+    # via must hit. The first run tested the bounding box only: vias landed in
+    # fill voids (clearance holes around other copper), never connected, the
+    # cluster count never dropped, and each power net sprayed up to 12 dead
+    # vias that then walled off every later net.
+    pours = defaultdict(list)
     for z in board.Zones():
         if z.GetIsRuleArea():
             continue
-        lays = list(z.GetLayerSet().CuStack())
-        if pcbnew.F_Cu in lays and pcbnew.B_Cu in lays:
-            pass
-        zb = z.GetBoundingBox()
-        # inner layers only: a through via reaches them anywhere inside
-        if any(l not in (pcbnew.F_Cu, pcbnew.B_Cu) for l in lays):
-            pours[z.GetNetname()].append(
-                (to_mm(zb.GetLeft()) + 1.0, to_mm(zb.GetTop()) + 1.0,
-                 to_mm(zb.GetRight()) - 1.0, to_mm(zb.GetBottom()) - 1.0))
-
-    def tap_pour(netname, group, vg, vd, vdr, w):
-        """via + stub from one pad of the cluster into the net's inner pour."""
-        wins = pours.get(netname)
-        if not wins:
-            return None
-        net = board.FindNet(netname)
-        for p in group:
-            bb2 = p.GetBoundingBox()
-            px, py = to_mm(bb2.GetCenter().x), to_mm(bb2.GetCenter().y)
-            if not any(wx0 <= px <= wx1 and wy0 <= py <= wy1
-                       for wx0, wy0, wx1, wy1 in wins):
+        for l in z.GetLayerSet().CuStack():
+            if l in (pcbnew.F_Cu, pcbnew.B_Cu):
                 continue
-            li = 0 if pcbnew.F_Cu in p.GetLayerSet().CuStack() else 1
-            ci, cj = cell(px, py)
-            for r in range(2, 26):          # 0.2 .. 2.5 mm ring search
-                found = None
-                for di in range(-r, r + 1):
-                    for dj in (-r, r):
-                        for ii, jj in ((ci + di, cj + dj), (ci + dj, cj + di)):
-                            if 0 <= ii < NX and 0 <= jj < NY and \
-                                    not vg[0][jj * NX + ii] and \
-                                    not vg[1][jj * NX + ii]:
-                                vx, vy = pos(ii, jj)
-                                if any(wx0 <= vx <= wx1 and wy0 <= vy <= wy1
-                                       for wx0, wy0, wx1, wy1 in wins):
-                                    found = (ii, jj)
-                                    break
-                        if found:
-                            break
-                    if found:
-                        break
-                if found:
-                    ii, jj = found
-                    vx, vy = pos(ii, jj)
-                    stub_w = min(w, 2 * min(to_mm(bb2.GetWidth()),
-                                            to_mm(bb2.GetHeight())) / 2)
-                    t = pcbnew.PCB_TRACK(board)
-                    t.SetStart(pt(px, py)); t.SetEnd(pt(vx, vy))
-                    t.SetWidth(mm(max(0.20, stub_w)))
-                    t.SetLayer(LAYERS[li]); t.SetNet(net)
-                    board.Add(t)
-                    v = pcbnew.PCB_VIA(board)
-                    v.SetPosition(pt(vx, vy))
-                    v.SetWidth(mm(vd)); v.SetDrill(mm(vdr))
-                    v.SetNet(net); v.SetLayerPair(pcbnew.F_Cu, pcbnew.B_Cu)
-                    board.Add(v)
-                    stats["vias"] += 1
-                    placed.append((netname, LAYERS, vx, vy, vd / 2, vd / 2))
-                    placed.append((netname, [LAYERS[li]], px, py,
-                                   max(0.20, stub_w) / 2, max(0.20, stub_w) / 2))
-                    placed.append((netname, [LAYERS[li]], vx, vy,
-                                   max(0.20, stub_w) / 2, max(0.20, stub_w) / 2))
-                    return (vx, vy)
-        return None
+            zb = z.GetBoundingBox()
+            pours[z.GetNetname()].append(
+                (z, l, (to_mm(zb.GetLeft()) + 0.6, to_mm(zb.GetTop()) + 0.6,
+                        to_mm(zb.GetRight()) - 0.6, to_mm(zb.GetBottom()) - 0.6)))
 
-    # GND: the L2 plane is full-board
-    pours["GND"] = [(x0 + 2.0, y0 + 2.0, x1 - 2.0, y1 - 2.0)]
+    def tap_pour(netname, group, tg, vg, vd, vdr, w, net):
+        """Maze a stub from the cluster to a via site that HITS the net's
+        filled inner-layer pour. Returns the emitted items (for rollback) or
+        None. The via site is verified against the FILLED polygon and the
+        stub is a routed path, not a blind line."""
+        zl = pours.get(netname)
+        if not zl:
+            return None
+        goals = []
+        for z, lay, (wx0, wy0, wx1, wy1) in zl:
+            i0, j0 = cell(wx0, wy0)
+            i1, j1 = cell(wx1, wy1)
+            for j in range(max(0, j0), min(NY - 1, j1) + 1):
+                for i in range(max(0, i0), min(NX - 1, i1) + 1):
+                    if vg[0][j * NX + i] or vg[1][j * NX + i]:
+                        continue
+                    x, y = pos(i, j)
+                    if z.HitTestFilledArea(lay, pt(x, y), 0):
+                        goals.append((0, i, j))
+                        goals.append((1, i, j))
+        if not goals:
+            return None
+        starts = []
+        for p in group:
+            starts += pad_cells(p)
+        path = astar(tg, vg, starts, set(goals))
+        if path is None:
+            return None
+        mark = len(placed)
+        items_before = set(id(t) for t in board.GetTracks())
+        emit_path(path, net, w, vd, vdr)
+        # a through via at the endpoint reaches the inner pour; if the path
+        # already ended with a layer change, that via is the tap
+        li, ix, iy = path[-1]
+        need_via = len(path) < 2 or path[-2][0] == path[-1][0]
+        if need_via:
+            v = pcbnew.PCB_VIA(board)
+            v.SetPosition(pt(*pos(ix, iy)))
+            v.SetWidth(mm(vd)); v.SetDrill(mm(vdr))
+            v.SetNet(net); v.SetLayerPair(pcbnew.F_Cu, pcbnew.B_Cu)
+            board.Add(v)
+            stats["vias"] += 1
+            placed.append((netname, LAYERS, *pos(ix, iy), vd / 2, vd / 2))
+        new_items = [t for t in board.GetTracks() if id(t) not in items_before]
+        return new_items, mark
+
+    # GND: the L2 solid plane
+    for z in board.Zones():
+        if z.GetZoneName() == "L2_GND_solid":
+            pours["GND"] = [(z, board.GetLayerID("In1.Cu"),
+                             (x0 + 2.0, y0 + 2.0, x1 - 2.0, y1 - 2.0))]
 
     # ---- the work list -----------------------------------------------------
     def refill():
@@ -434,27 +435,53 @@ def main():
               f"{', '.join(sorted(skip))}")
 
     def route_net(netname):
-        """Route one net to a single cluster. Partial copper that meets the
-        grid rules is legal and is KEPT on failure - only the connection is
-        reported missing. Returns (ok, cause, vias, length, manhattan)."""
+        """Route one net to a single cluster. On failure ALL of this net's
+        partial copper is REMOVED (board.Remove on tracks/vias is safe -
+        verified; the footprint segfault in SKILL.md does not apply) so a
+        failed net cannot wall off the nets after it. Returns
+        (ok, cause, vias, length, manhattan)."""
         cls = net_class(netname)
         w, my_clr, vd, vdr = GEO[cls]
         net = board.FindNet(netname)
         nv_net, tl_net, man_net = 0, 0.0, 0.0
-        for _round in range(12):
+        net_items = []
+        placed_mark = len(placed)
+        vias_mark = stats["vias"]
+
+        def fail(cause):
+            for it in net_items:
+                board.Remove(it)
+            del placed[placed_mark:]
+            stats["vias"] = vias_mark
+            refresh_connectivity()
+            return False, cause, 0, 0.0, 0.0
+
+        def track_new(before_ids):
+            new = [t for t in board.GetTracks() if id(t) not in before_ids]
+            net_items.extend(new)
+
+        last_cl = None
+        for _round in range(16):
             refresh_connectivity()
             cl = clusters(netname)
             if len(cl) <= 1:
                 return True, "", nv_net, tl_net, man_net
+            if last_cl is not None and len(cl) >= last_cl:
+                return fail(f"cluster count stuck at {len(cl)} "
+                            f"(tap or path did not merge)")
             tg = build(netname, my_clr, w / 2)
             vg = build(netname, my_clr, vd / 2)
+            before_ids = set(id(t) for t in board.GetTracks())
             tapped = False
             for group, _extra in cl[1:]:
-                if tap_pour(netname, group, vg, vd, vdr, w):
+                r = tap_pour(netname, group, tg, vg, vd, vdr, w, net)
+                if r is not None:
+                    track_new(before_ids)
                     nv_net += 1
                     tapped = True
                     break
             if tapped:
+                last_cl = len(cl)
                 continue
             bestpair, bestd = None, 1e18
             for i in range(len(cl)):
@@ -465,7 +492,7 @@ def main():
                             if d < bestd:
                                 bestd, bestpair = d, (i, j, pa, pb)
             if bestpair is None:
-                return False, "no pad pair", nv_net, tl_net, man_net
+                return fail("no pad pair")
             i, j, pa, pb = bestpair
             starts = []
             for p in cl[i][0]:
@@ -483,14 +510,15 @@ def main():
                          f"{pa.GetParentFootprint().GetReference()}.{pa.GetNumber()}"
                          f" -> "
                          f"{pb.GetParentFootprint().GetReference()}.{pb.GetNumber()}")
-                return False, cause, nv_net, tl_net, man_net
+                return fail(cause)
             nv, tl = emit_path(path, net, w, vd, vdr)
+            track_new(before_ids)
             nv_net += nv
             tl_net += tl
             man_net += (abs(to_mm(pa.GetPosition().x - pb.GetPosition().x))
                         + abs(to_mm(pa.GetPosition().y - pb.GetPosition().y)))
-        return False, "cluster count did not converge in 12 rounds", \
-            nv_net, tl_net, man_net
+            last_cl = len(cl)
+        return fail("cluster count did not converge in 16 rounds")
 
     # MODEM_BULK and PWR first (widest copper needs room), then by name.
     order = [n for n in sorted(
