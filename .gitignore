@@ -8,3 +8,6 @@ tools/__pycache__/
 nl.net
 erc-t*.rpt
 .history/
+autoroute-scratch.kicad_pcb
+autoroute.dsn
+autoroute.ses
