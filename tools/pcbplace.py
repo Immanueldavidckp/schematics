@@ -85,10 +85,13 @@ ANCHORS = {
     # runs (x 78.15, just clear of U1's keepout at 77.4), C49/C51 beside the
     # corridor verticals. pcbroute.py draws an RF-width T-stub from pad 1 to
     # the line; pad 2 (GND) lands in the coplanar pour.
-    "C48": (78.15, 22.55, 90, 0),
-    "C50": (78.15, 25.25, 270, 0),
-    "C49": (78.0, 15.0, 0, 0),
-    "C51": (78.0, 31.4, 0, 0),
+    # rotations chosen so PAD 1 faces the line: the first attempt had all
+    # four backwards and every T-stub ran through its own GND pad 2
+    # (6 shorting_items + 6 mask bridges, measured).
+    "C48": (78.15, 22.55, 270, 0),
+    "C50": (78.15, 25.25, 90, 0),
+    "C49": (78.0, 15.0, 180, 0),
+    "C51": (78.0, 31.4, 180, 0),
     # C84 is the SERIES DC block and carries the RF, so it is inline in the
     # corridor between R72 and AF2 - not a bypass part that can go anywhere.
     "C84": (79.8, 34.5, 270, 0),  # 270: chain flows down

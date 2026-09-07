@@ -56,19 +56,17 @@ def main():
     txt = open(SCRATCH, encoding="utf-8").read()
     body = txt[txt.index("\n") + 1:txt.rstrip().rfind(")")]
     forms = _split_forms(body)
-    netno = {}
-    for f in forms:
-        m = re.match(r'\(\s*net (\d+) "([^"]*)"', f)
-        if m:
-            netno[int(m.group(1))] = m.group(2)
-    ripnets &= (set(netno.values()) | PROTECTED)
+    # KiCad 10 references nets BY NAME on every item: (net "GND"). There is
+    # no numeric net table to translate through.
+    present = set(re.findall(r'\(net "([^"]*)"\)', txt))
+    ripnets &= (present | PROTECTED)
 
     kept, ripped = [], 0
     for f in forms:
         tag = re.match(r"\(\s*([A-Za-z_0-9]+)", f).group(1)
         if tag in ("segment", "via") and "(locked yes)" not in f:
-            m = re.search(r"\(net (\d+)\)", f)
-            if m and netno.get(int(m.group(1)), "") in ripnets:
+            m = re.search(r'\(net "([^"]*)"\)', f)
+            if m and m.group(1) in ripnets:
                 ripped += 1
                 continue
         kept.append(f)
