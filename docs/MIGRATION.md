@@ -51,6 +51,7 @@ low-speed nets, after which its output is reviewed to DRC-clean.
 | Jar | `freerouting-2.4.1.jar`, 64,076,787 bytes |
 | Download | `https://github.com/freerouting/freerouting/releases/download/v2.4.1/freerouting-2.4.1.jar` |
 | Local cache | `~/.cache/pcb-tools/freerouting-2.4.1.jar` (SHA verified before every run) |
+| Fallback (a) | `freerouting-1.9.0.jar`, 5,044,336 bytes, SHA-256 `9084a4888937a7f31f857ecc12aa7a37407f51160e4d2892dff9c9bb47ae3102`, from `https://github.com/freerouting/freerouting/releases/download/v1.9.0/freerouting-1.9.0.jar`, cached beside it. The classic pre-rewrite build - staged per the approved path-(b) plan's fallback clause; not yet authorised to replace 2.4.1 for anything except the fallback run. |
 | KNOWN DEFECT | v2.4.1 NPE-crashloops on this board (`SearchTreeObject.shapeLayer` on null, event thread, 5% CPU duty). First triggered by per-cell locked segments; persists on coalesced input during auto-routing. Step-4 STOP report in design-log 2026-09-06. Do not burn another budget window on this version without a fix upstream. |
 | **SHA-256** | **`251101c3eeac22d7e7dfcf6796603279e5d1000283eb82d8f093780f7afc6aa9`** |
 | Verified on | 2026-09-05, run headless under `/usr/bin/java` |
