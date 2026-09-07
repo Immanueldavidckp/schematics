@@ -38,16 +38,16 @@ def main():
     text = drc(SCRATCH, rpt)
 
     ripnets = set(PROTECTED)
-    block = []
+    current = None
     for line in text.splitlines():
-        if line.startswith("["):
-            block = [line]
-        elif line.startswith(("    @", "    ;", "    Rule", "    Local")):
-            block.append(line)
-        if block and not block[0].startswith("[unconnected_items]"):
-            for m in re.finditer(r"\[([^]\[]+)\]", line):
-                nm = m.group(1)
-                if nm and not nm.islower() or "/" in nm:
+        m = re.match(r"\[([a-z_]+)\]", line)
+        if m:
+            current = m.group(1)
+            continue
+        if current and current != "unconnected_items" and \
+                line.lstrip().startswith("@"):
+            for nm in re.findall(r"\[([^]\[]*)\]", line):
+                if nm and nm != "<no net>":
                     ripnets.add(nm)
     # the regexy net harvest can catch violation-type tags; they are all
     # lowercase_with_underscores and cannot collide with net names on this
