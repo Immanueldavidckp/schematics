@@ -1,117 +1,45 @@
 LV routing metrics (tools/pcbroute_lv.py)
-nets routed: 37/112   total vias: 107
+nets routed: 1/40   total vias: 2
 net                            vias   len mm manhattan  ratio
-/io/CANH                          2     73.8      63.2   1.17
-/io/CANH_T                        4    190.5      41.9   4.54 RATIO>2.5
-/io/CAN_MID                       2     18.5      24.6   0.75
-/io/Q2_G                          3     46.8      47.6   0.98
-/io/VBAT_SENSE                    2      4.8       8.3   0.58
-/mcu/3V3A                         0     24.8      33.1   0.75
-/mcu/BOOT0                        4     50.9      53.2   0.96
-/mcu/OSC32_OUT                    5     28.0      30.6   0.91 VIAS>4
-/mcu/SWCLK                        0     43.0      48.1   0.89
-/mcu/SWDIO                        4     49.9      44.1   1.13
-/mcu/SYS_LED_A                    1      2.9       5.8   0.49
-/modem_rf/NETLED_A                1     29.4      30.3   0.97
-/modem_rf/NETLED_K                2     25.2      28.8   0.88
-/modem_rf/NETLIGHT_MOD            2     51.1      60.5   0.85
-/modem_rf/PWRKEY_MOD              2     19.0      24.6   0.77
-/modem_rf/Q11_B                   2     61.2      56.8   1.08
-/modem_rf/Q12_B                   2     66.8      78.8   0.85
-/modem_rf/Q13_B                   2     16.2      19.6   0.83
-/modem_rf/Q3_G                    0     26.3      15.7   1.67
-/modem_rf/RESETN_MOD              2     57.1      49.5   1.15
-/modem_rf/SIM_CLK                 5     39.2      21.8   1.80 VIAS>4
-/modem_rf/SIM_DATA                3     20.8      28.4   0.73
-/modem_rf/STATUS_MOD              2     61.9      44.5   1.39
-/modem_rf/USB_DM_TP               6     38.1      11.1   3.43 VIAS>4 RATIO>2.5
-/modem_rf/USB_VBUS                4     27.7      29.2   0.95
-/modem_rf/USIM_CLK_M              7     46.4      46.2   1.00 VIAS>4
-/modem_rf/USIM_RST_M              3     47.0      51.5   0.91
-/modem_rf/USIM_VDD_ESIM           1     58.8      47.8   1.23
-/power/U5_VCC                     1     23.2      19.4   1.20
-/power/U6_OTG                     5     45.4      42.9   1.06 VIAS>4
-MODEM_PWRKEY                      4     62.4      75.6   0.83
-MODEM_PWR_EN                      6     44.7      38.0   1.17 VIAS>4
-MODEM_RESET                       4     62.1      80.6   0.77
-MODEM_RX                          5     57.5      52.1   1.10 VIAS>4
-MODEM_STATUS                      3    100.1     111.6   0.90
-SPI1_MOSI                         2     11.3      15.1   0.75
-SYS                               4      0.0       0.0   1.00
+/modem_rf/USIM_DET                2     18.4      21.3   0.86
 
 UNROUTED:
-  /modem_rf/VBAT_MODEM: no path U1.57 -> C41.1
-  3V3: no path C21.1 -> C14.1
-  /modem_rf/VDD_EXT_1V8: no path U1.7 -> U8.1
-  5V0: no path U6.1 -> U4.3
-  GND: no path C10.2 -> U2.47
-  /modem_rf/U8_OE: no path R62.1 -> U8.8
-  /io/CANL: no path TP26.1 -> D3.2
-  /power/SYS: no path C65.1 -> C68.1
-  /modem_rf/Q10_B: no path R57.2 -> Q10.1
-  /modem_rf/SIM_RST: no path D14.4 -> R68.2
-  /power/VBAT_BT: no path U6.13 -> J2.1
-  /power/U6_TS: no path J2.2 -> U6.11
-  /io/VIN_SENSE: no path C27.1 -> D10.3
-  /modem_rf/USIM_VDD: no path C47.1 -> R69.1
-  /power/REGN: no path R88.1 -> C63.1
-  /modem_rf/USIM_VDD_SIM: no path X1.C1 -> R69.2
-  /power/SW_CHG: no path U6.20 -> L3.1
-  /mcu/I2C1_SCL: no path R7.2 -> U2.42
+  /modem_rf/VBAT_MODEM: no path TP24.1 -> D12.1
+  3V3: no path U3.10 -> U3.12
+  SYS: no path R52.1 -> R38.1
+  5V0: no path R44.1 -> R45.1
+  GND: no path OK2.2 -> U6.9
+  /power/SYS: no path U9.1 -> C65.1
+  /power/U6_TS: no path J2.2 -> R88.2
+  /io/CANH: no path TP25.1 -> J1.4
+  /io/VIN_SENSE: no path C27.1 -> R32.2
+  /power/REGN: no path U6.22 -> C63.1
+  /mcu/SWCLK: no path U2.37 -> TP2.1
+  /power/SW_CHG: no path U6.20 -> C64.2
+  /io/Q2_G: no path Q2.1 -> R26.1
   /power/U6_BTST: no path U6.21 -> C64.1
   /power/PMID: no path U6.23 -> C62.1
+  /mcu/SWDIO: no path U2.34 -> TP1.1
   /power/U6_ICHG: no path U6.10 -> R85.1
-  MODEM_TX: no path U2.30 -> U8.13
-  /mcu/OSC_IN: no path C1.1 -> U2.5
-  DI1: no path R21.2 -> U2.25
-  /modem_rf/USIM_DATA_M: no path U1.15 -> R66.1
-  /io/IGN_SENSE: no path C28.1 -> R37.1
-  /io/Q1_G: no path R23.2 -> R25.1
+  /power/U6_OTG: no path U6.6 -> R87.1
+  MODEM_TX: no path TP27.1 -> U2.30
+  /io/IGN_SENSE: no path C28.1 -> R35.2
+  /io/Q1_G: no path Q1.1 -> R25.1
   /power/U6_ILIM: no path U6.8 -> R86.1
-  /mcu/I2C1_SDA: no path U3.14 -> R8.2
+  /mcu/I2C1_SDA: no path U3.14 -> U2.43
   /mcu/IMU_INT1: no path U3.4 -> U2.41
-  /io/CANL_T: no path U4.6 -> L2.3
-  DI2: no path C26.1 -> R22.2
-  /modem_rf/MRI_1V8: no path U1.62 -> U8.4
-  DO2_GATE: no path R46.1 -> R47.1
-  /mcu/DBG_RX: no path U2.13 -> TP5.1
-  /mcu/OSC_OUT: no path C2.1 -> U2.6
-  /mcu/NRST: no path U2.7 -> C5.1
-  /mcu/DBG_TX: no path U2.12 -> TP4.1
-  DO1_GATE: no path R42.1 -> U2.27
-  /modem_rf/MTXD_1V8: no path U1.67 -> U8.3
-  /modem_rf/MDTR_1V8: no path U1.66 -> U8.5
-  /modem_rf/MRXD_1V8: no path U1.68 -> U8.2
-  /mcu/VBAT_MCU: no path U2.1 -> R3.2
-  /mcu/OSC32_IN: no path C3.1 -> U2.3
-  /mcu/NET_STATUS_LED: no path U2.22 -> R5.1
-  CAN1_TX: no path U4.1 -> U2.46
+  DI2: no path OK2.4 -> U2.26
+  DO2_GATE: no path U2.28 -> R46.1
+  DO1_GATE: no path R43.1 -> U2.27
+  /mcu/OSC32_OUT: no path C4.1 -> Y2.2
+  /mcu/VBAT_MCU: no path C6.1 -> R3.2
+  /mcu/OSC32_IN: no path C3.1 -> Y2.1
   FLASH_CS: no path U7.1 -> U2.14
-  CAN1_RX: no path U4.4 -> U2.45
-  SPI1_MISO: no path U7.2 -> U2.16
-  CAN_STB: DRC regression (+2)
-  /io/DO1_B: no path Q5.1 -> R42.2
-  /io/DO2_X: no path Q7.3 -> R48.2
-  /io/DO2_DRV: no path Q8.3 -> R24.1
-  /modem_rf/USIM_DET: no path X1.CD -> U1.13
-  /io/DO1_X: no path Q6.1 -> Q5.3
-  /io/DO1_DRV: no path Q6.3 -> R23.1
+  /io/DO1_X: no path Q5.3 -> R44.2
+  /io/DO1_DRV: no path Q6.3 -> R45.2
   /mcu/SYS_LED: no path U2.2 -> D20.1
-  /io/CAN_SPLIT: no path C22.1 -> JP2.2
   /io/DO2_B: no path R46.2 -> Q7.1
-  /modem_rf/GNSS_BIAS: no path C85.1 -> R90.2
-  /modem_rf/Q14_B: DRC regression (+5)
   MODEM_DTR: no path U2.33 -> U8.10
-  /mcu/BOOT1: no path U2.20 -> R2.1
   SPI1_SCK: no path U7.6 -> U2.15
-  MODEM_RI: no path U2.32 -> U8.11
-  /modem_rf/Q14_C: no path R51.2 -> Q14.3
-  /modem_rf/USB_DP_M: no path U1.69 -> D15.1
-  /modem_rf/Q9_B: no path R55.2 -> R56.1
-  /mcu/NSL_K: no path D21.1 -> Q4.3
-  /modem_rf/USB_DM_M: no path U1.70 -> D15.3
-  /power/U5_EN: no path U5.2 -> R81.2
-  /mcu/NSL_BASE: no path Q4.1 -> R5.2
-  /power/U5_FB: no path U5.4 -> R84.1
-  /modem_rf/USB_DP_TP: no path TP15.1 -> D15.6
-  /mcu/NSL_A: no path D21.2 -> R6.2
+  SPI1_MOSI: no path U7.5 -> U2.17
+  /power/U5_FB: no path R83.2 -> R84.1
