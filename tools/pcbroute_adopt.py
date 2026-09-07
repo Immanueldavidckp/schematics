@@ -85,13 +85,57 @@ def main():
     pcbnew.SaveBoard(PCB, board)
     canonicalise(PCB)
 
-    text2 = drc(PCB, rpt)
-    kinds = {}
-    for k in re.findall(r"^\[([a-z_]+)\]", text2, re.M):
-        kinds[k] = kinds.get(k, 0) + 1
+    # Iterative rip on the ADOPTED board: some violation classes only
+    # manifest after adoption/refill, and FreeRouting cannot know the 1.5 mm
+    # HV rule (a DSN carries only netclass values), so its LV copper can
+    # land inside the strip's halos. Each iteration rips the named nets'
+    # unlocked copper; the LV finisher reroutes them under the full model.
+    for it in range(3):
+        text2 = drc(PCB, rpt)
+        kinds = {}
+        for k in re.findall(r"^\[([a-z_]+)\]", text2, re.M):
+            kinds[k] = kinds.get(k, 0) + 1
+        errs = sum(v for k, v in kinds.items() if k != "unconnected_items")
+        print(f"adopted board DRC (iter {it}): {kinds}")
+        if not errs:
+            break
+        more = set()
+        current = None
+        for line in text2.splitlines():
+            m = re.match(r"\[([a-z_]+)\]", line)
+            if m:
+                current = m.group(1)
+                continue
+            if current and current != "unconnected_items" and \
+                    line.lstrip().startswith("@"):
+                for nm in re.findall(r"\[([^]\[]*)\]", line):
+                    if nm and nm != "<no net>":
+                        more.add(nm)
+        txt = open(PCB, encoding="utf-8").read()
+        body = txt[txt.index("\n") + 1:txt.rstrip().rfind(")")]
+        forms = _split_forms(body)
+        kept, ripped = [], 0
+        for f in forms:
+            tag = re.match(r"\(\s*([A-Za-z_0-9]+)", f).group(1)
+            if tag in ("segment", "via") and "(locked yes)" not in f:
+                m = re.search(r'\(net "([^"]*)"\)', f)
+                if m and m.group(1) in more:
+                    ripped += 1
+                    continue
+            kept.append(f)
+        print(f"  iter {it}: ripping {sorted(more)} - {ripped} forms")
+        if not ripped:
+            print("  violations remain on LOCKED copper - placement problem")
+            break
+        head = txt[:txt.index("\n") + 1]
+        tail = txt[txt.rstrip().rfind(")"):]
+        open(PCB, "w", encoding="utf-8").write(head + "".join(kept) + tail)
+        board = pcbnew.LoadBoard(PCB)
+        board.BuildListOfNets()
+        pcbnew.ZONE_FILLER(board).Fill(board.Zones())
+        pcbnew.SaveBoard(PCB, board)
+        canonicalise(PCB)
     os.unlink(rpt)
-    print(f"adopted board DRC: {kinds}")
-    errs = sum(v for k, v in kinds.items() if k != "unconnected_items")
     if errs:
         print("ADOPT_BASELINE_NOT_CLEAN")
         sys.exit(2)

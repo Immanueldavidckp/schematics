@@ -85,11 +85,15 @@ ANCHORS = {
     # runs (x 78.15, just clear of U1's keepout at 77.4), C49/C51 beside the
     # corridor verticals. pcbroute.py draws an RF-width T-stub from pad 1 to
     # the line; pad 2 (GND) lands in the coplanar pour.
-    # rotations chosen so PAD 1 faces the line: the first attempt had all
-    # four backwards and every T-stub ran through its own GND pad 2
-    # (6 shorting_items + 6 mask bridges, measured).
-    "C48": (78.15, 22.55, 270, 0),
-    "C50": (78.15, 25.25, 90, 0),
+    # Rotations: PAD 1 faces the line (first attempt had all four backwards
+    # and every stub crossed its own GND pad). Positions: C48/C50 sit on the
+    # OUTER side of their horizontal runs - between the runs they landed in
+    # the mitred corner elbow at (78.6, y) and their GND pads fouled the
+    # diagonal (6 violations at 0.04..0.22 mm). Outer side is clear: the
+    # fence via that would land under each cap is auto-suppressed by
+    # _clear(), an accepted local fence gap at a DNP option position.
+    "C48": (77.9, 19.55, 90, 0),
+    "C50": (77.9, 28.25, 270, 0),
     "C49": (78.0, 15.0, 180, 0),
     "C51": (78.0, 31.4, 180, 0),
     # C84 is the SERIES DC block and carries the RF, so it is inline in the
