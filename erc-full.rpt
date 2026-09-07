@@ -65,7 +65,7 @@ Report includes: Errors, Warnings
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 81.28 mm): Global Label 'VBAT_SENSE'
-    @(292.10 mm, 144.78 mm): Label 'VBAT_SENSE'
+    @(322.58 mm, 129.54 mm): Label 'VBAT_SENSE'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 83.82 mm): Global Label 'VIN_SENSE'
@@ -77,7 +77,7 @@ Report includes: Errors, Warnings
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(220.98 mm, 50.80 mm): Global Label 'SYS'
-    @(130.81 mm, 198.12 mm): Label 'SYS'
+    @(261.62 mm, 193.04 mm): Label 'SYS'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(220.98 mm, 53.34 mm): Global Label 'VIN'

@@ -85,17 +85,22 @@ ANCHORS = {
     # runs (x 78.15, just clear of U1's keepout at 77.4), C49/C51 beside the
     # corridor verticals. pcbroute.py draws an RF-width T-stub from pad 1 to
     # the line; pad 2 (GND) lands in the coplanar pour.
-    # Rotations: PAD 1 faces the line (first attempt had all four backwards
-    # and every stub crossed its own GND pad). C48/C50 x = 77.8: 0.05 mm
-    # clear of U1's courtyard (77.25 + 0.5 keepout half) and >= 1.2 mm from
-    # the corner mitre diagonal that fouled them at 78.15+ (drifted 78.83).
-    # The outer-side attempt was worse (14 violations vs the fence rows).
-    # All four are FIXED: the relaxer's drift is exactly what pushed C48
-    # into the elbow.
-    "C48": (77.8, 22.55, 270, 0),
-    "C50": (77.8, 25.25, 90, 0),
-    "C49": (78.6, 15.0, 180, 0),
-    "C51": (78.6, 31.4, 180, 0),
+    # F-24: the module-side pi shunts C48/C50 CANNOT live on F.Cu. Measured
+    # exhaustively: between the runs they foul the mitre elbow (6 violations);
+    # outboard they foul the fence rows (14); and U1's outer NC-pad ring
+    # reaches x = 77.65, so there is NO legal 0402 column between the module
+    # and the corridor. They go to B.Cu under the corridor with one tap via
+    # each onto the short vertical of their run - a documented compromise on
+    # DNP OPTION pads (if matching is ever actually needed, the recommended
+    # path is a corridor-width respin - flagged F-24 for milestone 5).
+    # C49/C51 (connector-side shunts) stay top-side where they are clean.
+    "C48": (77.9, 21.6, 0, 1),
+    "C50": (77.9, 27.3, 0, 1),
+    # x = 79.0: pad 2 (GND) clears U1's outer NC-pad ring (reach 77.65) by
+    # 0.87 mm - at 78.6 it grazed pad 45 at 0.04 mm; pad 1 overlaps the
+    # corridor trace, which is its own net and exactly the point.
+    "C49": (79.0, 15.0, 180, 0),
+    "C51": (79.0, 31.4, 180, 0),
     # C84 is the SERIES DC block and carries the RF, so it is inline in the
     # corridor between R72 and AF2 - not a bypass part that can go anywhere.
     "C84": (79.8, 34.5, 270, 0),  # 270: chain flows down
