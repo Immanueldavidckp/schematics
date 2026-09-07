@@ -149,12 +149,19 @@ def main(single_net=None):
             n = max(1, int(math.hypot(bx - ax, by - ay) / RES))
             for i in range(n + 1):
                 tt = i / n
+                # the true layer is kept even when it is an INNER one:
+                # FreeRouting routes on GND_L2/PWR_L3, and a through-via
+                # must clear that copper (measured: MODEM_BULK vias landed
+                # 0.05..0.15 mm from SIM_RST on GND_L2 - invisible to a
+                # 2-layer grid model)
                 obst.append((t.GetNetname(), [t.GetLayer()],
                              ax + (bx - ax) * tt, ay + (by - ay) * tt, w, w, ""))
     print(f"obstacles: {len(obst)}")
     placed = []
 
-    def build(netname, my_clr, half):
+    def build(netname, my_clr, half, via_mode=False):
+        """via_mode: the grid gates VIA sites - a through via lands on every
+        copper layer, so inner-layer obstacles block BOTH surface grids."""
         grids = [bytearray(NX * NY) for _ in LAYERS]
         trace = None
         if os.environ.get("LV_TRACE"):
@@ -207,8 +214,10 @@ def main(single_net=None):
             # HV_ZONE (x < 20; the buck arm is the BUCK_HV rescope at 0.60)
             if oc == "HV" and ox < 20.0:
                 clr = 1.50
+            inner = via_mode and any(l not in (pcbnew.F_Cu, pcbnew.B_Cu)
+                                     for l in lays)
             for li, lay in enumerate(LAYERS):
-                if lay not in lays:
+                if not inner and lay not in lays:
                     continue
                 if trace is not None and \
                         abs(ox - (x0 + trace[0] * RES)) <= hw + clr + half and \
@@ -637,7 +646,7 @@ def main(single_net=None):
                 if stagnant >= 3:
                     return fail(f"cluster count stuck at {len(cl)}")
             tg = build(netname, my_clr, w / 2)
-            vg = build(netname, my_clr, vd / 2)
+            vg = build(netname, my_clr, vd / 2, via_mode=True)
             open_pad_entries(netname, tg, w / 2)
             tapped = False
             for group, _extra, hz in cl[1:]:
