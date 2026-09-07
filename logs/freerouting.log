@@ -283,3 +283,29 @@
 2026-09-08 01:08:55.049 [Thread-28] INFO  Starting route optimization on 1 thread...
 2026-09-08 01:09:28.869 [Thread-28] INFO  Route optimization was completed in 33.82 seconds.
 2026-09-08 01:09:28.898 [Thread-28] INFO  Saving '/home/david/pcb/autoroute.ses'...
+2026-09-08 01:51:31.320 [main] INFO  Freerouting v1.9.0 (build-date: 2023-10-30)
+2026-09-08 01:51:31.371 [main] INFO  Settings were loaded from freerouting.json
+2026-09-08 01:51:32.391 [main] INFO  Opening '/home/david/pcb/autoroute.dsn'...
+2026-09-08 01:51:32.877 [ForkJoinPool.commonPool-worker-1] INFO  New version available: v2.4.1
+2026-09-08 01:51:54.854 [Thread-28] INFO  Starting auto-routing...
+2026-09-08 01:51:55.067 [Thread-28] WARN  FloatLine: Parameter is null
+2026-09-08 01:51:55.124 [Thread-28] WARN  FloatLine: Parameter is null
+2026-09-08 01:51:55.164 [Thread-28] WARN  FloatLine: Parameter is null
+2026-09-08 01:51:56.766 [Thread-28] WARN  FloatLine: Parameter is null
+2026-09-08 01:51:56.768 [Thread-28] WARN  FloatLine: Parameter is null
+2026-09-08 01:51:56.769 [Thread-28] WARN  FloatLine: Parameter is null
+2026-09-08 01:51:56.772 [Thread-28] WARN  FloatLine: Parameter is null
+2026-09-08 01:51:56.774 [Thread-28] WARN  FloatLine: Parameter is null
+2026-09-08 01:51:56.777 [Thread-28] WARN  FloatLine: Parameter is null
+2026-09-08 01:51:56.779 [Thread-28] WARN  FloatLine: Parameter is null
+2026-09-08 01:51:56.780 [Thread-28] WARN  FloatLine: Parameter is null
+2026-09-08 01:51:56.781 [Thread-28] WARN  FloatLine: Parameter is null
+2026-09-08 01:51:56.787 [Thread-28] WARN  FloatLine: Parameter is null
+2026-09-08 01:51:56.792 [Thread-28] WARN  FloatLine: Parameter is null
+2026-09-08 01:51:56.801 [Thread-28] WARN  FloatLine: Parameter is null
+2026-09-08 01:51:56.809 [Thread-28] WARN  FloatLine: Parameter is null
+2026-09-08 01:51:56.811 [Thread-28] WARN  FloatLine: Parameter is null
+2026-09-08 01:51:56.813 [Thread-28] WARN  FloatLine: Parameter is null
+2026-09-08 01:51:56.813 [Thread-28] WARN  FloatLine: Parameter is null
+2026-09-08 01:51:56.814 [Thread-28] WARN  FloatLine: Parameter is null
+2026-09-08 01:51:56.815 [Thread-28] WARN  FloatLine: Parameter is null

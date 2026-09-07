@@ -86,16 +86,16 @@ ANCHORS = {
     # corridor verticals. pcbroute.py draws an RF-width T-stub from pad 1 to
     # the line; pad 2 (GND) lands in the coplanar pour.
     # Rotations: PAD 1 faces the line (first attempt had all four backwards
-    # and every stub crossed its own GND pad). Positions: C48/C50 sit on the
-    # OUTER side of their horizontal runs - between the runs they landed in
-    # the mitred corner elbow at (78.6, y) and their GND pads fouled the
-    # diagonal (6 violations at 0.04..0.22 mm). Outer side is clear: the
-    # fence via that would land under each cap is auto-suppressed by
-    # _clear(), an accepted local fence gap at a DNP option position.
-    "C48": (77.9, 19.55, 90, 0),
-    "C50": (77.9, 28.25, 270, 0),
-    "C49": (78.0, 15.0, 180, 0),
-    "C51": (78.0, 31.4, 180, 0),
+    # and every stub crossed its own GND pad). C48/C50 x = 77.8: 0.05 mm
+    # clear of U1's courtyard (77.25 + 0.5 keepout half) and >= 1.2 mm from
+    # the corner mitre diagonal that fouled them at 78.15+ (drifted 78.83).
+    # The outer-side attempt was worse (14 violations vs the fence rows).
+    # All four are FIXED: the relaxer's drift is exactly what pushed C48
+    # into the elbow.
+    "C48": (77.8, 22.55, 270, 0),
+    "C50": (77.8, 25.25, 90, 0),
+    "C49": (78.6, 15.0, 180, 0),
+    "C51": (78.6, 31.4, 180, 0),
     # C84 is the SERIES DC block and carries the RF, so it is inline in the
     # corridor between R72 and AF2 - not a bypass part that can go anywhere.
     "C84": (79.8, 34.5, 270, 0),  # 270: chain flows down
@@ -322,7 +322,9 @@ FIXED = {"U1",              # the corridor width depends on exactly this x
          "C40", "C41", "C81", "C82",   # VBAT bulk, <= 5 mm from pads 57-60
          "U3",              # amendment (c): must stay beside H5
          "J1",              # the harness interface (see note below)
-         "F1"}              # the harness interface. Not pinning it let the
+         "F1",
+         "C48", "C50", "C49", "C51"}   # pi shunts: pinned clear of the
+                                       # corner elbows; drift = violations              # the harness interface. Not pinning it let the
                             # relaxer walk it to x = 4.0, half its keepout off
                             # the board edge, while shuffling the HV strip.
 
