@@ -236,36 +236,50 @@ ANCHORS = {
     "U4":  (24.5, 43.5, 0, 0),
     "U8":  (41.0, 24.0, 0, 0),
 
-    # --- scattered-cluster repair (hybrid residue, 2026-09-08) -----------
-    # The packer had put U6's ENTIRE ring 30-44 mm from the chip (C62-C64 at
-    # y=2, L3 at (26.7,9.6), R85-R89 at y 12-14.5 - U6 is at (30.3,46)), and
-    # Y2's crystal on B at (37,17) with its caps on F at (30,35), 8 mm from
-    # the MCU. Neither router could close those nets. Clusters live WITH
-    # their owner, B side mirrored under/beside it.
-    # U6 charger ring (B, under/around U6):
-    "L3":  (28.0, 49.7, 0, 1),
-    "C62": (24.3, 46.5, 90, 1),
-    "C63": (24.3, 43.2, 90, 1),
-    "C64": (33.6, 43.2, 90, 1),
-    "R85": (36.2, 43.2, 90, 1),
-    "R86": (36.2, 46.4, 90, 1),
-    "R87": (36.2, 49.6, 90, 1),
-    "R88": (33.6, 46.4, 90, 1),
-    "R89": (33.6, 49.6, 90, 1),
-    # 32 kHz crystal at the MCU, caps flanking (B, under U2's corner):
+    # --- scattered-cluster repair (hybrid residue, 2026-09-08, v2) -------
+    # The packer had put U6's ENTIRE ring 30-44 mm from the chip, Y2 on the
+    # wrong side 8 mm from the MCU, and - after the first repair displaced
+    # the B-side packing - Y1 (the 8 MHz crystal!) landed under the buck.
+    # v1 of this repair also dropped C62/C63 straight onto the DI optos at
+    # (21.3/26.6, 46.6). Everything below is tiled around: optos
+    # (x 19.7..28.2, y 42.8..50.4 B), H5 (x <= 26.65, y >= 51.85), the buck
+    # B-field (x 34..44, y 1..18, RESERVED), and the dig zone bound x <= 43.
+    # U6 charger ring (B, right of the optos, under U6):
+    "C62": (29.5, 43.2, 90, 1),
+    "C63": (32.2, 43.2, 90, 1),
+    "C64": (34.9, 43.2, 90, 1),
+    "R85": (37.6, 43.2, 90, 1),
+    "R86": (37.6, 46.4, 90, 1),
+    "R87": (37.6, 49.6, 90, 1),
+    "R88": (40.3, 43.2, 90, 1),
+    "R89": (40.3, 46.4, 90, 1),
+    "L3":  (31.5, 49.8, 0, 1),
+    # displaced by v1, re-homed:
+    "C67": (27.9, 39.0, 90, 1),
+    "C68": (30.4, 39.0, 90, 1),
+    "C69": (32.9, 39.0, 90, 1),
+    "C80": (35.4, 39.0, 90, 1),
+    # 8 MHz crystal + load caps AT the MCU (B, under U2's edge):
+    "Y1":  (29.0, 18.5, 0, 1),
+    "C1":  (25.9, 18.5, 90, 1),
+    "C2":  (32.1, 18.5, 90, 1),
+    # 32 kHz crystal + caps (B, under U2's corner):
     "Y2":  (23.2, 24.6, 0, 1),
     "C3":  (20.6, 26.9, 90, 1),
     "C4":  (25.8, 26.9, 90, 1),
-    # DO gate chains as ordered rows (B): U2 -> R43/R46 -> driver pairs ->
-    # R25/R26 -> (Q1/Q2 gates in the strip)
+    # DO gate chains as ordered rows (B):
     "R43": (24.5, 31.3, 0, 1), "Q5": (28.2, 31.3, 0, 1),
     "R44": (31.9, 31.3, 0, 1), "Q6": (35.6, 31.3, 0, 1),
     "R45": (39.3, 31.3, 0, 1),
     "R46": (24.5, 34.9, 0, 1), "Q7": (28.2, 34.9, 0, 1),
     "R47": (31.9, 34.9, 0, 1), "Q8": (35.6, 34.9, 0, 1),
     "R48": (39.3, 34.9, 0, 1),
-    "R25": (21.8, 38.5, 90, 1),
-    "R26": (21.8, 42.0, 90, 1),
+    "R25": (21.0, 40.6, 0, 1),
+    "R26": (24.5, 40.6, 0, 1),
+    # debug/GND test points out of the buck field (top edge, B):
+    "TP4": (23.5, 2.5, 0, 1),
+    "TP5": (26.5, 2.5, 0, 1),
+    "TP7": (29.5, 2.5, 0, 1),
 }
 
 def relax_anchors(anchor_boxes, bounds, min_gap=1.10, iters=1500):

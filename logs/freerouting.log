@@ -678,3 +678,7 @@
 2026-09-08 05:04:04.150 [Thread-28] WARN  FloatLine: Parameter is null
 2026-09-08 05:04:04.151 [Thread-28] WARN  FloatLine: Parameter is null
 2026-09-08 05:04:04.151 [Thread-28] WARN  FloatLine: Parameter is null
+2026-09-08 05:19:26.549 [main] INFO  Freerouting v1.9.0 (build-date: 2023-10-30)
+2026-09-08 05:19:26.589 [main] INFO  Settings were loaded from freerouting.json
+2026-09-08 05:19:27.606 [main] INFO  Opening '/home/david/pcb/autoroute.dsn'...
+2026-09-08 05:19:28.144 [ForkJoinPool.commonPool-worker-1] INFO  New version available: v2.4.1
