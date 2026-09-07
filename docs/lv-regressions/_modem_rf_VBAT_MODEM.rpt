@@ -1,62 +1,18 @@
 ** Drc report for telematics-tracker.kicad_pcb **
-** Created on 2026-09-07T05:22:42 **
+** Created on 2026-09-07T06:19:29 **
 ** Report includes: Errors **
 
-** Found 13 DRC violations **
-[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(46.6500 mm, 4.4500 mm): Track [/modem_rf/VBAT_MODEM] on F.Cu, length 0.5000 mm
-    @(48.3600 mm, 4.4450 mm): Pad 2 [GND] of D12 on F.Cu
-[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(46.6500 mm, 4.4500 mm): Track [/modem_rf/VBAT_MODEM] on F.Cu, length 0.5000 mm
-    @(48.3600 mm, 4.4450 mm): Pad 2 [GND] of D12 on F.Cu
-[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(48.3500 mm, 2.2500 mm): Track [/modem_rf/VBAT_MODEM] on F.Cu, length 3.0000 mm
-    @(46.8000 mm, 2.2750 mm): Pad 2 [GND] of C42 on F.Cu
-[clearance]: Clearance violation (netclass 'MODEM_BULK' clearance 0.2000 mm; actual 0.1346 mm)
-    Rule: netclass 'MODEM_BULK'; error
-    @(45.2975 mm, 4.7962 mm): Pad 1 [GND] of TP18 on B.Cu
-    @(47.1500 mm, 4.4500 mm): Track [/modem_rf/VBAT_MODEM] on B.Cu, length 5.0000 mm
-[clearance]: Clearance violation (netclass 'MODEM_BULK' clearance 0.2000 mm; actual 0.1346 mm)
-    Rule: netclass 'MODEM_BULK'; error
-    @(45.2975 mm, 4.7962 mm): Pad 1 [GND] of TP18 on B.Cu
-    @(47.1500 mm, 4.4500 mm): Track [/modem_rf/VBAT_MODEM] on B.Cu, length 5.0000 mm
-[shorting_items]: Items shorting two nets (nets GND and /modem_rf/VBAT_MODEM)
-    Local override; error
-    @(46.8000 mm, 2.2750 mm): Pad 2 [GND] of C42 on F.Cu
-    @(48.3500 mm, 2.2500 mm): Track [/modem_rf/VBAT_MODEM] on F.Cu, length 3.0000 mm
+** Found 2 DRC violations **
 [clearance]: Clearance violation (netclass 'MODEM_BULK' clearance 0.2000 mm; actual 0.1190 mm)
     Rule: netclass 'MODEM_BULK'; error
-    @(46.8000 mm, 2.2750 mm): Pad 2 [GND] of C42 on F.Cu
     @(45.2500 mm, 2.7500 mm): Track [/modem_rf/VBAT_MODEM] on F.Cu, length 0.6000 mm
-[shorting_items]: Items shorting two nets (nets GND and /modem_rf/VBAT_MODEM)
-    Local override; error
-    @(48.3600 mm, 4.4450 mm): Pad 2 [GND] of D12 on F.Cu
-    @(46.6500 mm, 4.4500 mm): Track [/modem_rf/VBAT_MODEM] on F.Cu, length 0.5000 mm
-[clearance]: Clearance violation (netclass 'MODEM_BULK' clearance 0.2000 mm; actual 0.1000 mm)
-    Rule: netclass 'MODEM_BULK'; error
-    @(45.2500 mm, 2.3500 mm): Track [/modem_rf/VBAT_MODEM] on F.Cu, length 1.0000 mm
     @(46.8000 mm, 2.2750 mm): Pad 2 [GND] of C42 on F.Cu
-[clearance]: Clearance violation (netclass 'MODEM_BULK' clearance 0.2000 mm; actual 0.1100 mm)
+[clearance]: Clearance violation (netclass 'MODEM_BULK' clearance 0.2000 mm; actual 0.1802 mm)
     Rule: netclass 'MODEM_BULK'; error
-    @(46.2500 mm, 4.0500 mm): Track [/modem_rf/VBAT_MODEM] on F.Cu, length 0.5657 mm
-    @(48.3600 mm, 4.4450 mm): Pad 2 [GND] of D12 on F.Cu
-[shorting_items]: Items shorting two nets (nets /modem_rf/VBAT_MODEM and GND)
-    Local override; error
-    @(45.3500 mm, 2.2500 mm): Track [/modem_rf/VBAT_MODEM] on F.Cu, length 0.1414 mm
-    @(46.8000 mm, 2.2750 mm): Pad 2 [GND] of C42 on F.Cu
-[shorting_items]: Items shorting two nets (nets /modem_rf/VBAT_MODEM and GND)
-    Local override; error
-    @(46.6500 mm, 4.4500 mm): Track [/modem_rf/VBAT_MODEM] on F.Cu, length 0.5000 mm
-    @(48.3600 mm, 4.4450 mm): Pad 2 [GND] of D12 on F.Cu
-[clearance]: Clearance violation (netclass 'MODEM_BULK' clearance 0.2000 mm; actual 0.1100 mm)
-    Rule: netclass 'MODEM_BULK'; error
-    @(46.1500 mm, 3.9500 mm): Track [/modem_rf/VBAT_MODEM] on F.Cu, length 0.7071 mm
+    @(49.3500 mm, 3.3500 mm): Track [/modem_rf/VBAT_MODEM] on F.Cu, length 0.4243 mm
     @(48.3600 mm, 4.4450 mm): Pad 2 [GND] of D12 on F.Cu
 
-** Found 258 unconnected pads **
+** Found 257 unconnected pads **
 [unconnected_items]: Missing connection between items
     Local override; error
     @(22.3200 mm, 46.2700 mm): Pad 1 [CAN1_TX] of U4 on F.Cu
@@ -75,6 +31,10 @@
     @(26.7500 mm, 17.9700 mm): Pad 35 [GND] of U2 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
+    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
+    @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
+[unconnected_items]: Missing connection between items
+    Local override; error
     @(29.0000 mm, 56.0100 mm): Pad 6 [GND] of U3 on F.Cu
     @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
 [unconnected_items]: Missing connection between items
@@ -83,28 +43,20 @@
     @(29.7500 mm, 26.1900 mm): Pad 8 [GND] of U2 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
-    @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
-    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
-[unconnected_items]: Missing connection between items
-    Local override; error
     @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
     @(30.0200 mm, 48.0500 mm): Pad 9 [GND] of U6 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
-    @(32.3100 mm, 45.2500 mm): Pad 17 [GND] of U6 on F.Cu
     @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
+    @(32.3100 mm, 45.2500 mm): Pad 17 [GND] of U6 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
-    @(36.0625 mm, 13.9950 mm): Pad 2 [GND] of R87 on B.Cu
     @(33.1100 mm, 19.8300 mm): Pad 23 [GND] of U2 on F.Cu
+    @(36.0625 mm, 13.9950 mm): Pad 2 [GND] of R87 on B.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
     @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
     @(0.6500 mm, 0.6500 mm): Zone 'B_GND' [GND] on B.Cu, priority 0
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(48.3600 mm, 4.4450 mm): Pad 2 [GND] of D12 on F.Cu
-    @(46.8000 mm, 2.2750 mm): Pad 2 [GND] of C42 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
     @(63.7500 mm, 4.5450 mm): Pad 2 [GND] of D14 on F.Cu

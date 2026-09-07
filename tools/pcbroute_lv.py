@@ -258,17 +258,23 @@ def main(single_net=None):
             def sib_skip(o, axis):
                 """True when sibling o may be ignored for THIS lane axis.
 
-                Per-lane: a same-row sibling is lateral for the VERTICAL
-                lane but dead ahead for the HORIZONTAL one - the one-list
-                version let every 2-pad chip's horizontal lane run through
-                its own second pad (C42/D12 shorting_items, measured)."""
+                Per-lane, and ARITHMETIC, not faith: a lateral sibling is
+                skippable only when the lane's copper actually clears it -
+                at U3's 0.5 mm LGA pitch a PWR-width entry has zero margin
+                and 'legal by construction' measured 0.11 mm (regressions).
+                0.055 covers the half-cell grid snap."""
                 if o[6] != ref:
                     return False
                 if o[0] in HV and o[2] < 20.0:
                     return False          # HV-in-strip: 1.5 mm rule, no pass
+                oc2 = net_class(o[0]) if o[0] else "HV"
+                need = max(CLS_CLR.get(net_class(netname), 0.2),
+                           CLS_CLR.get(oc2, 0.15)) + half + 0.055
                 if axis == "v":
-                    return abs(o[3] - cy) <= hh + 0.15 and abs(o[2] - cx) > hw
-                return abs(o[2] - cx) <= hw + 0.15 and abs(o[3] - cy) > hh
+                    return abs(o[3] - cy) <= hh + 0.15 and \
+                        (abs(o[2] - cx) - o[4]) >= need
+                return abs(o[2] - cx) <= hw + 0.15 and \
+                    (abs(o[3] - cy) - o[5]) >= need
 
             near = [o for o in obst + placed
                     if o[0] != netname
