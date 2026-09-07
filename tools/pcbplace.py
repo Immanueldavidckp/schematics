@@ -77,6 +77,18 @@ ANCHORS = {
     # pi-network series 0R, inline and hard against its ANT pad (<= 2 mm)
     "R71": (79.8, 23.04, 90, 0),   # ANT_MAIN
     "R72": (79.8, 28.74, 270, 0),  # ANT_GNSS - 270: chain flows down
+    # pi-network SHUNT caps (DNP). The packer had scattered them up to 25 mm
+    # from the corridor - C51 sat at (55.5, 3.5) - leaving open ratsnest on
+    # the RF nets, which is what pulled FreeRouting 1.9 into the corridor
+    # (46 items on ANT_GNSS_M) and would make the caps useless stubs if ever
+    # fitted. They sit ON their runs: C48/C50 between the two horizontal ANT
+    # runs (x 78.15, just clear of U1's keepout at 77.4), C49/C51 beside the
+    # corridor verticals. pcbroute.py draws an RF-width T-stub from pad 1 to
+    # the line; pad 2 (GND) lands in the coplanar pour.
+    "C48": (78.15, 22.55, 90, 0),
+    "C50": (78.15, 25.25, 270, 0),
+    "C49": (78.0, 15.0, 0, 0),
+    "C51": (78.0, 31.4, 0, 0),
     # C84 is the SERIES DC block and carries the RF, so it is inline in the
     # corridor between R72 and AF2 - not a bypass part that can go anywhere.
     "C84": (79.8, 34.5, 270, 0),  # 270: chain flows down

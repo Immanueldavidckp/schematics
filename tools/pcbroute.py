@@ -223,6 +223,27 @@ def main():
     print(f"RF: {len(rf_runs)} runs at W={RF_W} G={RF_GAP}, fence standoff "
           f"{FENCE_STANDOFF:.2f} mm, pitch {FENCE_PITCH} mm")
 
+    # ---- pi-network shunt T-stubs ---------------------------------------
+    # C48-C51 are the DNP shunt elements of the two pi networks. Their pad 1
+    # carries the RF net and must TOUCH the line; unconnected they leave open
+    # ratsnest that invites an autorouter into the corridor (measured), and
+    # fitted they would otherwise hang on a long stub. Each gets an RF-width
+    # stub from pad 1 to its run: C48/C50 to the horizontal ANT runs, C49/C51
+    # to the corridor verticals. The stub crosses the coplanar gap at a DNP
+    # option position - logged as an accepted, deliberate discontinuity.
+    SHUNTS = [("C48", "h", 21.04), ("C50", "h", 26.74),
+              ("C49", "v", CORR), ("C51", "v", CORR)]
+    for ref, axis, coord in SHUNTS:
+        p1 = pad(board, ref, "1")
+        if p1 is None:
+            print(f"  shunt {ref}: missing")
+            continue
+        a = xy(p1)
+        b = (a[0], coord) if axis == "h" else (coord, a[1])
+        track(board, a, b, RF_W, p1.GetNet())
+        n_tracks += 1
+    print(f"pi shunts: 4 T-stubs at RF width")
+
     # ---- 2. HV front end -> LEFT TO FREEROUTING, deliberately -----------
     # The first attempt drew naive L-shapes between the HV pads and ploughed
     # straight through D2, U5 and J1 - 13 shorts. That is not routing, it is

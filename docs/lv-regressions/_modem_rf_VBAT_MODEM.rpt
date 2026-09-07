@@ -1,5 +1,5 @@
 ** Drc report for telematics-tracker.kicad_pcb **
-** Created on 2026-09-07T07:18:10 **
+** Created on 2026-09-08T00:02:28 **
 ** Report includes: Errors **
 
 ** Found 1 DRC violations **
@@ -816,7 +816,7 @@
 [unconnected_items]: Missing connection between items
     Local override; error
     @(72.4750 mm, 2.0050 mm): Pad 1 [/modem_rf/ANT_GNSS_M] of C50 on F.Cu
-    @(76.5500 mm, 28.6000 mm): Pad 47 [/modem_rf/ANT_GNSS_M] of U1 on F.Cu
+    @(76.5500 mm, 28.6000 mm): Track [/modem_rf/ANT_GNSS_M] on F.Cu, length 1.4500 mm
 [unconnected_items]: Missing connection between items
     Local override; error
     @(40.4500 mm, 26.1500 mm): Pad 4 [/modem_rf/MRI_1V8] of U8 on F.Cu
