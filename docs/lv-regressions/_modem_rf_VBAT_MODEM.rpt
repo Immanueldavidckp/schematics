@@ -1,12 +1,8 @@
 ** Drc report for telematics-tracker.kicad_pcb **
-** Created on 2026-09-07T06:19:29 **
+** Created on 2026-09-07T07:18:10 **
 ** Report includes: Errors **
 
-** Found 2 DRC violations **
-[clearance]: Clearance violation (netclass 'MODEM_BULK' clearance 0.2000 mm; actual 0.1190 mm)
-    Rule: netclass 'MODEM_BULK'; error
-    @(45.2500 mm, 2.7500 mm): Track [/modem_rf/VBAT_MODEM] on F.Cu, length 0.6000 mm
-    @(46.8000 mm, 2.2750 mm): Pad 2 [GND] of C42 on F.Cu
+** Found 1 DRC violations **
 [clearance]: Clearance violation (netclass 'MODEM_BULK' clearance 0.2000 mm; actual 0.1802 mm)
     Rule: netclass 'MODEM_BULK'; error
     @(49.3500 mm, 3.3500 mm): Track [/modem_rf/VBAT_MODEM] on F.Cu, length 0.4243 mm
@@ -772,7 +768,7 @@
 [unconnected_items]: Missing connection between items
     Local override; error
     @(55.4750 mm, 2.0050 mm): Pad 1 [/modem_rf/ANT_MAIN_M] of C48 on F.Cu
-    @(76.5500 mm, 22.9000 mm): Track [/modem_rf/ANT_MAIN_M] on F.Cu, length 1.4500 mm
+    @(76.5500 mm, 22.9000 mm): Pad 49 [/modem_rf/ANT_MAIN_M] of U1 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
     @(81.0542 mm, 12.6076 mm): Track [/modem_rf/ANT_MAIN_C] on F.Cu, length 2.4130 mm
@@ -820,7 +816,7 @@
 [unconnected_items]: Missing connection between items
     Local override; error
     @(72.4750 mm, 2.0050 mm): Pad 1 [/modem_rf/ANT_GNSS_M] of C50 on F.Cu
-    @(76.5500 mm, 28.6000 mm): Track [/modem_rf/ANT_GNSS_M] on F.Cu, length 1.4500 mm
+    @(76.5500 mm, 28.6000 mm): Pad 47 [/modem_rf/ANT_GNSS_M] of U1 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
     @(40.4500 mm, 26.1500 mm): Pad 4 [/modem_rf/MRI_1V8] of U8 on F.Cu
