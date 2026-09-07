@@ -1,5 +1,5 @@
 ** Drc report for telematics-tracker.kicad_pcb **
-** Created on 2026-09-07T04:39:45 **
+** Created on 2026-09-07T05:35:20 **
 ** Report includes: Errors **
 
 ** Found 3 DRC violations **
@@ -11,10 +11,10 @@
     Rule: netclass 'Default'; error
     @(61.8125 mm, 55.4950 mm): Pad 1 [/modem_rf/STATUS_MOD] of R59 on F.Cu
     @(61.0500 mm, 55.4500 mm): Track [/modem_rf/Q11_B] on F.Cu, length 0.1414 mm
-[shorting_items]: Items shorting two nets (nets /modem_rf/STATUS_MOD and /modem_rf/Q11_B)
+[shorting_items]: Items shorting two nets (nets /modem_rf/Q11_B and /modem_rf/STATUS_MOD)
     Local override; error
-    @(61.8125 mm, 55.4950 mm): Pad 1 [/modem_rf/STATUS_MOD] of R59 on F.Cu
     @(63.1500 mm, 55.4500 mm): Track [/modem_rf/Q11_B] on F.Cu, length 2.1000 mm
+    @(61.8125 mm, 55.4950 mm): Pad 1 [/modem_rf/STATUS_MOD] of R59 on F.Cu
 
 ** Found 265 unconnected pads **
 [unconnected_items]: Missing connection between items
@@ -828,7 +828,7 @@
 [unconnected_items]: Missing connection between items
     Local override; error
     @(55.4750 mm, 2.0050 mm): Pad 1 [/modem_rf/ANT_MAIN_M] of C48 on F.Cu
-    @(76.5500 mm, 22.9000 mm): Track [/modem_rf/ANT_MAIN_M] on F.Cu, length 1.4500 mm
+    @(76.5500 mm, 22.9000 mm): Pad 49 [/modem_rf/ANT_MAIN_M] of U1 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
     @(80.8300 mm, 10.2050 mm): Pad 3 [/modem_rf/ANT_MAIN_C] of AF1 on F.Cu

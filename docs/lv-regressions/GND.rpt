@@ -1,36 +1,36 @@
 ** Drc report for telematics-tracker.kicad_pcb **
-** Created on 2026-09-07T04:37:18 **
+** Created on 2026-09-07T05:32:53 **
 ** Report includes: Errors **
 
 ** Found 10 DRC violations **
 [solder_mask_bridge]: Front solder mask aperture bridges items with different nets
     Rule: board setup solder mask min width; error
-    @(30.2500 mm, 47.5500 mm): Track [GND] on F.Cu, length 0.3000 mm
+    @(30.1500 mm, 47.6500 mm): Track [GND] on F.Cu, length 0.1414 mm
     @(30.5200 mm, 48.0500 mm): Pad 10 [/power/U6_ICHG] of U6 on F.Cu
 [solder_mask_bridge]: Front solder mask aperture bridges items with different nets
     Rule: board setup solder mask min width; error
-    @(30.1500 mm, 47.6500 mm): Track [GND] on F.Cu, length 0.1414 mm
+    @(30.2500 mm, 47.5500 mm): Track [GND] on F.Cu, length 0.3000 mm
     @(30.5200 mm, 48.0500 mm): Pad 10 [/power/U6_ICHG] of U6 on F.Cu
-[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1950 mm)
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1100 mm)
     Rule: netclass 'Default'; error
-    @(63.7500 mm, 5.1950 mm): Pad 1 [/modem_rf/SIM_DATA] of D14 on F.Cu
-    @(63.3500 mm, 4.5500 mm): Track [GND] on F.Cu, length 0.2000 mm
-[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1300 mm)
-    Rule: netclass 'Default'; error
-    @(25.6500 mm, 24.3500 mm): Track [GND] on F.Cu, length 0.4000 mm
-    @(24.8900 mm, 23.8300 mm): Pad 46 [CAN1_TX] of U2 on F.Cu
-[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0900 mm)
-    Rule: netclass 'Default'; error
-    @(33.8500 mm, 19.8500 mm): Track [GND] on F.Cu, length 0.4000 mm
-    @(33.1100 mm, 20.3300 mm): Pad 22 [/mcu/NET_STATUS_LED] of U2 on F.Cu
+    @(27.2500 mm, 17.9700 mm): Pad 34 [/mcu/SWDIO] of U2 on F.Cu
+    @(26.7500 mm, 18.6500 mm): Track [GND] on F.Cu, length 0.4000 mm
 [clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1100 mm)
     Rule: netclass 'Default'; error
     @(29.2500 mm, 26.1900 mm): Pad 7 [/mcu/NRST] of U2 on F.Cu
     @(29.7500 mm, 25.4500 mm): Track [GND] on F.Cu, length 0.4000 mm
-[shorting_items]: Items shorting two nets (nets /power/U6_ICHG and GND)
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0900 mm)
+    Rule: netclass 'Default'; error
+    @(33.8500 mm, 19.8500 mm): Track [GND] on F.Cu, length 0.4000 mm
+    @(33.1100 mm, 20.3300 mm): Pad 22 [/mcu/NET_STATUS_LED] of U2 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1950 mm)
+    Rule: netclass 'Default'; error
+    @(63.7500 mm, 5.1950 mm): Pad 1 [/modem_rf/SIM_DATA] of D14 on F.Cu
+    @(63.3500 mm, 4.5500 mm): Track [GND] on F.Cu, length 0.2000 mm
+[shorting_items]: Items shorting two nets (nets GND and /power/U6_ICHG)
     Local override; error
+    @(30.1500 mm, 47.6500 mm): Track [GND] on F.Cu, length 0.1414 mm
     @(30.5200 mm, 48.0500 mm): Pad 10 [/power/U6_ICHG] of U6 on F.Cu
-    @(30.2500 mm, 47.5500 mm): Track [GND] on F.Cu, length 0.3000 mm
 [clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1676 mm)
     Rule: netclass 'Default'; error
     @(30.5200 mm, 48.0500 mm): Pad 10 [/power/U6_ICHG] of U6 on F.Cu
@@ -38,11 +38,11 @@
 [shorting_items]: Items shorting two nets (nets /power/U6_ICHG and GND)
     Local override; error
     @(30.5200 mm, 48.0500 mm): Pad 10 [/power/U6_ICHG] of U6 on F.Cu
-    @(30.1500 mm, 47.6500 mm): Track [GND] on F.Cu, length 0.1414 mm
-[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1100 mm)
+    @(30.2500 mm, 47.5500 mm): Track [GND] on F.Cu, length 0.3000 mm
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1300 mm)
     Rule: netclass 'Default'; error
-    @(27.2500 mm, 17.9700 mm): Pad 34 [/mcu/SWDIO] of U2 on F.Cu
-    @(26.7500 mm, 18.6500 mm): Track [GND] on F.Cu, length 0.4000 mm
+    @(25.6500 mm, 24.3500 mm): Track [GND] on F.Cu, length 0.4000 mm
+    @(24.8900 mm, 23.8300 mm): Pad 46 [CAN1_TX] of U2 on F.Cu
 
 ** Found 254 unconnected pads **
 [unconnected_items]: Missing connection between items
@@ -792,7 +792,7 @@
 [unconnected_items]: Missing connection between items
     Local override; error
     @(55.4750 mm, 2.0050 mm): Pad 1 [/modem_rf/ANT_MAIN_M] of C48 on F.Cu
-    @(76.5500 mm, 22.9000 mm): Pad 49 [/modem_rf/ANT_MAIN_M] of U1 on F.Cu
+    @(76.5500 mm, 22.9000 mm): Track [/modem_rf/ANT_MAIN_M] on F.Cu, length 1.4500 mm
 [unconnected_items]: Missing connection between items
     Local override; error
     @(81.0542 mm, 12.6076 mm): Track [/modem_rf/ANT_MAIN_C] on F.Cu, length 2.4130 mm

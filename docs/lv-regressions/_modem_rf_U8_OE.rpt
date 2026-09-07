@@ -1,5 +1,5 @@
 ** Drc report for telematics-tracker.kicad_pcb **
-** Created on 2026-09-07T04:39:24 **
+** Created on 2026-09-07T05:35:00 **
 ** Report includes: Errors **
 
 ** Found 3 DRC violations **
@@ -7,14 +7,14 @@
     Rule: board setup solder mask min width; error
     @(62.2500 mm, 57.9500 mm): Track [/modem_rf/U8_OE] on F.Cu, length 2.1000 mm
     @(63.6375 mm, 57.9950 mm): Pad 2 [GND] of R62 on F.Cu
-[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1000 mm)
-    Rule: netclass 'Default'; error
-    @(63.6375 mm, 57.9950 mm): Pad 2 [GND] of R62 on F.Cu
-    @(64.3500 mm, 57.9500 mm): Track [/modem_rf/U8_OE] on F.Cu, length 0.9899 mm
 [shorting_items]: Items shorting two nets (nets GND and /modem_rf/U8_OE)
     Local override; error
     @(63.6375 mm, 57.9950 mm): Pad 2 [GND] of R62 on F.Cu
     @(62.2500 mm, 57.9500 mm): Track [/modem_rf/U8_OE] on F.Cu, length 2.1000 mm
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1000 mm)
+    Rule: netclass 'Default'; error
+    @(63.6375 mm, 57.9950 mm): Pad 2 [GND] of R62 on F.Cu
+    @(64.3500 mm, 57.9500 mm): Track [/modem_rf/U8_OE] on F.Cu, length 0.9899 mm
 
 ** Found 264 unconnected pads **
 [unconnected_items]: Missing connection between items
@@ -527,7 +527,7 @@
     @(69.8125 mm, 59.9950 mm): Pad 1 [/modem_rf/NETLIGHT_MOD] of R64 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
-    @(55.8500 mm, 5.2500 mm): Track [/modem_rf/SIM_DATA] on B.Cu, length 0.1414 mm
+    @(63.2500 mm, 5.2500 mm): Track [/modem_rf/SIM_DATA] on B.Cu, length 7.4000 mm
     @(50.1700 mm, 45.6270 mm): Pad C7 [/modem_rf/SIM_DATA] of X1 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
@@ -691,7 +691,7 @@
     @(60.4125 mm, 8.2450 mm): Pad 3 [/modem_rf/Q14_C] of Q14 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
-    @(79.8000 mm, 29.2500 mm): Track [/modem_rf/ANT_GNSS_C] on F.Cu, length 4.7700 mm
+    @(79.8000 mm, 29.2500 mm): Pad 2 [/modem_rf/ANT_GNSS_C] of R72 on F.Cu
     @(55.4750 mm, 3.5050 mm): Pad 1 [/modem_rf/ANT_GNSS_C] of C51 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error

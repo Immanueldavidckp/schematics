@@ -255,26 +255,31 @@ def main(single_net=None):
             # still block: on U3's LGA grid the 3V3 lane extended straight
             # through the IMU's GND and NC pads (measured: shorting_items).
             # HV-in-strip siblings always block (1.5 mm rule, no exception).
-            def lateral(o):
-                if vert or both:
-                    if abs(o[3] - cy) <= hh + 0.15 and \
-                            abs(o[2] - cx) > hw:
-                        return True
-                if (not vert) or both:
-                    if abs(o[2] - cx) <= hw + 0.15 and \
-                            abs(o[3] - cy) > hh:
-                        return True
-                return False
+            def sib_skip(o, axis):
+                """True when sibling o may be ignored for THIS lane axis.
+
+                Per-lane: a same-row sibling is lateral for the VERTICAL
+                lane but dead ahead for the HORIZONTAL one - the one-list
+                version let every 2-pad chip's horizontal lane run through
+                its own second pad (C42/D12 shorting_items, measured)."""
+                if o[6] != ref:
+                    return False
+                if o[0] in HV and o[2] < 20.0:
+                    return False          # HV-in-strip: 1.5 mm rule, no pass
+                if axis == "v":
+                    return abs(o[3] - cy) <= hh + 0.15 and abs(o[2] - cx) > hw
+                return abs(o[2] - cx) <= hw + 0.15 and abs(o[3] - cy) > hh
 
             near = [o for o in obst + placed
                     if o[0] != netname
-                    and (o[6] != ref or (o[0] in HV and o[2] < 20.0)
-                         or not lateral(o))
                     and abs(o[2] - cx) < 4.0 and abs(o[3] - cy) < 4.0]
 
-            def lane_cell_ok(px, py, lay):
-                for on2, l2, ox, oy, ohw, ohh, _ in near:
+            def lane_cell_ok(px, py, lay, axis):
+                for o in near:
+                    on2, l2, ox, oy, ohw, ohh, _r = o
                     if lay not in l2:
+                        continue
+                    if sib_skip(o, axis):
                         continue
                     oc = net_class(on2) if on2 else "HV"
                     clr = max(CLS_CLR.get(net_class(netname), 0.2),
@@ -303,7 +308,7 @@ def main(single_net=None):
                         # every lane cell is verified - including on-pad
                         # cells, because a track on J1.4's own pad can still
                         # sit closer than 1.5 mm to the HV pin next to it
-                        if lane_cell_ok(px, py, lay):
+                        if lane_cell_ok(px, py, lay, "v"):
                             tg[li][j * NX + ci] = 0
                 if (not vert) or both:
                     cj = int(round((cy - y0) / RES))
@@ -311,7 +316,7 @@ def main(single_net=None):
                     i1 = int(round((cx + hw - x0) / RES)) + 25
                     for i in range(max(1, i0), min(NX - 2, i1) + 1):
                         px, py = pos(i, cj)
-                        if lane_cell_ok(px, py, lay):
+                        if lane_cell_ok(px, py, lay, "h"):
                             tg[li][cj * NX + i] = 0
 
     def astar(tg, vg, starts, goals):
