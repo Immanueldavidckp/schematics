@@ -429,7 +429,13 @@ POWER_POURS = [
     # island and keeps the HV netclass clearance from it.
     ("5V0", "In2.Cu", HV_X + 0.75, 27.5, 43.0, 39.0),
     ("SYS", "In2.Cu", HV_X + 0.75, 39.5, 43.0, 48.0),
-    ("3V3", "In2.Cu", HV_X + 0.75, 48.5, 43.0, BH - EDGE),
+    # 3V3 extended across the modem half: 41 of the 162 leftover edges were
+    # 3V3 pads with no pour to tap - the island only covered the dig column.
+    # Island A spans the bottom band to x 76 (clear of the RF corridor at
+    # 76.8); island B covers the modem mid-region, clear of the VBAT_MODEM
+    # island (62..76, 7..21) by 1.5 mm.
+    ("3V3", "In2.Cu", HV_X + 0.75, 48.5, 76.0, BH - EDGE),
+    ("3V3", "In2.Cu", 44.0, 22.5, 76.0, 40.0),
     # CHECK 4 as approved: "VBAT_MODEM pour on L3 ties them" - the four F-13
     # bulk caps (C40/C41 top, C81/C82 bottom) and U1 pads 57-60. This island
     # was in the approved design but never emitted; found when the LV router
@@ -627,6 +633,11 @@ def add_zone(board, layer, net, rect, name=""):
     z.AddPolygon(pts)
     z.SetZoneName(name)
     z.SetPadConnection(pcbnew.ZONE_CONNECTION_FULL)   # no thermal spokes
+    # Remove pad-less fill fragments: without this, every isolated pour
+    # island the routing carves off counts as an unconnected ratsnest item -
+    # 60 of the 162 "unconnected" edges were F_GND/B_GND fragment-to-fragment
+    # links, not real connections.
+    z.SetIslandRemovalMode(pcbnew.ISLAND_REMOVAL_MODE_ALWAYS)
     z.SetIsFilled(False)
     board.Add(z)
     return z
