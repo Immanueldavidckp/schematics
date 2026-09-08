@@ -285,8 +285,10 @@ ANCHORS = {
     "TP4": (21.6, 16.4, 0, 0),    # DBG_TX  - left of U2
     "TP5": (21.6, 13.4, 0, 0),    # DBG_RX
     "TP7": (29.5, 2.5, 0, 1),     # GND: anywhere over the plane
-    "TP1": (36.5, 16.4, 0, 0),    # SWDIO - right of U2
-    "TP2": (36.5, 13.4, 0, 0),    # SWCLK
+    # NOT at x 36.5: that is inside the buck cluster (C73 at 38.3) and the
+    # SWD test points there walled U5_IS's pin-7 escape (HV 41/42).
+    "TP1": (33.0, 29.8, 0, 0),    # SWDIO - below U2's right corner
+    "TP2": (36.2, 29.8, 0, 0),    # SWCLK
     "TP27": (44.5, 42.5, 0, 0),   # MODEM_TX - modem UART side
     "TP28": (44.5, 45.5, 0, 0),   # MODEM_RX
 }
