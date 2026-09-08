@@ -1,45 +1,56 @@
 LV routing metrics (tools/pcbroute_lv.py)
-nets routed: 1/40   total vias: 2
+nets routed: 15/51   total vias: 32
 net                            vias   len mm manhattan  ratio
-/modem_rf/USIM_DET                2     18.4      21.3   0.86
+/io/CAN_MID                       2      6.1       7.3   0.83
+/io/Q1_G                          1     34.4      21.0   1.64
+/io/Q2_G                          1     46.2      23.8   1.94
+/mcu/BOOT0                        4     35.3      29.5   1.20
+/mcu/I2C1_SCL                     1      9.3       6.6   1.41
+/mcu/SWDIO                        6     66.9      42.1   1.59 VIAS>4
+/modem_rf/Q3_G                    2     32.3      11.4   2.84 RATIO>2.5
+/modem_rf/VBAT_MODEM              2     35.8      16.1   2.23
+/modem_rf/VDD_EXT_1V8             2     50.0      56.2   0.89
+/power/REGN                       1     22.9       4.0   5.73 RATIO>2.5
+DI1                               1     56.3      52.0   1.08
+DI2                               2     17.4      20.2   0.86
+MODEM_PWRKEY                      4     70.2      81.1   0.87
+MODEM_RX                          2     45.0      28.5   1.58
+MODEM_STATUS                      1     57.8      63.1   0.92
 
 UNROUTED:
-  /modem_rf/VBAT_MODEM: no path TP24.1 -> D12.1
-  3V3: no path U3.10 -> U3.12
-  SYS: no path R52.1 -> R38.1
-  5V0: no path R44.1 -> R45.1
-  GND: no path OK2.2 -> U6.9
-  /power/SYS: no path U9.1 -> C65.1
-  /power/U6_TS: no path J2.2 -> R88.2
+  3V3: no path U3.5 -> U3.8
+  SYS: no path TP13.1 -> R52.1
+  5V0: no path C78.1 -> R83.1
+  GND: no path U6.25 -> U6.9
+  /power/SYS: no path U6.15 -> C68.1
   /io/CANH: no path TP25.1 -> J1.4
-  /io/VIN_SENSE: no path C27.1 -> R32.2
-  /power/REGN: no path U6.22 -> C63.1
+  /io/VIN_SENSE: no path D10.3 -> R32.2
+  /io/CANL: no path TP26.1 -> L2.2
+  /modem_rf/USIM_VDD: no path U1.14 -> D14.5
+  /io/IGN_SENSE: no path R37.1 -> R35.2
   /mcu/SWCLK: no path U2.37 -> TP2.1
-  /power/SW_CHG: no path U6.20 -> C64.2
-  /io/Q2_G: no path Q2.1 -> R26.1
-  /power/U6_BTST: no path U6.21 -> C64.1
-  /power/PMID: no path U6.23 -> C62.1
-  /mcu/SWDIO: no path U2.34 -> TP1.1
-  /power/U6_ICHG: no path U6.10 -> R85.1
-  /power/U6_OTG: no path U6.6 -> R87.1
-  MODEM_TX: no path TP27.1 -> U2.30
-  /io/IGN_SENSE: no path C28.1 -> R35.2
-  /io/Q1_G: no path Q1.1 -> R25.1
-  /power/U6_ILIM: no path U6.8 -> R86.1
-  /mcu/I2C1_SDA: no path U3.14 -> U2.43
+  DO1_GATE: no path U2.27 -> R42.1
   /mcu/IMU_INT1: no path U3.4 -> U2.41
-  DI2: no path OK2.4 -> U2.26
-  DO2_GATE: no path U2.28 -> R46.1
-  DO1_GATE: no path R43.1 -> U2.27
-  /mcu/OSC32_OUT: no path C4.1 -> Y2.2
-  /mcu/VBAT_MCU: no path C6.1 -> R3.2
-  /mcu/OSC32_IN: no path C3.1 -> Y2.1
+  /mcu/NRST: no path C5.1 -> TP3.1
+  /mcu/DBG_TX: no path U2.12 -> TP4.1
+  /mcu/DBG_RX: no path U2.13 -> TP5.1
+  /power/U6_TS: no path R88.2 -> U6.11
+  DO2_GATE: no path R46.1 -> U2.28
+  /io/CANH_T: no path L2.4 -> U4.7
   FLASH_CS: no path U7.1 -> U2.14
-  /io/DO1_X: no path Q5.3 -> R44.2
-  /io/DO1_DRV: no path Q6.3 -> R45.2
+  CAN1_RX: no path U4.4 -> U2.45
+  /mcu/VBAT_MCU: no path R3.2 -> U2.1
+  CAN_STB: no path U4.8 -> U2.38
+  MODEM_TX: no path TP27.1 -> U2.30
+  /modem_rf/USIM_DET: no path X1.CD -> U1.13
+  /power/U5_VCC: no path R81.1 -> U5.1
   /mcu/SYS_LED: no path U2.2 -> D20.1
-  /io/DO2_B: no path R46.2 -> Q7.1
   MODEM_DTR: no path U2.33 -> U8.10
-  SPI1_SCK: no path U7.6 -> U2.15
-  SPI1_MOSI: no path U7.5 -> U2.17
-  /power/U5_FB: no path R83.2 -> R84.1
+  /mcu/OSC32_IN: no path U2.3 -> C3.1
+  MODEM_RI: no path U2.32 -> U8.11
+  /power/U6_OTG: no path U6.6 -> R87.1
+  /mcu/OSC_OUT: no path U2.6 -> Y1.3
+  /power/U5_EN: no path U5.2 -> R81.2
+  /power/U6_ICHG: no path U6.10 -> R85.1
+  /mcu/OSC_IN: no path U2.5 -> C1.1
+  /power/U5_FB: no path R83.2 -> U5.4
