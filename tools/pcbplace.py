@@ -386,7 +386,13 @@ FIXED = {"U1",              # the corridor width depends on exactly this x
          "F1",
          "C48", "C50", "C49", "C51",   # pi shunts: pinned clear of the
                                        # corner elbows; drift = violations
-         "OK1", "OK2"}      # optos: the relaxer walked OK1 onto H5              # the harness interface. Not pinning it let the
+         "OK1", "OK2",      # optos: the relaxer walked OK1 onto H5
+         # the whole buck cluster: the relaxer drifted U5 by 2 mm whenever
+         # neighbours changed (U5.7 measured at 39.88,5.89 vs the engineered
+         # 37.92,6.66), invalidating every escape-window calculation and
+         # breaking SW_BUCK/U5_IS on four consecutive chains. The buck's
+         # geometry IS the design - it does not move.
+         "U5", "L1", "D16", "C73", "C74", "C76", "R82"}              # the harness interface. Not pinning it let the
                             # relaxer walk it to x = 4.0, half its keepout off
                             # the board edge, while shuffling the HV strip.
 
