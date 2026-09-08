@@ -875,10 +875,52 @@ def orchestrate():
     for attempt in range(1, 4):
         print(f"--- pass {attempt}: {len(queue)} net(s)")
         next_queue = []
+        batch = []          # (netname, metrics) awaiting a DRC gate
+        def gate():
+            """DRC-gate the accumulated batch. Same invariant as per-net
+            gating - copper that fails DRC never survives - but checked per
+            4 nets: the kicad-cli run is 10-15 s and dominated finisher wall
+            time. On regression the whole batch rolls back and its nets
+            retry individually next pass."""
+            nonlocal done_ct
+            if not batch:
+                return
+            errs = drc_errors(PCB)
+            if errs > baseline:
+                shutil.copyfile(LAST_GOOD, PCB)
+                for n, _m in batch:
+                    failed[n] = f"DRC regression in batch (+{errs - baseline})"
+                    next_queue.append(n)
+                print(f"  BATCH FAIL {[n for n, _ in batch]} "
+                      f"(+{errs - baseline}) - rolled back")
+                batch.clear()
+                return
+            shutil.copyfile(PCB, LAST_GOOD)
+            for n, (nv, tl, man) in batch:
+                failed.pop(n, None)
+                done_ct += 1
+                ratio = (tl / man) if man > 0.5 else 1.0
+                metrics[n] = (nv, tl, man, ratio)
+                flags = []
+                if nv > 4:
+                    flags.append("VIAS>4")
+                if ratio > 2.5:
+                    flags.append("RATIO>2.5")
+                pct = 100 * done_ct / total_ct
+                print(f"  OK {n:28} vias={nv} len={tl:5.1f} man={man:5.1f} "
+                      f"ratio={ratio:4.2f} [{done_ct}/{total_ct} {pct:3.0f}%]"
+                      f"{'  ' + ','.join(flags) if flags else ''}")
+                if done_ct % 25 == 0:
+                    git_progress(f"LV routing progress: {done_ct}/{total_ct} "
+                                 f"nets ({pct:.0f}%)")
+                    print(f"== progress commit at {done_ct}/{total_ct}")
+            batch.clear()
+
         for netname in queue:
             try:
                 r = child(["--net", netname])
             except subprocess.TimeoutExpired:
+                gate()
                 shutil.copyfile(LAST_GOOD, PCB)
                 failed[netname] = "child timeout (900 s)"
                 next_queue.append(netname)
@@ -890,7 +932,8 @@ def orchestrate():
                 fm = re.search(r"CHILD_FAIL (.*)", r.stdout)
                 cause = fm.group(1) if fm else \
                     f"child crashed (rc={r.returncode})"
-                shutil.copyfile(LAST_GOOD, PCB)   # crash may have half-saved
+                gate()
+                shutil.copyfile(LAST_GOOD, PCB)
                 failed[netname] = cause
                 next_queue.append(netname)
                 print(f"  FAIL {netname:28} {cause}")
@@ -898,53 +941,12 @@ def orchestrate():
                     if "DEBUG" in l:
                         print(f"   {l}")
                 continue
-            errs = drc_errors(PCB)
-            if errs > baseline:
-                # keep the evidence: the mid-run board state that produced
-                # the regression is destroyed by the rollback, so capture
-                # the report (and the new violation types) NOW.
-                rpt = PCB + ".drc"
-                subprocess.run(["kicad-cli", "pcb", "drc",
-                                "--severity-error", "-o", rpt, PCB],
-                               capture_output=True)
-                text = open(rpt).read()
-                os.unlink(rpt)
-                kinds = {}
-                for k in re.findall(r"^\[([a-z_]+)\]", text, re.M):
-                    if k != "unconnected_items":
-                        kinds[k] = kinds.get(k, 0) + 1
-                keep = os.path.join(PROJ, "docs",
-                                    "lv-regressions",
-                                    netname.replace("/", "_") + ".rpt")
-                os.makedirs(os.path.dirname(keep), exist_ok=True)
-                with open(keep, "w") as fh:
-                    fh.write(text)
-                shutil.copyfile(LAST_GOOD, PCB)
-                failed[netname] = f"DRC regression (+{errs - baseline}: {kinds})"
-                next_queue.append(netname)
-                print(f"  FAIL {netname:28} DRC regression "
-                      f"(+{errs - baseline}) {kinds} - report kept")
-                continue
-            shutil.copyfile(PCB, LAST_GOOD)
-            failed.pop(netname, None)
-            done_ct += 1
-            nv, tl, man = int(m.group(1)), float(m.group(2)), float(m.group(3))
-            ratio = (tl / man) if man > 0.5 else 1.0
-            metrics[netname] = (nv, tl, man, ratio)
-            flags = []
-            if nv > 4:
-                flags.append("VIAS>4")
-            if ratio > 2.5:
-                flags.append("RATIO>2.5")
-            pct = 100 * done_ct / total_ct
-            print(f"  OK {netname:28} vias={nv} len={tl:5.1f} man={man:5.1f} "
-                  f"ratio={ratio:4.2f} [{done_ct}/{total_ct} {pct:3.0f}%]"
-                  f"{'  ' + ','.join(flags) if flags else ''}")
-            if done_ct % 25 == 0:
-                git_progress(f"LV routing progress: {done_ct}/{total_ct} "
-                             f"nets ({pct:.0f}%)")
-                print(f"== progress commit at {done_ct}/{total_ct} "
-                      f"({pct:.0f}%)")
+            batch.append((netname,
+                          (int(m.group(1)), float(m.group(2)),
+                           float(m.group(3)))))
+            if len(batch) >= 4:
+                gate()
+        gate()
         queue = next_queue
         if not queue:
             break
