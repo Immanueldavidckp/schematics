@@ -13,6 +13,10 @@ import sys
 
 import pcbnew
 
+# Python 3.14 / KiCad SWIG shim fix (see pcbgen.py)
+if not hasattr(pcbnew.SwigPyIterator, "next"):
+    pcbnew.SwigPyIterator.next = pcbnew.SwigPyIterator.__next__
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from netclasses import HV as HV_NETS, MV as MV_NETS       # noqa: E402
 

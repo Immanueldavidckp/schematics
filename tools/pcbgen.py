@@ -18,6 +18,12 @@ import uuid as _uuid
 
 import pcbnew
 
+# Python 3.14 compatibility: the system updated mid-project and KiCad's SWIG
+# shim still calls the Python-2 iterator protocol (it.next()) inside every
+# container __iter__, which raises AttributeError on 3.14. Alias it.
+if not hasattr(pcbnew.SwigPyIterator, "next"):
+    pcbnew.SwigPyIterator.next = pcbnew.SwigPyIterator.__next__
+
 # same namespace as tools/schgen.py, so the two generators cannot collide
 NS = _uuid.UUID("11111111-2222-3333-4444-555555555555")
 
