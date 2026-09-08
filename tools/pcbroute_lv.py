@@ -619,11 +619,11 @@ def main(single_net=None):
             return max(0.20, min(to_mm(b2.GetWidth()), to_mm(b2.GetHeight())))
 
         def fail(cause):
-            # No in-memory rollback: board.Remove on many tracks crashed
-            # pcbnew (SWIG leak storm then silent death). In child-per-net
-            # mode failure simply means the child exits WITHOUT saving, so
-            # the file never sees the partial copper.
-            return False, cause, 0, 0.0, 0.0
+            # No in-memory rollback (board.Remove crashes at scale). The
+            # child decides: with zero progress it exits unsaved; with
+            # partial progress it SAVES and reports CHILD_PARTIAL - the
+            # copper is legal, only the remaining edges requeue.
+            return False, cause, nv_net, tl_net, man_net
 
         # The FIRST tap into a virgin pour does not reduce the pad-cluster
         # count (it merges a cluster with the pour, not with another pad
@@ -825,13 +825,23 @@ def main(single_net=None):
             last_cl = len(cl)
         return fail("cluster count did not converge in 40 rounds")
 
-    # child mode: route exactly one net; save ONLY on success
+    # child mode: route exactly one net. Full success saves and reports OK.
+    # PARTIAL success also saves: a 42-pad net that closes 35 taps and then
+    # hits one stubborn hop was previously discarded whole - 3V3 re-made and
+    # re-lost ~35 connections every cycle. Partial copper is legal (the same
+    # grids produced it); the remaining edges requeue and resume from the
+    # saved state next pass.
     ok, cause, nv, tl, man = route_net(single_net)
     if ok:
         refill()
         pcbnew.SaveBoard(PCB, board)
         print(f"CHILD_OK vias={nv} len={tl:.2f} man={man:.2f}")
         return
+    if nv > 0 or tl > 0:
+        refill()
+        pcbnew.SaveBoard(PCB, board)
+        print(f"CHILD_PARTIAL vias={nv} len={tl:.2f} man={man:.2f} cause={cause}")
+        sys.exit(4)
     print(f"CHILD_FAIL {cause}")
     sys.exit(3)
 
@@ -926,8 +936,8 @@ def orchestrate():
                 next_queue.append(netname)
                 print(f"  FAIL {netname:28} child timeout")
                 continue
-            m = re.search(r"CHILD_OK vias=(\d+) len=([\d.]+) man=([\d.]+)",
-                          r.stdout)
+            m = re.search(r"CHILD_(OK|PARTIAL) vias=(\d+) len=([\d.]+) "
+                          r"man=([\d.]+)", r.stdout)
             if not m:
                 fm = re.search(r"CHILD_FAIL (.*)", r.stdout)
                 cause = fm.group(1) if fm else \
@@ -941,9 +951,15 @@ def orchestrate():
                     if "DEBUG" in l:
                         print(f"   {l}")
                 continue
+            partial = m.group(1) == "PARTIAL"
             batch.append((netname,
-                          (int(m.group(1)), float(m.group(2)),
-                           float(m.group(3)))))
+                          (int(m.group(2)), float(m.group(3)),
+                           float(m.group(4)))))
+            if partial:
+                next_queue.append(netname)   # resume the remainder next pass
+                cm = re.search(r"cause=(.*)", r.stdout)
+                print(f"  PARTIAL {netname:26} kept copper; remainder "
+                      f"requeued ({cm.group(1)[:60] if cm else '?'})")
             if len(batch) >= 4:
                 gate()
         gate()

@@ -916,9 +916,17 @@ def stitch_vias(board, spots):
         nets_hit = set()
         for f in board.GetFootprints():
             for pd in f.Pads():
-                if pd.HitTest(pcbnew.VECTOR2I(mm(vx), mm(vy))):
+                bb = pd.GetBoundingBox()
+                # PROXIMITY, not hit: a via 0.175 mm from a pad of another
+                # net passes a hit test and fails DRC (measured at C62.1).
+                # via radius + netclass floor clearance + margin = 0.50.
+                if (abs(pcbnew.ToMM(bb.GetCenter().x) - vx)
+                        <= pcbnew.ToMM(bb.GetWidth()) / 2 + 0.50 and
+                        abs(pcbnew.ToMM(bb.GetCenter().y) - vy)
+                        <= pcbnew.ToMM(bb.GetHeight()) / 2 + 0.50):
                     if pd.GetNet() is not None and pd.GetNetname():
-                        net = pd.GetNet()
+                        if pd.HitTest(pcbnew.VECTOR2I(mm(vx), mm(vy))):
+                            net = pd.GetNet()
                         nets_hit.add(pd.GetNetname())
         if len(nets_hit) > 1:
             # a through via here would weld two nets: measured when the U6
