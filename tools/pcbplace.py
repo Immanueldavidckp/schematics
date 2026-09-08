@@ -195,9 +195,9 @@ ANCHORS = {
     # wrap around R18 and its locked copper sealed R18.2 into a 398-cell
     # pocket (flood-fill measured). 180 restores pad 1 facing the feed.
     "R14": (3.4, 46.4, 180, 1), "R15": (8.6, 46.4, 180, 1), "R16": (13.8, 46.4, 180, 1),
-    "D5":  (21.4, 39.8, 0, 1), "OK1": (21.3, 46.6, 0, 1),
+    "D5":  (17.9, 43.5, 0, 1), "OK1": (21.3, 46.6, 0, 1),
     "R17": (3.4, 50.2, 180, 1), "R18": (8.6, 50.2, 180, 1), "R19": (13.8, 50.2, 180, 1),
-    "D6":  (26.6, 39.8, 0, 1), "OK2": (26.6, 46.6, 0, 1),
+    "D6":  (17.9, 40.5, 0, 1), "OK2": (26.6, 46.6, 0, 1),
     # VIN entry test point above J1, clear of F1's column
     "TP23": (11.0, 2.5, 0, 0),
 
@@ -274,8 +274,12 @@ ANCHORS = {
     "R46": (24.5, 34.9, 0, 1), "Q7": (28.2, 34.9, 0, 1),
     "R47": (31.9, 34.9, 0, 1), "Q8": (35.6, 34.9, 0, 1),
     "R48": (39.3, 34.9, 0, 1),
-    "R25": (21.0, 40.6, 0, 1),
-    "R26": (24.5, 40.6, 0, 1),
+    # single row between the driver rows and the (pinned) optos - two rows
+    # of rot-90 0805s do not fit in the 4.2 mm band and the relaxer answered
+    # by shoving OK1 onto mounting hole H5 (measured: 3 violations, PTH
+    # inside courtyard).
+    "R25": (21.2, 39.8, 0, 1),
+    "R26": (25.3, 39.8, 0, 1),
     # debug/GND test points out of the buck field (top edge, B):
     "TP4": (23.5, 2.5, 0, 1),
     "TP5": (26.5, 2.5, 0, 1),
@@ -373,8 +377,9 @@ FIXED = {"U1",              # the corridor width depends on exactly this x
          "U3",              # amendment (c): must stay beside H5
          "J1",              # the harness interface (see note below)
          "F1",
-         "C48", "C50", "C49", "C51"}   # pi shunts: pinned clear of the
-                                       # corner elbows; drift = violations              # the harness interface. Not pinning it let the
+         "C48", "C50", "C49", "C51",   # pi shunts: pinned clear of the
+                                       # corner elbows; drift = violations
+         "OK1", "OK2"}      # optos: the relaxer walked OK1 onto H5              # the harness interface. Not pinning it let the
                             # relaxer walk it to x = 4.0, half its keepout off
                             # the board edge, while shuffling the HV strip.
 
