@@ -280,10 +280,15 @@ ANCHORS = {
     # inside courtyard).
     "R25": (21.2, 39.8, 0, 1),
     "R26": (25.3, 39.8, 0, 1),
-    # debug/GND test points out of the buck field (top edge, B):
-    "TP4": (23.5, 2.5, 0, 1),
-    "TP5": (26.5, 2.5, 0, 1),
-    "TP7": (29.5, 2.5, 0, 1),
+    # Test points BESIDE their signals - parked far away they each cost an
+    # unroutable long edge (measured: 8 of the residual nets were TP links).
+    "TP4": (21.6, 16.4, 0, 0),    # DBG_TX  - left of U2
+    "TP5": (21.6, 13.4, 0, 0),    # DBG_RX
+    "TP7": (29.5, 2.5, 0, 1),     # GND: anywhere over the plane
+    "TP1": (36.5, 16.4, 0, 0),    # SWDIO - right of U2
+    "TP2": (36.5, 13.4, 0, 0),    # SWCLK
+    "TP27": (44.5, 42.5, 0, 0),   # MODEM_TX - modem UART side
+    "TP28": (44.5, 45.5, 0, 0),   # MODEM_RX
 }
 
 def relax_anchors(anchor_boxes, bounds, min_gap=1.10, iters=1500):
@@ -864,6 +869,32 @@ def planned_vias(board):
                             abs(y - cy) + VIA / 2 <= h / 2 - 0.2):
                         spots.append((x, y, VIA))
             break
+    # U6 (charger QFN) exposed pad: U1 and U5 got their stitch fields; U6 was
+    # forgotten, and its GND EP had NO path to pin-ring GND across the pin
+    # ring (measured: 'GND: no path U6.25 -> U6.9'). The vias close that edge
+    # through L2 and are the thermal path the charger needs anyway.
+    u6 = _fp(board, "U6")
+    if u6 is not None:
+        biggest = None
+        for pd in u6.Pads():
+            bb = pd.GetBoundingBox()
+            a = pcbnew.ToMM(bb.GetWidth()) * pcbnew.ToMM(bb.GetHeight())
+            if biggest is None or a > biggest[0]:
+                biggest = (a, pd)
+        if biggest and biggest[0] > 2.0:      # a real EP, not a pin
+            pd = biggest[1]
+            bb = pd.GetBoundingBox()
+            cx = pcbnew.ToMM(bb.GetCenter().x)
+            cy = pcbnew.ToMM(bb.GetCenter().y)
+            w = pcbnew.ToMM(bb.GetWidth())
+            h = pcbnew.ToMM(bb.GetHeight())
+            PITCH, VIA = 0.85, 0.50
+            for i in (-1, 0, 1):
+                for j in (-1, 0, 1):
+                    x, y = cx + i * PITCH, cy + j * PITCH
+                    if (abs(x - cx) + VIA / 2 <= w / 2 - 0.2 and
+                            abs(y - cy) + VIA / 2 <= h / 2 - 0.2):
+                        spots.append((x, y, VIA))
     return spots
 
 
@@ -874,16 +905,20 @@ def stitch_vias(board, spots):
     made = 0
     for vx, vy, vd in spots:
         net = gnd
+        nets_hit = set()
         for f in board.GetFootprints():
-            hit = False
             for pd in f.Pads():
                 if pd.HitTest(pcbnew.VECTOR2I(mm(vx), mm(vy))):
                     if pd.GetNet() is not None and pd.GetNetname():
                         net = pd.GetNet()
-                    hit = True
-                    break
-            if hit:
-                break
+                        nets_hit.add(pd.GetNetname())
+        if len(nets_hit) > 1:
+            # a through via here would weld two nets: measured when the U6
+            # EP grid landed on C62.1 (PMID) parked on the BOTTOM side under
+            # the charger - 7 violations from three vias. Skip the spot.
+            print(f"  stitch via at ({vx:.2f},{vy:.2f}) skipped: "
+                  f"would join {sorted(nets_hit)}")
+            continue
         v = pcbnew.PCB_VIA(board)
         v.SetPosition(pt(vx, vy))
         v.SetWidth(mm(vd))

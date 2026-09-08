@@ -13,3 +13,6 @@ autoroute.dsn
 autoroute.ses
 autoroute.log
 telematics-tracker.kicad_pcb.lastgood
+.chain9.sh
+.chain9.log
+.cy*.rpt
