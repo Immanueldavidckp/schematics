@@ -963,6 +963,14 @@ def main():
         y = pcbnew.ToMM(fp.GetPosition().y)
         for z in zones.values():
             z.block(x, y, w + 1.0, h + 1.0)   # extra ring: screw head keepout
+    # BUCK FIELD RESERVATION: nothing may be PACKED into x 34..44, y 1..18 on
+    # either side. U5's pin escapes live in sub-0.1 mm windows and every
+    # reshuffle that spilled a stray part there (Y1, C67-C69, debug TPs, SWD
+    # TPs...) broke U5_IS / SW_BUCK / VIN_B routing again. The buck cluster's
+    # own parts are ANCHORED inside and unaffected - this blocks only the
+    # skyline packer.
+    for z in zones.values():
+        z.block(39.0, 9.5, 10.0, 17.0)
 
     def add(ref, c, x, y, rot, side):
         fp = load_fp(c["fp"])
