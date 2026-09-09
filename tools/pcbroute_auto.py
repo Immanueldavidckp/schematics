@@ -28,6 +28,97 @@ DSN = os.path.join(PROJ, "autoroute.dsn")
 SES = os.path.join(PROJ, "autoroute.ses")
 
 
+def inject_keepouts(dsn_path, board):
+    """Teach FreeRouting the rules a DSN cannot express, as keepouts.
+
+    Measured on cycle-2's session (docs/design-log.md, hybrid fixed point):
+    every cycle FR produced copper that adopt HAD to rip - 17 board-edge
+    violations (board setup edge clearance 0.5, which a DSN boundary does not
+    carry) and 1 via inside the 1.5 mm HV halo (a scoped DRU rule FR cannot
+    know). The ripped nets then requeued to the LV finisher, which had already
+    failed them: a fixed point at 155 unconnected.
+
+    This injects (keepout ...) polygons - a strictly TIGHTER model, never a
+    looser one:
+      - four 0.5 mm strips along the board edges, both copper layers;
+      - a halo rect around every locked HV segment/via: 1.5 mm outside
+        BUCK_HV, 0.6 mm inside it (the approved BUCK_HV carve-out);
+      - a 0.6 mm halo around locked MV copper (MV class clearance).
+    Coordinates: DSN units are 0.1 um, Y negated.
+    """
+    from netclasses import HV, MV
+
+    def rect(layer, x0, y0, x1, y1):
+        c = [int(round(v * 10000)) for v in (x0, -y1, x1, -y0)]
+        return (f'    (keepout "" (polygon {layer} 0  {c[0]} {c[1]}  '
+                f'{c[2]} {c[1]}  {c[2]} {c[3]}  {c[0]} {c[3]}  '
+                f'{c[0]} {c[1]}))\n')
+
+    bb = board.GetBoardEdgesBoundingBox()
+    bx0, by0 = bb.GetLeft() / 1e6, bb.GetTop() / 1e6
+    bx1, by1 = bb.GetRight() / 1e6, bb.GetBottom() / 1e6
+    EDGE = 0.5          # board setup constraints edge clearance
+    out = []
+    for lay in ("F.Cu", "B.Cu"):
+        out.append(rect(lay, bx0, by0, bx1, by0 + EDGE))
+        out.append(rect(lay, bx0, by1 - EDGE, bx1, by1))
+        out.append(rect(lay, bx0, by0, bx0 + EDGE, by1))
+        out.append(rect(lay, bx1 - EDGE, by0, bx1, by1))
+
+    buck = None
+    for z in board.Zones():
+        if z.GetZoneName() == "BUCK_HV":
+            b2 = z.GetBoundingBox()
+            buck = (b2.GetLeft() / 1e6, b2.GetTop() / 1e6,
+                    b2.GetRight() / 1e6, b2.GetBottom() / 1e6)
+
+    def hv_margin(x0, y0, x1, y1):
+        if buck and x0 >= buck[0] and y0 >= buck[1] and \
+                x1 <= buck[2] and y1 <= buck[3]:
+            return 0.6
+        return 1.5
+
+    hv, mv = set(HV), set(MV)
+    lname = {board.GetLayerID("F.Cu"): "F.Cu", board.GetLayerID("B.Cu"): "B.Cu"}
+    n_hv = n_mv = 0
+    for t in board.GetTracks():
+        if not t.IsLocked():
+            continue
+        net = t.GetNetname()
+        if net in hv:
+            is_hv = True
+        elif net in mv:
+            is_hv = False
+        else:
+            continue
+        if t.GetClass() == "PCB_VIA":
+            x, y = t.GetPosition().x / 1e6, t.GetPosition().y / 1e6
+            r = t.GetWidth(pcbnew.F_Cu) / 2e6
+            m = (hv_margin(x - r, y - r, x + r, y + r) if is_hv else 0.6) + r
+            for lay in ("F.Cu", "B.Cu"):
+                out.append(rect(lay, x - m, y - m, x + m, y + m))
+        else:
+            lay = lname.get(t.GetLayer())
+            if lay is None:
+                continue
+            s, e = t.GetStart(), t.GetEnd()
+            x0, x1 = sorted((s.x / 1e6, e.x / 1e6))
+            y0, y1 = sorted((s.y / 1e6, e.y / 1e6))
+            hw = t.GetWidth() / 2e6
+            m = (hv_margin(x0 - hw, y0 - hw, x1 + hw, y1 + hw)
+                 if is_hv else 0.6) + hw
+            out.append(rect(lay, x0 - m, y0 - m, x1 + m, y1 + m))
+        n_hv += is_hv
+        n_mv += not is_hv
+
+    txt = open(dsn_path).read()
+    i = txt.index("(keepout")            # existing keepout block in structure
+    txt = txt[:i] + "".join(out) + "    " + txt[i:]
+    open(dsn_path, "w").write(txt)
+    print(f"injected keepouts: 8 edge strips, {n_hv} HV halos, "
+          f"{n_mv} MV halos")
+
+
 def main():
     jar = sys.argv[1]
     minutes = int(sys.argv[2]) if len(sys.argv) > 2 else 90
@@ -55,6 +146,8 @@ def main():
             print(f"  WARNING: class {name} not found in DSN")
     print("DSN class blocks present")
 
+    inject_keepouts(DSN, board)
+
     shutil.copyfile(PCB, SCRATCH)
 
     # -mp 8: v2.4.1 has no wall-clock option and only writes the .ses when
@@ -63,6 +156,12 @@ def main():
     # earlier (harder, pre-shrink) board completed 8 passes in ~40 minutes.
     # Fewer optimisation passes is a schedule choice, not a rule change.
     passes = os.environ.get("FR_PASSES", "8")
+    # A stale .ses from the previous cycle MUST NOT satisfy the existence
+    # check below: when FR hits the budget and is killed it writes nothing,
+    # and importing the old session replays the old cycle verbatim (measured:
+    # cycles 1 and 2 both "103935 bytes" - the hybrid fixed point).
+    if os.path.exists(SES):
+        os.replace(SES, SES + ".prev")
     cmd = ["java", "-jar", jar, "-de", DSN, "-do", SES, "-mp", passes]
     print("running:", " ".join(cmd))
     print(f"budget: {minutes} minutes")
