@@ -106,10 +106,18 @@ boolop(base, gboss, 'UNION')
 gh = cyl("gland_hole", 30.0, gz, OX0 - 3.0, IX0 + 1, 8.25, axis='X')
 boolop(base, gh, 'DIFFERENCE')
 
-# SMA bulkhead hole, +X wall (external active GNSS antenna), 6.5 dia
-sma = cyl("sma", 30.0, FLOOR + STANDOFF + 1.6 + 6.0, OX1 - WALL - 1,
-          OX1 + 1, 3.25, axis='X')
+# SMA bulkhead, +X wall: antennas are INTERNAL (lid FPC LTE + GNSS patch,
+# U.FL) - the SMA is the handoff's "drill option for steel installs" where a
+# U.FL->SMA pigtail feeds an external antenna instead. One hole drilled
+# (GNSS-or-LTE, installer's choice), a second boss with a 1 mm pilot dimple
+# stays sealed until needed.
+sma_z = FLOOR + STANDOFF + 1.6 + 6.0
+sma = cyl("sma", 30.0, sma_z, OX1 - WALL - 1, OX1 + 1, 3.25, axis='X')
 boolop(base, sma, 'DIFFERENCE')
+sma2b = cyl("sma2_boss", 44.0, sma_z, OX1 - 1.0, OX1 + 1.5, 6.0, axis='X')
+boolop(base, sma2b, 'UNION')
+sma2p = cyl("sma2_pilot", 44.0, sma_z, OX1 + 0.5, OX1 + 2.0, 0.5, axis='X')
+boolop(base, sma2p, 'DIFFERENCE')
 
 # external corner posts for the lid screws (M3 self-tap, 2.5 pilot)
 POSTS = [(OX0 - 3.0, OY0 - 3.0), (OX1 + 3.0, OY0 - 3.0),

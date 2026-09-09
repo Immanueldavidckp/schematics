@@ -34,8 +34,14 @@ angles, no rib/wall FEA, gasket cross-section unselected).
   not an open aperture, keeps the perimeter gasket meaningful outdoors on a
   MEWP. *The earlier idea of a rectangular wall cutout was wrong for a
   vertical header and has been dropped.*
-- **SMA bulkhead** Ø6.5 in the +X wall (RF corridor side), 6 mm above board
-  top, for the external active GNSS antenna cable.
+- **Antenna scheme — internal first, external optional** (per handoff §BOM
+  ANT row): both antennas are INTERNAL and lid-mounted on U.FL pigtails — the
+  LTE FPC and the GNSS ceramic patch (active-capable). The Ø6.5 **SMA
+  bulkhead** in the +X wall is the handoff's *"SMA drill option for steel
+  installs"*: a U.FL→SMA pigtail replaces the internal antenna feed when the
+  tracker is mounted on/behind steel. A second SMA boss with a 1 mm pilot
+  dimple (sealed until drilled) sits 14 mm further along the wall so LTE and
+  GNSS can both go external on the worst installs.
 - **F-23 — mechanical LTE FPC antenna retention in the lid** (adhesive alone
   rejected): two clamp bosses (Ø6, pilot 2.2 for M2.5 self-tap clamp plate)
   at (55, 31) and (75, 31) plus two strap ribs at x 48–50 and 78–80 forming a
