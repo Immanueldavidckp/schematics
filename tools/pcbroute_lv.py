@@ -570,6 +570,106 @@ def main(single_net=None):
     def refresh_connectivity():
         board.BuildConnectivity()
 
+    # ---- island taps -------------------------------------------------------
+    # KiCad's connectivity treats a ZONE as ONE item, so a pour that fills as
+    # several disconnected islands still merges its clusters()' BFS into one
+    # cluster - route_net() then reports the net complete while DRC counts an
+    # unconnected edge per island split (measured: 104 of the 150-edge v11
+    # plateau were exactly these, on GND/3V3/5V0/SYS). A filled island with no
+    # net via / PTH pad inside it can only be reached through its own copper:
+    # bond it with one via at a spot where another fill of the same net (the
+    # L2 plane, an L3 island, or the opposite surface pour) lies underneath.
+
+    def net_anchors(netname):
+        anchors = [t.GetPosition() for t in board.GetTracks()
+                   if t.GetNetname() == netname
+                   and t.GetClass() == "PCB_VIA"]
+        for f in board.GetFootprints():
+            for p in f.Pads():
+                if p.GetNetname() == netname and \
+                        p.GetAttribute() == pcbnew.PAD_ATTRIB_PTH:
+                    anchors.append(p.GetPosition())
+        return anchors
+
+    def net_fills(netname):
+        out = []
+        for z in board.Zones():
+            if z.GetIsRuleArea() or z.GetNetname() != netname:
+                continue
+            for lay in z.GetLayerSet().CuStack():
+                out.append((z, lay))
+        return out
+
+    def orphan_islands(netname):
+        """(zone, layer, outline-index, bbox) of every fill island holding no
+        via / through pad of the net."""
+        anchors = net_anchors(netname)
+        out = []
+        for z, lay in net_fills(netname):
+            polys = z.GetFilledPolysList(lay)
+            for oi in range(polys.OutlineCount()):
+                bb = polys.Outline(oi).BBox()
+                if any(bb.Contains(a) and polys.Contains(a, oi)
+                       for a in anchors):
+                    continue
+                out.append((z, lay, oi, bb))
+        return out
+
+    def island_taps(netname, net, vd, vdr, my_clr):
+        """Place the bonding vias. Returns how many were added; refills and
+        rebuilds connectivity when any were."""
+        orphans = orphan_islands(netname)
+        if not orphans:
+            return 0
+        vg = build(netname, my_clr, vd / 2, via_mode=True)
+        fills = net_fills(netname)
+        added = []
+        for z, lay, oi, bb in orphans:
+            polys = z.GetFilledPolysList(lay)
+            i0, j0 = cell(to_mm(bb.GetLeft()), to_mm(bb.GetTop()))
+            i1, j1 = cell(to_mm(bb.GetRight()), to_mm(bb.GetBottom()))
+            spot = None
+            for j in range(max(0, j0), min(NY - 1, j1) + 1):
+                for i in range(max(0, i0), min(NX - 1, i1) + 1):
+                    if vg[0][j * NX + i] or vg[1][j * NX + i]:
+                        continue
+                    x, y = pos(i, j)
+                    # a fresh via is not in vg: keep new ones apart
+                    if any((x - ax) ** 2 + (y - ay) ** 2 < 0.9 ** 2
+                           for ax, ay in added):
+                        continue
+                    p_ = pt(x, y)
+                    if not polys.Contains(p_, oi):
+                        continue
+                    if any(z2.HitTestFilledArea(l2, p_, 0)
+                           for z2, l2 in fills
+                           if not (z2 is z and l2 == lay)):
+                        spot = (x, y)
+                        break
+                if spot:
+                    break
+            if spot is None:
+                if os.environ.get("LV_DEBUG"):
+                    print(f"    DEBUG island (layer {lay}) at "
+                          f"({to_mm(bb.GetLeft()):.1f},{to_mm(bb.GetTop()):.1f})"
+                          f" has no legal tap spot")
+                continue
+            v = pcbnew.PCB_VIA(board)
+            v.SetPosition(pt(*spot))
+            v.SetWidth(mm(vd)); v.SetDrill(mm(vdr))
+            v.SetNet(net); v.SetLayerPair(pcbnew.F_Cu, pcbnew.B_Cu)
+            board.Add(v)
+            stats["vias"] += 1
+            placed.append((netname, LAYERS, *spot, vd / 2, vd / 2, ""))
+            added.append(spot)
+        if added:
+            if os.environ.get("LV_DEBUG"):
+                print(f"    DEBUG island taps: {len(added)} vias "
+                      f"({len(orphans)} orphan islands)")
+            refill()
+            refresh_connectivity()
+        return len(added)
+
     if single_net == "--finish--":
         refill()
         pcbnew.SaveBoard(PCB, board)
@@ -585,7 +685,7 @@ def main(single_net=None):
                            for p in f.Pads()
                            if p.GetNetname() and p.GetNetname() not in PROTECTED})
         for n in all_nets:
-            if len(clusters(n)) > 1:
+            if len(clusters(n)) > 1 or orphan_islands(n):
                 print(f"TODO {n}")
         return
 
@@ -630,11 +730,15 @@ def main(single_net=None):
         # count (it merges a cluster with the pour, not with another pad
         # cluster) - the drop comes when the second cluster taps in. So the
         # stagnation window is 3 rounds, not 1.
+        nv_net += island_taps(netname, net, vd, vdr, my_clr)
+
         best_cl, stagnant = None, 0
         for _round in range(40):
             refresh_connectivity()
             cl = clusters(netname)
             if len(cl) <= 1:
+                if orphan_islands(netname):
+                    return fail("orphan pour islands with no legal tap spot")
                 return True, "", nv_net, tl_net, man_net
             if os.environ.get("LV_DEBUG"):
                 sizes = [len(g) for g, _e, _z in cl][:8]
