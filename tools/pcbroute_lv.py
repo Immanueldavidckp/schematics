@@ -26,6 +26,7 @@ Run:  PYTHONPATH=tools python3 tools/pcbroute_lv.py
 import heapq
 import math
 import os
+import time
 import re
 import shutil
 import subprocess
@@ -882,6 +883,12 @@ def orchestrate():
                                         net_class(n) != "PWR",
                                         -spans.get(n, 0.0), n))
     queue = list(order)
+    # Wall-clock cap: the chain's outer `timeout` was observed not to fire
+    # (cycle 2 ran 15 h against a 25000 s cap), so the orchestrator enforces
+    # its own deadline. Pending copper is gated and saved; the remainder is
+    # reported as unfinished - the cap never loosens a rule.
+    t0 = time.time()
+    deadline = float(os.environ.get("LV_DEADLINE_S", "21600"))
     for attempt in range(1, 4):
         print(f"--- pass {attempt}: {len(queue)} net(s)")
         next_queue = []
@@ -927,6 +934,10 @@ def orchestrate():
             batch.clear()
 
         for netname in queue:
+            if time.time() - t0 > deadline:
+                failed.setdefault(netname, "LV deadline reached")
+                next_queue.append(netname)
+                continue
             try:
                 r = child(["--net", netname])
             except subprocess.TimeoutExpired:
@@ -965,6 +976,10 @@ def orchestrate():
         gate()
         queue = next_queue
         if not queue:
+            break
+        if time.time() - t0 > deadline:
+            print(f"LV_DEADLINE {deadline:.0f}s reached - stopping with "
+                  f"{len(queue)} net(s) unfinished")
             break
 
     child(["--finish"], timeout=600)
