@@ -17,3 +17,5 @@ telematics-tracker.kicad_pcb.lastgood
 .chain9.log
 .cy*.rpt
 .chain9.lock
+.cycles.sh
+*.blend1
