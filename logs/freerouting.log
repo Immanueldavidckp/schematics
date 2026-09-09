@@ -1928,3 +1928,18 @@ java.lang.NullPointerException: Cannot invoke "app.freerouting.geometry.planar.F
 2026-09-09 01:24:12.968 [Thread-29] INFO  Starting route optimization on 1 thread...
 2026-09-09 01:24:58.309 [Thread-29] INFO  Route optimization was completed in 45.34 seconds.
 2026-09-09 01:24:58.348 [Thread-29] INFO  Saving '/home/david/pcb/autoroute.ses'...
+2026-09-09 03:06:48.973 [main] INFO  Freerouting v1.9.0 (build-date: 2023-10-30)
+2026-09-09 03:06:49.023 [main] INFO  Settings were loaded from freerouting.json
+2026-09-09 03:06:50.040 [main] INFO  Opening '/home/david/pcb/autoroute.dsn'...
+2026-09-09 03:06:50.598 [ForkJoinPool.commonPool-worker-1] INFO  New version available: v2.4.1
+2026-09-09 03:06:50.993 [main] WARN  Multiple vias skipped at (297500, -530500)
+2026-09-09 03:06:50.994 [main] WARN  Multiple vias skipped at (297500, -530500)
+2026-09-09 03:06:50.996 [main] WARN  Multiple vias skipped at (306500, -324500)
+2026-09-09 03:06:50.997 [main] WARN  Multiple vias skipped at (306500, -324500)
+2026-09-09 03:06:51.000 [main] WARN  Multiple vias skipped at (311500, -323500)
+2026-09-09 03:06:51.001 [main] WARN  Multiple vias skipped at (311500, -323500)
+2026-09-09 03:06:51.022 [main] WARN  Multiple vias skipped at (328500, -174500)
+2026-09-09 03:06:51.023 [main] WARN  Multiple vias skipped at (328500, -174500)
+2026-09-09 03:06:51.030 [main] WARN  Multiple vias skipped at (354500, -267500)
+2026-09-09 03:06:51.039 [main] WARN  Multiple vias skipped at (357500, -226500)
+2026-09-09 03:06:51.040 [main] WARN  Multiple vias skipped at (357500, -226500)
