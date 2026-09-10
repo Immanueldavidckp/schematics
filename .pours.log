@@ -28,3 +28,18 @@ POUR /power/SYS: unconnected=141 errors=0
 CHILD_PARTIAL vias=7 len=0.00 man=0.00 cause=no path C10.2 -> U2.8
 POUR GND: unconnected=141 errors=0
 POURS_DONE
+=== pour ROUND 1 05:00:55
+=== pours start 05:00:55
+--- 3V3 05:00:55
+POUR 3V3: unconnected=141 errors=0
+--- 5V0 05:02:54
+POUR 5V0: unconnected=141 errors=0
+--- /power/SYS 05:05:26
+CHILD_PARTIAL vias=1 len=35.09 man=25.11 cause=no path U9.3 -> L3.2
+POUR /power/SYS: unconnected=141 errors=0
+--- GND 05:06:22
+    DEBUG island taps: 1 vias (11 orphan islands)
+CHILD_PARTIAL vias=1 len=0.00 man=0.00 cause=no path U6.18 -> U6.9
+POUR GND: unconnected=140 errors=0
+POURS_DONE
+ROUND 1 END unconnected=140
