@@ -887,6 +887,33 @@ def main(single_net=None, rip=None):
                 free_g = sum(1 for li, i, j in goals if not tg[li][j * NX + i])
                 print(f"    DEBUG starts {free_s}/{len(starts)} free, "
                       f"goals {free_g}/{len(goals)} free")
+                # a SEALED terminal (0 free cells) is starved by the few nets
+                # whose copper covers its own cells - name THOSE, not the
+                # whole flood boundary: the global wall histogram dilutes the
+                # actual sealers into noise (measured: U2.8 sealed by nets
+                # that never reached the top-3 rip candidates)
+                cls2 = net_class(netname)
+                clr_half = GEO[cls2][0] / 2
+                for label, cells, nfree in (("start", starts, free_s),
+                                            ("goal", goals, free_g)):
+                    if nfree > 0:
+                        continue
+                    seal = Counter()
+                    for li, i, j in cells:
+                        px, py = pos(i, j)
+                        for on2, l2, ox, oy, ohw, ohh, _r in obst + placed:
+                            if on2 == netname or LAYERS[li] not in l2:
+                                continue
+                            oc2 = net_class(on2) if on2 else "HV"
+                            c2 = max(GEO[cls2][1], CLS_CLR.get(oc2, 0.15))
+                            if on2 in HV and ox < 20.0:
+                                c2 = 1.50
+                            if abs(px - ox) <= ohw + c2 + clr_half and \
+                                    abs(py - oy) <= ohh + c2 + clr_half:
+                                seal[on2 or "netless"] += 1
+                                break
+                    print(f"    DEBUG pad seal ({label}): "
+                          f"{dict(seal.most_common(5))}")
                 from collections import deque
                 seen, dq = set(), deque()
                 for c in starts:
@@ -1194,17 +1221,27 @@ def orchestrate():
                 # seals this net. Schedule ONE rip-retry for the next pass
                 # with the top unlocked, unprotected wall nets.
                 if not ripping:
-                    wall = Counter()
+                    # pad-seal nets first (the actual pad sealers), then the
+                    # flood-boundary walls to fill up to 3 candidates
+                    seal, wall = Counter(), Counter()
                     for l in r.stdout.splitlines():
+                        ms = re.search(r"DEBUG pad seal \(\w+\): (\{.*\})", l)
                         mw = re.search(r"DEBUG pocket walls: (\{.*\})", l)
-                        if mw:
-                            try:
+                        try:
+                            if ms:
+                                seal.update(ast.literal_eval(ms.group(1)))
+                            elif mw:
                                 wall.update(ast.literal_eval(mw.group(1)))
-                            except (ValueError, SyntaxError):
-                                pass
-                    cands = [n for n, _c in wall.most_common()
-                             if n not in ("edge/nogo", "netless")
-                             and n not in PROTECTED and n != netname][:3]
+                        except (ValueError, SyntaxError):
+                            pass
+                    cands = []
+                    for src in (seal, wall):
+                        for n, _c in src.most_common():
+                            if n not in ("edge/nogo", "netless") and \
+                                    n not in PROTECTED and n != netname and \
+                                    n not in cands:
+                                cands.append(n)
+                    cands = cands[:3]
                     if cands:
                         rip_plan[netname] = cands
                 continue
