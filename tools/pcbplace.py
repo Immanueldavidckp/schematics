@@ -280,16 +280,22 @@ ANCHORS = {
     # inside courtyard).
     "R25": (21.2, 39.8, 0, 1),
     "R26": (25.3, 39.8, 0, 1),
-    # Test points BESIDE their signals - parked far away they each cost an
-    # unroutable long edge (measured: 8 of the residual nets were TP links).
-    "TP4": (21.6, 16.4, 0, 0),    # DBG_TX  - left of U2
-    "TP5": (21.6, 13.4, 0, 0),    # DBG_RX
+    # Test points: the "beside their signals" rule was REVERSED for the six
+    # below after the v12 plateau - inside the x 19..42 pocket each one cost
+    # more wall than its short edge saved (gate-5 report: the TP column at
+    # x~22 and the row at y~30 plugged U2's west and south escapes). They now
+    # sit on the open B-side field east of the pocket (probing is bottom-face
+    # anyway); the pocket keeps only TP4 (routed) and the GND TP7.
+    "TP4": (21.6, 16.4, 0, 0),    # DBG_TX  - left of U2 (routed, stays)
+    "TP5": (56.0, 26.0, 0, 1),    # DBG_RX
+    "TP6": (46.0, 26.0, 0, 1),    # 3V3
     "TP7": (29.5, 2.5, 0, 1),     # GND: anywhere over the plane
     # NOT at x 36.5: that is inside the buck cluster (C73 at 38.3) and the
     # SWD test points there walled U5_IS's pin-7 escape (HV 41/42).
-    "TP1": (33.0, 29.8, 0, 0),    # SWDIO - below U2's right corner
-    "TP2": (36.2, 29.8, 0, 0),    # SWCLK
-    "TP27": (44.5, 42.5, 0, 0),   # MODEM_TX - modem UART side
+    "TP1": (54.0, 22.0, 0, 1),    # SWDIO
+    "TP2": (58.0, 22.0, 0, 1),    # SWCLK
+    "TP3": (52.0, 26.0, 0, 1),    # NRST
+    "TP27": (54.0, 40.0, 0, 1),   # MODEM_TX - modem UART side, B field
     "TP28": (44.5, 45.5, 0, 0),   # MODEM_RX
 }
 
