@@ -235,12 +235,6 @@ def main(single_net=None, rip=None):
             # to ~0.2 mm - and that inflation is precisely what erased the
             # legal diagonal passages around the U5/U6/U7 pin fields
             # (27/113 routed, everything else walled in).
-            # DIAG_SAG: cell centres pass the halo test, but a diagonal
-            # SEGMENT between two legal cells sags up to RES/(2*sqrt(2))
-            # closer to a corner than its endpoints - measured: a SYS
-            # diagonal at 0.1963 mm from U9.2 against the 0.20 rule killed
-            # every pour batch (+1). Tightens the router, never the rule.
-            reach += RES / (2.0 * math.sqrt(2.0))
             r2 = reach * reach
             i0 = int(math.floor((ox - hw - reach - x0) / RES))
             j0 = int(math.floor((oy - hh - reach - y0) / RES))
@@ -416,6 +410,15 @@ def main(single_net=None, rip=None):
             for dx, dy, w in NB:
                 nx_, ny_ = ix + dx, iy + dy
                 if not (0 <= nx_ < NX and 0 <= ny_ < NY) or tg[li][ny_ * NX + nx_]:
+                    continue
+                # no corner-cutting: a diagonal between two halo-legal cells
+                # can pass RES/(2*sqrt(2)) closer to a pad corner than either
+                # endpoint (measured: SYS at 0.1963 vs the 0.20 rule against
+                # U9.2 - the +1 that killed every pour batch). Requiring both
+                # orthogonal neighbours free keeps the swept segment inside
+                # tested cells without shrinking any engineered lane.
+                if dx and dy and (tg[li][iy * NX + nx_] or
+                                  tg[li][ny_ * NX + ix]):
                     continue
                 nxt, ng = (li, nx_, ny_), g + w
                 if ng < best.get(nxt, 1e18):
