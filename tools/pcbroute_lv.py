@@ -848,10 +848,13 @@ def main(single_net=None, rip=None):
             if not pairs:
                 return fail("no pad pair")
             pairs.sort(key=lambda t: t[0])
-            # try up to 4 candidate pairs: the closest pair's endpoint can
-            # be pocketed while another cluster pair routes fine
+            # try up to 12 candidate pairs: the closest pair's endpoint can
+            # be pocketed while another cluster pair routes fine - and on the
+            # multi-cluster pour nets, quitting at the 4th candidate left
+            # every easy pair BEHIND the first hard one unrouted (measured:
+            # 3V3 stalled whole at U3.5->U3.10 with 24 other edges pending)
             path = None
-            for _d, i, j, pa, pb in pairs[:4]:
+            for _d, i, j, pa, pb in pairs[:12]:
             # A 2.0 mm MODEM_BULK track cannot ENTER a 1210 pad cluster at
             # 0.2 clearance (measured: C81.1 goals 0/286 free). The last
             # approach is physically capped by the endpoint pad's own width -
