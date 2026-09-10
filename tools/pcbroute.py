@@ -233,9 +233,14 @@ def main():
     # option position - logged as an accepted, deliberate discontinuity.
     # C49/C51: F.Cu T-stub to the corridor vertical. C48/C50 (F-24): B.Cu
     # stub to a tap via that lands on the short vertical of their run.
-    SHUNTS = [("C48", "bv", (78.6, 21.6)), ("C50", "bv", (78.6, 27.3)),
-              ("C49", "v", CORR), ("C51", "v", CORR)]
-    for ref, style, coord in SHUNTS:
+    # bv entries carry run_y: the y where their run's short vertical (same x)
+    # begins. The tap via does NOT touch the run without the F.Cu extension
+    # down to it - measured on the routed board as the only two unconnected
+    # RF edges (C48.1 and C50.1, 1.59/1.02 mm gaps).
+    SHUNTS = [("C48", "bv", (78.6, 21.6), 23.19),
+              ("C50", "bv", (78.6, 27.3), 28.32),
+              ("C49", "v", CORR, None), ("C51", "v", CORR, None)]
+    for ref, style, coord, run_y in SHUNTS:
         p1 = pad(board, ref, "1")
         if p1 is None:
             print(f"  shunt {ref}: missing")
@@ -248,7 +253,8 @@ def main():
             tx, ty = coord
             track(board, a, (tx, ty), RF_W, p1.GetNet(), layer=pcbnew.B_Cu)
             via(board, (tx, ty), p1.GetNet())
-            n_tracks += 1
+            track(board, (tx, ty), (tx, run_y), RF_W, p1.GetNet())
+            n_tracks += 2
             n_vias += 1
     print(f"pi shunts: 2 F-stubs + 2 B-stub tap vias (F-24)")
 
