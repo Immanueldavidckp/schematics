@@ -1,14 +1,13 @@
 LV routing metrics (tools/pcbroute_lv.py)
-nets routed: 4/42   total vias: 6
+nets routed: 2/41   total vias: 4
 net                            vias   len mm manhattan  ratio
-/modem_rf/VBAT_MODEM              1      0.0       0.0   1.00
-5V0                               1      0.0       0.0   1.00
 GND                               4      0.0       0.0   1.00
 
 UNROUTED:
   3V3: no path C12.1 -> R22.1
   SYS: no path Q13.2 -> Q3.2
   /modem_rf/VDD_EXT_1V8: no path R63.1 -> C45.1
+  5V0: no path C23.1 -> C80.1
   /mcu/3V3A: no path C8.1 -> FB1.2
   /io/CANH: no path L2.1 -> J1.4
   /io/CANL: no path D3.2 -> J1.5
@@ -45,4 +44,4 @@ UNROUTED:
   /power/REGN: no path R88.1 -> U6.22
   /mcu/OSC_IN: no path U2.5 -> C1.1
   /power/U5_EN: no path U5.2 -> R81.2
-  5V0: no path C23.1 -> C80.1
+  GND: no path C1.2 -> U2.35
