@@ -455,6 +455,13 @@ POWER_POURS = [
     # island (62..76, 7..21) by 1.5 mm.
     ("3V3", "In2.Cu", HV_X + 0.75, 48.5, 76.0, BH - EDGE),
     ("3V3", "In2.Cu", 44.0, 22.5, 76.0, 40.0),
+    # 3V3 pocket fingers (endgame): the starved 3V3 pads at x21-41 sit over
+    # the 5V0/SYS islands with no 3V3 copper underneath - reach, not order.
+    # Two free L3 corridors host a comb connected to island B at x44:
+    # band y15.0..26.9 (0.6 to the 5V0 island at 27.5), north lobe
+    # x21..33.5 y5..15.2 (0.7 to VIN_B thermal at x34.2).
+    ("3V3", "In2.Cu", 20.8, 15.0, 44.5, 26.9),
+    ("3V3", "In2.Cu", 21.0, 5.0, 33.5, 15.2),
     # CHECK 4 as approved: "VBAT_MODEM pour on L3 ties them" - the four F-13
     # bulk caps (C40/C41 top, C81/C82 bottom) and U1 pads 57-60. This island
     # was in the approved design but never emitted; found when the LV router

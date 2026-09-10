@@ -43,3 +43,18 @@ CHILD_PARTIAL vias=1 len=0.00 man=0.00 cause=no path U6.18 -> U6.9
 POUR GND: unconnected=140 errors=0
 POURS_DONE
 ROUND 1 END unconnected=140
+=== pour ROUND 2 05:12:47
+=== pours start 05:12:47
+--- 3V3 05:12:47
+CHILD_FAIL no path U9.5 -> U2.24
+POUR 3V3: unconnected=140 errors=0
+--- 5V0 05:14:59
+POUR 5V0: unconnected=140 errors=0
+--- /power/SYS 05:17:33
+CHILD_FAIL no path U9.3 -> L3.2
+POUR /power/SYS: unconnected=140 errors=0
+--- GND 05:18:17
+CHILD_FAIL no path U6.18 -> U6.9
+POUR GND: unconnected=140 errors=0
+POURS_DONE
+ROUND 2 END unconnected=140
