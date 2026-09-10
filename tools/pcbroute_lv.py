@@ -947,7 +947,6 @@ def main(single_net=None, rip=None):
                 cls = net_class(netname)
                 my_clr = GEO[cls][1]
                 half = GEO[cls][0] / 2
-                from collections import Counter
                 wall = Counter()
                 frontier = 0
                 for (li, i, j) in list(seen)[:60000]:
