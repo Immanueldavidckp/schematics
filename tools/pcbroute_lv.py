@@ -1034,6 +1034,39 @@ def orchestrate():
         return subprocess.run([sys.executable, "-u", me] + args,
                               capture_output=True, text=True, timeout=timeout)
 
+    # LV_RIP_WINDOW="x0,y0,x1,y1": pocket restart. Rip ALL unlocked,
+    # unprotected copper inside the window before routing, then route the
+    # whole pocket from a clean slate with the starved nets FIRST (LV_FIRST).
+    # Sequential routing starved them precisely because the flexible nets
+    # went first and took the last lanes; hard-first inverts that. Textual
+    # rip - same proven pattern as pcbroute_adopt.
+    win = os.environ.get("LV_RIP_WINDOW")
+    if win:
+        from pcbgen import _split_forms
+        wx0, wy0, wx1, wy1 = (float(v) for v in win.split(","))
+        txt = open(PCB, encoding="utf-8").read()
+        body = txt[txt.index("\n") + 1: txt.rstrip().rfind(")")]
+        kept, n_rip = [], 0
+        for fo in _split_forms(body):
+            tag = re.match(r"\(\s*([A-Za-z_0-9]+)", fo).group(1)
+            drop = False
+            if tag in ("segment", "via") and "(locked yes)" not in fo:
+                mnet = re.search(r'\(net "([^"]*)"\)', fo)
+                mxy = re.search(r"\((?:start|at) ([-\d.]+) ([-\d.]+)\)", fo)
+                if mnet and mxy and mnet.group(1) not in PROTECTED:
+                    fx, fy = float(mxy.group(1)), float(mxy.group(2))
+                    drop = wx0 < fx < wx1 and wy0 < fy < wy1
+            if drop:
+                n_rip += 1
+            else:
+                kept.append(fo)
+        head = txt[:txt.index("\n") + 1]
+        tail = txt[txt.rstrip().rfind(")"):]
+        open(PCB, "w", encoding="utf-8").write(head + "".join(kept) + tail)
+        print(f"POCKET RESTART: ripped {n_rip} unlocked items in "
+              f"window {win}")
+        child(["--finish"], timeout=600)     # refill + canonicalise
+
     r = child(["--list"])
     todo = [l.split(None, 1)[1] for l in r.stdout.splitlines()
             if l.startswith("TODO ")]
@@ -1058,6 +1091,11 @@ def orchestrate():
     order = sorted(todo, key=lambda n: (net_class(n) != "MODEM_BULK",
                                         net_class(n) != "PWR",
                                         -spans.get(n, 0.0), n))
+    first = [n for n in os.environ.get("LV_FIRST", "").split(";")
+             if n and n in todo]
+    if first:
+        order = first + [n for n in order if n not in set(first)]
+        print(f"hard-first override: {len(first)} net(s) lead the queue")
     queue = list(order)
     rip_plan = {}       # net -> wall nets to rip on its next attempt
     # Wall-clock cap: the chain's outer `timeout` was observed not to fire
