@@ -235,6 +235,12 @@ def main(single_net=None, rip=None):
             # to ~0.2 mm - and that inflation is precisely what erased the
             # legal diagonal passages around the U5/U6/U7 pin fields
             # (27/113 routed, everything else walled in).
+            # DIAG_SAG: cell centres pass the halo test, but a diagonal
+            # SEGMENT between two legal cells sags up to RES/(2*sqrt(2))
+            # closer to a corner than its endpoints - measured: a SYS
+            # diagonal at 0.1963 mm from U9.2 against the 0.20 rule killed
+            # every pour batch (+1). Tightens the router, never the rule.
+            reach += RES / (2.0 * math.sqrt(2.0))
             r2 = reach * reach
             i0 = int(math.floor((ox - hw - reach - x0) / RES))
             j0 = int(math.floor((oy - hh - reach - y0) / RES))
