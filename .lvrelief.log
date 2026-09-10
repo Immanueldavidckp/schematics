@@ -1,0 +1,134 @@
+/usr/src/debug/kicad/kicad/include/properties/property.h(607): assert "m_choices.GetCount() > 0" failed in PROPERTY_ENUM(): No enum choices defined
+/usr/src/debug/kicad/kicad/include/properties/property.h(607): assert "m_choices.GetCount() > 0" failed in PROPERTY_ENUM(): No enum choices defined
+/usr/src/debug/kicad/kicad/include/properties/property.h(607): assert "m_choices.GetCount() > 0" failed in PROPERTY_ENUM(): No enum choices defined
+nets needing work: 41
+baseline DRC errors (non-ratsnest): 0
+--- pass 1: 41 net(s)
+  FAIL 3V3                          no path C12.1 -> R22.1
+       DEBUG island (layer 6) at (20.8,48.5) has no legal tap spot
+       DEBUG round 0: 26 clusters (pad counts [12, 1, 3, 2, 2, 2, 1, 1])
+       DEBUG starts 281/340 free, goals 137/140 free
+       DEBUG flood 2524 cells, x range 32.4..40.5, y 27.2..33.2
+       DEBUG pocket walls: {'GND': 131, '5V0': 119, '/power/SYS': 91, '/io/DO1_DRV': 86, '/io/DO2_X': 49, '/modem_rf/MTXD_1V8': 44, 'MODEM_PWRKEY': 39, 'MODEM_STATUS': 31}
+  FAIL SYS                          no path Q13.2 -> Q3.2
+       DEBUG island (layer 6) at (20.8,39.5) has no legal tap spot
+       DEBUG island (layer 6) at (24.7,44.1) has no legal tap spot
+       DEBUG island (layer 6) at (28.8,47.5) has no legal tap spot
+       DEBUG island (layer 6) at (37.6,47.2) has no legal tap spot
+       DEBUG island (layer 6) at (39.8,44.1) has no legal tap spot
+       DEBUG island (layer 6) at (28.2,44.0) has no legal tap spot
+       DEBUG island (layer 6) at (35.8,41.6) has no legal tap spot
+       DEBUG island (layer 6) at (33.0,42.9) has no legal tap spot
+       DEBUG island (layer 6) at (39.8,39.5) has no legal tap spot
+       DEBUG island (layer 6) at (29.7,43.2) has no legal tap spot
+       DEBUG island (layer 6) at (24.6,41.9) has no legal tap spot
+       DEBUG island (layer 6) at (29.9,41.2) has no legal tap spot
+       DEBUG island (layer 6) at (34.1,39.5) has no legal tap spot
+       DEBUG island (layer 6) at (35.8,39.5) has no legal tap spot
+       DEBUG island (layer 6) at (30.0,39.5) has no legal tap spot
+       DEBUG island (layer 6) at (32.3,39.5) has no legal tap spot
+       DEBUG round 0: 5 clusters (pad counts [1, 2, 1, 1, 1])
+       DEBUG starts 208/234 free, goals 70/70 free
+       DEBUG flood 3376 cells, x range 47.8..58.2, y 6.3..13.2
+       DEBUG pocket walls: {'/modem_rf/USB_VBUS': 200, '/modem_rf/Q3_G': 144, '/modem_rf/Q13_B': 127, '/modem_rf/USIM_VDD': 90, '/modem_rf/VBAT_MODEM': 89, '/modem_rf/USB_DM_M': 48, 'GND': 42, '/modem_rf/Q14_B': 24}
+  FAIL /modem_rf/VDD_EXT_1V8        no path R63.1 -> C45.1
+       DEBUG round 0: 2 clusters (pad counts [4, 1])
+       DEBUG starts 351/507 free, goals 56/90 free
+       DEBUG flood 105672 cells, x range 34.2..76.4, y 0.1..61.1
+       DEBUG pocket walls: {'GND': 445, 'edge/nogo': 434, 'MODEM_PWRKEY': 316, 'netless': 314, '/modem_rf/USIM_RST_M': 195, '/modem_rf/VBAT_MODEM': 191, '/modem_rf/SIM_DATA': 190, '/modem_rf/U8_OE': 166}
+       DEBUG unknown wall cell L1 (51.15,28.25)
+       DEBUG unknown wall cell L0 (76.45,53.75)
+       DEBUG unknown wall cell L1 (45.35,61.15)
+       DEBUG unknown wall cell L1 (62.45,17.25)
+       DEBUG unknown wall cell L1 (40.05,0.75)
+       DEBUG unknown wall cell L1 (62.55,61.15)
+  FAIL 5V0                          no path C23.1 -> C80.1
+       DEBUG island (layer 6) at (42.5,27.5) has no legal tap spot
+       DEBUG round 0: 4 clusters (pad counts [13, 1, 1, 1])
+       DEBUG starts 2902/3087 free, goals 58/90 free
+       DEBUG flood 132092 cells, x range 6.9..76.4, y 0.3..61.1
+       DEBUG pocket walls: {'GND': 598, 'MODEM_PWRKEY': 196, '3V3': 168, '/power/VIN_B': 166, 'edge/nogo': 166, '/io/CAN_SPLIT': 157, '/modem_rf/VDD_EXT_1V8': 141, '/modem_rf/Q12_B': 138}
+       DEBUG unknown wall cell L0 (76.45,53.75)
+       DEBUG unknown wall cell L1 (22.85,0.75)
+       DEBUG unknown wall cell L1 (45.35,61.15)
+       DEBUG unknown wall cell L1 (16.85,0.75)
+       DEBUG unknown wall cell L0 (8.15,0.75)
+       DEBUG unknown wall cell L1 (62.55,61.15)
+  FAIL /mcu/3V3A                    no path C8.1 -> FB1.2
+       DEBUG round 0: 3 clusters (pad counts [2, 1, 1])
+       DEBUG starts 178/200 free, goals 69/108 free
+       DEBUG flood 1815 cells, x range 26.2..41.8, y 37.3..45.2
+       DEBUG pocket walls: {'/io/IGN_SENSE': 165, 'GND': 120, '3V3': 71, '/power/SYS': 71, '5V0': 48, '/io/CANL_T': 35, 'MODEM_TX': 26, '/io/VIN_SENSE': 22}
+  FAIL GND                          no path C1.2 -> U2.35
+       DEBUG island (layer 2) at (22.9,41.8) has no legal tap spot
+       DEBUG island (layer 2) at (41.5,44.4) has no legal tap spot
+       DEBUG island (layer 2) at (29.6,40.8) has no legal tap spot
+       DEBUG island (layer 2) at (27.2,34.3) has no legal tap spot
+       DEBUG island (layer 2) at (35.5,21.1) has no legal tap spot
+       DEBUG island (layer 0) at (38.4,47.4) has no legal tap spot
+       DEBUG island (layer 0) at (33.1,46.0) has no legal tap spot
+       DEBUG island (layer 0) at (54.9,45.4) has no legal tap spot
+       DEBUG island (layer 0) at (27.4,41.5) has no legal tap spot
+       DEBUG island (layer 0) at (29.0,36.1) has no legal tap spot
+       DEBUG island (layer 0) at (32.0,33.6) has no legal tap spot
+       DEBUG island (layer 0) at (28.9,34.0) has no legal tap spot
+       DEBUG island (layer 0) at (40.0,32.6) has no legal tap spot
+       DEBUG island (layer 0) at (40.5,30.6) has no legal tap spot
+       DEBUG island (layer 0) at (41.9,25.6) has no legal tap spot
+       DEBUG island (layer 0) at (58.0,10.0) has no legal tap spot
+       DEBUG island (layer 0) at (48.6,0.7) has no legal tap spot
+       DEBUG island (layer 0) at (46.4,2.1) has no legal tap spot
+       DEBUG island (layer 0) at (66.7,1.6) has no legal tap spot
+       DEBUG round 0: 5 clusters (pad counts [182, 1, 1, 1, 1])
+       DEBUG starts 32176/64188 free, goals 0/60 free
+       DEBUG flood 283217 cells, x range 0.1..76.5, y 0.1..61.9
+       DEBUG pocket walls: {'edge/nogo': 466, '5V0': 203, 'netless': 176, '/modem_rf/VBAT_MODEM': 171, '3V3': 141, '/modem_rf/USIM_RST_M': 138, '/modem_rf/VDD_EXT_1V8': 115, '/power/VIN_B': 93}
+       DEBUG unknown wall cell L0 (2.55,61.15)
+       DEBUG unknown wall cell L1 (51.15,28.25)
+       DEBUG unknown wall cell L1 (76.45,35.45)
+       DEBUG unknown wall cell L1 (0.75,55.55)
+       DEBUG unknown wall cell L1 (6.45,0.75)
+       DEBUG unknown wall cell L1 (76.45,16.75)
+  FAIL /io/CANH                     no path L2.1 -> J1.4
+       DEBUG round 0: 3 clusters (pad counts [2, 1, 1])
+       DEBUG starts 210/222 free, goals 392/392 free
+       DEBUG flood 80104 cells, x range 33.2..76.6, y 31.7..61.3
+       DEBUG pocket walls: {'GND': 513, 'netless': 294, 'MODEM_PWRKEY': 249, 'edge/nogo': 247, '5V0': 245, '/modem_rf/SIM_DATA': 217, '/modem_rf/USIM_RST_M': 201, '/modem_rf/VDD_EXT_1V8': 183}
+       DEBUG unknown wall cell L1 (45.95,61.35)
+       DEBUG unknown wall cell L1 (70.45,61.35)
+       DEBUG unknown wall cell L1 (47.25,61.35)
+       DEBUG unknown wall cell L1 (64.95,61.35)
+       DEBUG unknown wall cell L1 (52.15,61.35)
+       DEBUG unknown wall cell L1 (41.75,61.35)
+  FAIL /io/CANL                     no path D3.2 -> J1.5
+       DEBUG round 0: 3 clusters (pad counts [2, 1, 1])
+       DEBUG starts 214/220 free, goals 390/392 free
+       DEBUG flood 5850 cells, x range 33.1..44.0, y 31.7..50.5
+       DEBUG pocket walls: {'GND': 295, '5V0': 234, '/io/CANH': 159, '/io/IGN_SENSE': 154, '/power/U6_ILIM': 98, '/io/CANL_T': 81, '/mcu/SYS_LED_A': 68, '/power/U6_BTST': 65}
+  FAIL /io/VIN_SENSE                no path R36.1 -> R32.2
+       DEBUG round 0: 2 clusters (pad counts [3, 1])
+       DEBUG starts 337/351 free, goals 129/140 free
+       DEBUG flood 11324 cells, x range 26.2..41.9, y 33.5..59.1
+       DEBUG pocket walls: {'GND': 672, '/power/VBAT_BT': 228, '3V3': 203, '/io/VBAT_SENSE': 188, '/power/U6_BTST': 174, '5V0': 168, '/io/IGN_SENSE': 157, '/io/DO2_DRV': 144}
+  FAIL /io/IGN_SENSE                no path R37.1 -> R35.2
+       DEBUG round 0: 2 clusters (pad counts [3, 1])
+       DEBUG starts 304/349 free, goals 130/140 free
+       DEBUG flood 85313 cells, x range 26.1..76.6, y 33.7..61.3
+       DEBUG pocket walls: {'GND': 614, 'netless': 235, 'edge/nogo': 209, 'MODEM_PWRKEY': 205, '/modem_rf/SIM_DATA': 183, '5V0': 164, '/modem_rf/USIM_RST_M': 157, '/modem_rf/VDD_EXT_1V8': 150}
+       DEBUG unknown wall cell L1 (45.95,61.35)
+       DEBUG unknown wall cell L1 (70.45,61.35)
+       DEBUG unknown wall cell L1 (47.25,61.35)
+       DEBUG unknown wall cell L1 (64.95,61.35)
+       DEBUG unknown wall cell L1 (52.15,61.35)
+       DEBUG unknown wall cell L1 (41.75,61.35)
+  FAIL /mcu/I2C1_SCL                no path R7.2 -> U3.13
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 153/187 free, goals 12/28 free
+       DEBUG flood 24806 cells, x range 6.7..27.4, y 0.7..29.1
+       DEBUG pocket walls: {'5V0': 630, 'GND': 522, 'VIN': 446, '/power/VIN_B': 342, 'edge/nogo': 250, '/power/VIN_F': 174, '/mcu/OSC32_IN': 135, '/io/DO2_OUT': 131}
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (23.95,0.55)
+       DEBUG unknown wall cell L0 (6.75,0.55)
+       DEBUG unknown wall cell L0 (20.95,0.55)
+       DEBUG unknown wall cell L1 (7.75,0.55)
+       DEBUG unknown wall cell L1 (10.75,0.55)

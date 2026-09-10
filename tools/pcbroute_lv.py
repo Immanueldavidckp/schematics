@@ -23,6 +23,7 @@ maze-routed on F/B.
 
 Run:  PYTHONPATH=tools python3 tools/pcbroute_lv.py
 """
+import ast
 import heapq
 import math
 import os
@@ -31,7 +32,7 @@ import re
 import shutil
 import subprocess
 import sys
-from collections import defaultdict
+from collections import Counter, defaultdict
 
 import pcbnew
 
@@ -96,8 +97,56 @@ def git_progress(msg):
                     "<noreply@anthropic.com>"], capture_output=True)
 
 
-def main(single_net=None):
-    board = pcbnew.LoadBoard(PCB)
+def main(single_net=None, rip=None):
+    # --rip: negotiation for the endgame. A net that fails with walled pad
+    # entries lost its lanes to nets routed EARLIER (measured: C5.1/NRST had
+    # 0/196 free start cells, sealed by VBAT_SENSE, CANH_T and GND vias that
+    # are each individually legal). The named nets' UNLOCKED copper near the
+    # starved net's pads is removed TEXTUALLY (board.Remove() poisons the
+    # SWIG wrappers on Python 3.14 - measured core dumps; the adopt tool's
+    # file-level rip is the proven pattern), the ripped copy is loaded, the
+    # starved net routes FIRST, the ripped signal nets after. All-or-nothing:
+    # any failure exits without saving, so the real board file never holds a
+    # ripped-but-unrouted state. No rule changes - only the ORDER in which
+    # the same rules are satisfied.
+    if rip:
+        from pcbgen import _split_forms
+        rip = [n for n in rip if n not in PROTECTED]
+        pre = pcbnew.LoadBoard(PCB)
+        anchors_r = [(p.GetPosition().x / 1e6, p.GetPosition().y / 1e6)
+                     for f in pre.GetFootprints()
+                     for p in f.Pads() if p.GetNetname() == single_net]
+        del pre
+        RIP_R = float(os.environ.get("LV_RIP_R", "4"))
+        txt = open(PCB, encoding="utf-8").read()
+        body = txt[txt.index("\n") + 1: txt.rstrip().rfind(")")]
+        kept, n_rip = [], 0
+        for fo in _split_forms(body):
+            tag = re.match(r"\(\s*([A-Za-z_0-9]+)", fo).group(1)
+            drop = False
+            if tag in ("segment", "via") and "(locked yes)" not in fo:
+                mnet = re.search(r'\(net "([^"]*)"\)', fo)
+                mxy = re.search(r"\((?:start|at) ([-\d.]+) ([-\d.]+)\)", fo)
+                if mnet and mxy and mnet.group(1) in rip:
+                    fx, fy = float(mxy.group(1)), float(mxy.group(2))
+                    drop = any(abs(fx - ax) < RIP_R and abs(fy - ay) < RIP_R
+                               for ax, ay in anchors_r)
+            if drop:
+                n_rip += 1
+            else:
+                kept.append(fo)
+        head = txt[:txt.index("\n") + 1]
+        tail = txt[txt.rstrip().rfind(")"):]
+        # keep the .kicad_pcb extension: LoadBoard picks its format plugin
+        # from the extension and returns None for anything else
+        riptmp = PCB[:-len(".kicad_pcb")] + "-riptmp.kicad_pcb"
+        open(riptmp, "w", encoding="utf-8").write(head + "".join(kept) + tail)
+        print(f"ripped {n_rip} unlocked items of {sorted(rip)} "
+              f"within {RIP_R:.0f} mm of {single_net}")
+        board = pcbnew.LoadBoard(riptmp)
+        os.unlink(riptmp)
+    else:
+        board = pcbnew.LoadBoard(PCB)
     LAYERS = [pcbnew.F_Cu, pcbnew.B_Cu]
 
     bb = board.GetBoardEdgesBoundingBox()
@@ -936,6 +985,29 @@ def main(single_net=None):
     # re-lost ~35 connections every cycle. Partial copper is legal (the same
     # grids produced it); the remaining edges requeue and resume from the
     # saved state next pass.
+    if rip:
+        # starved net first, then the ripped SIGNAL nets. Ripped POUR nets
+        # are NOT re-routed here (route_net on GND rebuilds grids for ~40
+        # rounds and blows the retry budget) - they are reported for the
+        # parent to requeue; their taps are cheap in their own child.
+        seq = [single_net] + [n for n in rip if n not in pours]
+        tot = [0, 0.0, 0.0]
+        for nn in seq:
+            refill()
+            refresh_connectivity()
+            ok, cause, nv, tl, man = route_net(nn)
+            tot[0] += nv; tot[1] += tl; tot[2] += man
+            if not ok:
+                print(f"CHILD_FAIL rip-retry stalled on {nn}: {cause}")
+                sys.exit(3)          # unsaved: the rip never reaches disk
+        refill()
+        pcbnew.SaveBoard(PCB, board)
+        for nn in rip:
+            if nn in pours:
+                print(f"REQUEUE {nn}")
+        print(f"CHILD_OK vias={tot[0]} len={tot[1]:.2f} man={tot[2]:.2f}")
+        return
+
     ok, cause, nv, tl, man = route_net(single_net)
     if ok:
         refill()
@@ -987,6 +1059,7 @@ def orchestrate():
                                         net_class(n) != "PWR",
                                         -spans.get(n, 0.0), n))
     queue = list(order)
+    rip_plan = {}       # net -> wall nets to rip on its next attempt
     # Wall-clock cap: the chain's outer `timeout` was observed not to fire
     # (cycle 2 ran 15 h against a 25000 s cap), so the orchestrator enforces
     # its own deadline. Pending copper is gated and saved; the remainder is
@@ -1042,12 +1115,17 @@ def orchestrate():
                 failed.setdefault(netname, "LV deadline reached")
                 next_queue.append(netname)
                 continue
+            args = ["--net", netname]
+            ripping = rip_plan.pop(netname, None)
+            if ripping:
+                args += ["--rip", ";".join(ripping)]
+                print(f"  RIP-RETRY {netname}: ripping {ripping}")
             try:
-                r = child(["--net", netname])
+                r = child(args, timeout=2400 if ripping else 900)
             except subprocess.TimeoutExpired:
                 gate()
                 shutil.copyfile(LAST_GOOD, PCB)
-                failed[netname] = "child timeout (900 s)"
+                failed[netname] = "child timeout"
                 next_queue.append(netname)
                 print(f"  FAIL {netname:28} child timeout")
                 continue
@@ -1065,8 +1143,29 @@ def orchestrate():
                 for l in r.stdout.splitlines():
                     if "DEBUG" in l:
                         print(f"   {l}")
+                # negotiation: the pocket-walls diagnostic names whose copper
+                # seals this net. Schedule ONE rip-retry for the next pass
+                # with the top unlocked, unprotected wall nets.
+                if not ripping:
+                    wall = Counter()
+                    for l in r.stdout.splitlines():
+                        mw = re.search(r"DEBUG pocket walls: (\{.*\})", l)
+                        if mw:
+                            try:
+                                wall.update(ast.literal_eval(mw.group(1)))
+                            except (ValueError, SyntaxError):
+                                pass
+                    cands = [n for n, _c in wall.most_common()
+                             if n not in ("edge/nogo", "netless")
+                             and n not in PROTECTED and n != netname][:3]
+                    if cands:
+                        rip_plan[netname] = cands
                 continue
             partial = m.group(1) == "PARTIAL"
+            for rq in re.findall(r"^REQUEUE (.+)$", r.stdout, re.M):
+                if rq not in next_queue:
+                    next_queue.append(rq)   # pour net ripped by a rip-retry
+                    failed.setdefault(rq, "ripped by a rip-retry, requeued")
             batch.append((netname,
                           (int(m.group(2)), float(m.group(3)),
                            float(m.group(4)))))
@@ -1116,7 +1215,11 @@ def orchestrate():
 
 if __name__ == "__main__":
     if "--net" in sys.argv:
-        main(single_net=sys.argv[sys.argv.index("--net") + 1])
+        rip_arg = None
+        if "--rip" in sys.argv:
+            rip_arg = [n for n in
+                       sys.argv[sys.argv.index("--rip") + 1].split(";") if n]
+        main(single_net=sys.argv[sys.argv.index("--net") + 1], rip=rip_arg)
     elif "--list" in sys.argv:
         main(single_net="--list--")
     elif "--spans" in sys.argv:
