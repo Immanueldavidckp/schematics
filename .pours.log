@@ -145,3 +145,23 @@ POUR GND: unconnected=139 errors=0
 .pours.sh: line 26: syntax error near unexpected token `)'
 .pours.sh: line 26: `-E '^\[' .pours.rpt | grep -vc unconnected)'
 ROUND 2 END unconnected=139
+=== pour ROUND 3 05:58:52
+=== pours start 05:58:52
+--- 3V3 05:58:52
+    DEBUG island taps: 1 vias (3 orphan islands)
+CHILD_PARTIAL vias=6 len=0.00 man=0.00 cause=no path C10.1 -> C11.1
+POUR 3V3: unconnected=135 errors=1
+POUR 3V3 fouled - scrubbing the violating fragments
+SCRUBBED n=1 of 1 violation targets
+POUR 3V3 after scrub: unconnected=135 errors=0
+--- 5V0 06:02:52
+POUR 5V0: unconnected=135 errors=0
+--- /power/SYS 06:05:36
+CHILD_FAIL no path U9.3 -> L3.2
+POUR /power/SYS: unconnected=135 errors=0
+--- GND 06:06:20
+    DEBUG island taps: 1 vias (11 orphan islands)
+CHILD_PARTIAL vias=1 len=0.00 man=0.00 cause=no path U6.18 -> U6.9
+POUR GND: unconnected=134 errors=0
+POURS_DONE
+ROUND 3 END unconnected=134
