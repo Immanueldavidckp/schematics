@@ -234,7 +234,7 @@ ANCHORS = {
     "U3":  (29.0, 55.0, 0, 0),
     "U7":  (24.0, 33.0, 0, 0),
     "U4":  (24.5, 43.5, 0, 0),
-    "U8":  (41.0, 24.0, 0, 0),
+    "U8":  (42.0, 31.5, 0, 0),
 
     # --- scattered-cluster repair (hybrid residue, 2026-09-08, v2) -------
     # The packer had put U6's ENTIRE ring 30-44 mm from the chip, Y2 on the
@@ -248,11 +248,11 @@ ANCHORS = {
     "C62": (29.5, 43.2, 90, 1),
     "C63": (32.2, 43.2, 90, 1),
     "C64": (34.9, 43.2, 90, 1),
-    "R85": (37.6, 43.2, 90, 1),
-    "R86": (37.6, 46.4, 90, 1),
+    "R85": (41.5, 42.2, 90, 1),
+    "R86": (41.5, 46.4, 90, 1),
     "R87": (37.6, 49.6, 90, 1),
-    "R88": (40.3, 43.2, 90, 1),
-    "R89": (40.3, 46.4, 90, 1),
+    "R88": (44.5, 43.0, 90, 1),
+    "R89": (44.5, 47.2, 90, 1),
     "L3":  (31.5, 49.8, 0, 1),
     # displaced by v1, re-homed:
     "C67": (27.9, 39.0, 90, 1),
@@ -287,16 +287,31 @@ ANCHORS = {
     # sit on the open B-side field east of the pocket (probing is bottom-face
     # anyway); the pocket keeps only TP4 (routed) and the GND TP7.
     "TP4": (21.6, 16.4, 0, 0),    # DBG_TX  - left of U2 (routed, stays)
-    "TP5": (56.0, 26.0, 0, 1),    # DBG_RX
+    "TP5": (48.5, 31.5, 0, 1),    # DBG_RX
     "TP6": (46.0, 26.0, 0, 1),    # 3V3
     "TP7": (29.5, 2.5, 0, 1),     # GND: anywhere over the plane
     # NOT at x 36.5: that is inside the buck cluster (C73 at 38.3) and the
     # SWD test points there walled U5_IS's pin-7 escape (HV 41/42).
-    "TP1": (54.0, 22.0, 0, 1),    # SWDIO
-    "TP2": (58.0, 22.0, 0, 1),    # SWCLK
-    "TP3": (52.0, 26.0, 0, 1),    # NRST
-    "TP27": (54.0, 40.0, 0, 1),   # MODEM_TX - modem UART side, B field
+    "TP1": (47.0, 29.0, 0, 1),    # SWDIO
+    "TP2": (49.0, 27.0, 0, 1),    # SWCLK
+    "TP3": (43.5, 21.5, 0, 1),    # NRST
+    "TP27": (49.0, 24.0, 0, 1),   # MODEM_TX - modem UART side, B field
     "TP28": (44.5, 45.5, 0, 0),   # MODEM_RX
+    # Relief round 2 (option A, approved 2026-09-11): spread the pocket.
+    # The decoupling column packed itself into a solid field south of U2 -
+    # the endgame report measured its pads as the sealed terminals of the
+    # residual 3V3/GND/5V0 edges. Anchored with 1.5-2 mm lanes between rows;
+    # the relaxer keeps courtyards legal.
+    "C12": (40.5, 28.5, 0, 0),
+    "C14": (42.6, 30.8, 0, 0),
+    "C21": (36.3, 34.6, 0, 0),
+    "C23": (32.3, 35.8, 0, 0),
+    "C24": (28.8, 36.3, 0, 0),
+    "C9":  (41.3, 38.8, 0, 0),
+    "D11": (37.3, 41.7, 0, 0),
+    # 5V0 bulk pair: adjacent, one short hop instead of a blocked corridor
+    "C77": (24.4, 7.0, 180, 1),
+    "C78": (26.5, 7.0, 180, 1),
 }
 
 def relax_anchors(anchor_boxes, bounds, min_gap=1.10, iters=1500):
