@@ -1176,6 +1176,16 @@ def orchestrate():
                 return
             errs = drc_errors(PCB)
             if errs > baseline:
+                # scrub-then-regate: rip exactly the violating fragments
+                # (tools/scrub_fouls.py, adopt's rip at segment granularity)
+                # and re-check - a batch of good nets is no longer discarded
+                # for one 10-micron fragment (measured: three pour batches,
+                # ~2 h of routing each, lost to a single such fragment)
+                subprocess.run([sys.executable,
+                                os.path.join(PROJ, "tools", "scrub_fouls.py")],
+                               capture_output=True, text=True, timeout=600)
+                errs = drc_errors(PCB)
+            if errs > baseline:
                 shutil.copyfile(LAST_GOOD, PCB)
                 for n, _m in batch:
                     failed[n] = f"DRC regression in batch (+{errs - baseline})"
