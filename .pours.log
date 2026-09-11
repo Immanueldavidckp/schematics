@@ -140,3 +140,8 @@ POUR 5V0: unconnected=139 errors=0
 CHILD_FAIL no path U9.3 -> L3.2
 POUR /power/SYS: unconnected=139 errors=0
 --- GND 05:52:33
+CHILD_FAIL no path U6.18 -> U6.9
+POUR GND: unconnected=139 errors=0
+.pours.sh: line 26: syntax error near unexpected token `)'
+.pours.sh: line 26: `-E '^\[' .pours.rpt | grep -vc unconnected)'
+ROUND 2 END unconnected=139
