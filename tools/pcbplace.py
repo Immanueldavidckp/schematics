@@ -460,8 +460,8 @@ POWER_POURS = [
     # Two free L3 corridors host a comb connected to island B at x44:
     # band y15.0..26.9 (0.6 to the 5V0 island at 27.5), north lobe
     # x21..33.5 y5..15.2 (0.7 to VIN_B thermal at x34.2).
-    ("3V3", "In2.Cu", 20.8, 15.0, 44.5, 26.9),
-    ("3V3", "In2.Cu", 21.0, 5.0, 33.5, 15.2),
+    ("3V3", "In2.Cu", 20.8, 15.0, 44.5, 26.9),   # priority 1 (overlaps island B)
+    ("3V3", "In2.Cu", 21.0, 5.0, 33.5, 15.2),    # priority 2 (overlaps the band)
     # CHECK 4 as approved: "VBAT_MODEM pour on L3 ties them" - the four F-13
     # bulk caps (C40/C41 top, C81/C82 bottom) and U1 pads 57-60. This island
     # was in the approved design but never emitted; found when the LV router

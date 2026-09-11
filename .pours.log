@@ -58,3 +58,7 @@ CHILD_FAIL no path U6.18 -> U6.9
 POUR GND: unconnected=140 errors=0
 POURS_DONE
 ROUND 2 END unconnected=140
+=== pour ROUND 3 05:24:41
+=== pours start 05:24:41
+--- 3V3 05:24:41
+CHILD_FAIL no path U9.5 -> U2.24
