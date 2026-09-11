@@ -321,14 +321,18 @@ def main(single_net=None, rip=None):
                 skippable only when the lane's copper actually clears it -
                 at U3's 0.5 mm LGA pitch a PWR-width entry has zero margin
                 and 'legal by construction' measured 0.11 mm (regressions).
-                0.055 covers the half-cell grid snap."""
+                0.055 covers the half-cell grid snap; the extra RES/(2*sqrt2)
+                covers diagonal sag through force-opened lane cells, where
+                the A* corner-cut test cannot see the wall (measured: a 3V3
+                elbow at 0.190 mm from U2.23 against the 0.20 rule)."""
                 if o[6] != ref:
                     return False
                 if o[0] in HV and o[2] < 20.0:
                     return False          # HV-in-strip: 1.5 mm rule, no pass
                 oc2 = net_class(o[0]) if o[0] else "HV"
                 need = max(CLS_CLR.get(net_class(netname), 0.2),
-                           CLS_CLR.get(oc2, 0.15)) + half + 0.055
+                           CLS_CLR.get(oc2, 0.15)) + half + 0.055 + \
+                    RES / (2.0 * math.sqrt(2.0))
                 if axis == "v":
                     return abs(o[3] - cy) <= hh + 0.15 and \
                         (abs(o[2] - cx) - o[4]) >= need
