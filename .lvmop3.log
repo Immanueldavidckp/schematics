@@ -1,0 +1,1803 @@
+/usr/src/debug/kicad/kicad/include/properties/property.h(607): assert "m_choices.GetCount() > 0" failed in PROPERTY_ENUM(): No enum choices defined
+/usr/src/debug/kicad/kicad/include/properties/property.h(607): assert "m_choices.GetCount() > 0" failed in PROPERTY_ENUM(): No enum choices defined
+/usr/src/debug/kicad/kicad/include/properties/property.h(607): assert "m_choices.GetCount() > 0" failed in PROPERTY_ENUM(): No enum choices defined
+nets needing work: 68
+baseline DRC errors (non-ratsnest): 0
+--- pass 1: 68 net(s)
+  FAIL 3V3                          no path C10.1 -> C11.1
+       DEBUG island (layer 6) at (44.0,22.5) has no legal tap spot
+       DEBUG island (layer 6) at (44.5,22.5) has no legal tap spot
+       DEBUG round 0: 16 clusters (pad counts [22, 4, 2, 2, 1, 1, 1, 1])
+       DEBUG starts 339/400 free, goals 231/240 free
+       DEBUG flood 934 cells, x range 27.4..29.1, y 27.2..35.4
+       DEBUG pocket walls: {'CAN1_RX': 78, '/io/IGN_SENSE': 58, 'GND': 53, '/io/DO1_B': 12, '/mcu/OSC32_IN': 9, '/mcu/OSC_OUT': 5, '/mcu/SYS_LED': 5, '/mcu/BOOT0': 4}
+  PARTIAL SYS                        kept copper; remainder requeued (no path Q13.2 -> R38.1)
+  OK SYS                          vias=2 len=  0.0 man=  0.0 ratio=1.00 [1/68   1%]
+  FAIL /modem_rf/VDD_EXT_1V8        no path R63.1 -> C44.1
+       DEBUG round 0: 5 clusters (pad counts [1, 1, 1, 1, 1])
+       DEBUG starts 102/142 free, goals 90/90 free
+       DEBUG flood 74316 cells, x range 41.1..76.4, y 18.9..61.1
+       DEBUG pocket walls: {'GND': 537, 'edge/nogo': 480, '/modem_rf/SIM_DATA': 327, 'netless': 304, '/modem_rf/USIM_RST_M': 277, '3V3': 257, 'MODEM_PWRKEY': 199, '5V0': 176}
+       DEBUG unknown wall cell L1 (51.15,28.25)
+       DEBUG unknown wall cell L0 (76.45,53.75)
+       DEBUG unknown wall cell L1 (51.15,22.95)
+       DEBUG unknown wall cell L1 (42.35,61.15)
+       DEBUG unknown wall cell L1 (45.35,61.15)
+       DEBUG unknown wall cell L1 (62.55,61.15)
+  FAIL 5V0                          child crashed (rc=1)
+       DEBUG round 0: 10 clusters (pad counts [4, 4, 2, 1, 1, 1, 1, 1])
+       DEBUG round 1: 9 clusters (pad counts [4, 4, 3, 1, 1, 1, 1, 1])
+       DEBUG round 2: 8 clusters (pad counts [4, 4, 3, 2, 1, 1, 1, 1])
+       DEBUG starts 472/577 free, goals 92/162 free
+       DEBUG flood 70946 cells, x range 27.9..76.4, y 26.2..61.1
+       DEBUG pocket walls: {'GND': 683, '/modem_rf/SIM_DATA': 285, '3V3': 270, 'netless': 261, 'edge/nogo': 223, '/io/DO2_DRV': 206, '/modem_rf/VDD_EXT_1V8': 193, '/io/IGN_SENSE': 162}
+       DEBUG unknown wall cell L0 (76.45,53.75)
+       DEBUG unknown wall cell L1 (42.35,61.15)
+       DEBUG unknown wall cell L1 (45.35,61.15)
+       DEBUG unknown wall cell L1 (62.55,61.15)
+       DEBUG unknown wall cell L1 (65.55,61.15)
+       DEBUG unknown wall cell L1 (68.55,61.15)
+  FAIL /mcu/3V3A                    no path FB1.2 -> U2.9
+       DEBUG round 0: 4 clusters (pad counts [1, 1, 1, 1])
+       DEBUG starts 87/108 free, goals 0/64 free
+       DEBUG pad seal (goal): {'GND': 48, 'IGN_SENSE': 16}
+       DEBUG flood 331 cells, x range 22.1..24.4, y 46.6..48.8
+       DEBUG pocket walls: {'/io/DI1_LED': 35, '/io/Q1_G': 32, '/io/DI2_LED': 31, 'GND': 15, '3V3': 13, 'CAN1_TX': 11, '5V0': 1}
+  FAIL GND                          no path U6.18 -> U6.9
+       DEBUG island (layer 0) at (33.2,45.6) has no legal tap spot
+       DEBUG island (layer 0) at (32.2,32.5) has no legal tap spot
+       DEBUG island (layer 0) at (40.4,27.5) has no legal tap spot
+       DEBUG island (layer 0) at (58.0,10.0) has no legal tap spot
+       DEBUG island (layer 0) at (48.6,0.7) has no legal tap spot
+       DEBUG island (layer 0) at (46.4,2.1) has no legal tap spot
+       DEBUG island (layer 0) at (66.7,1.6) has no legal tap spot
+       DEBUG island (layer 2) at (38.4,51.5) has no legal tap spot
+       DEBUG island (layer 2) at (41.6,44.4) has no legal tap spot
+       DEBUG island (layer 2) at (28.8,17.4) has no legal tap spot
+       DEBUG round 0: 7 clusters (pad counts [180, 1, 1, 1, 1, 1, 1])
+       DEBUG starts 32280/64084 free, goals 0/36 free
+       DEBUG pad seal (goal): {'/power/U6_ILIM': 27, '/power/U6_ICHG': 9}
+       DEBUG flood 289335 cells, x range 0.1..76.5, y 0.1..61.9
+       DEBUG pocket walls: {'edge/nogo': 426, 'netless': 193, '3V3': 183, '5V0': 168, '/modem_rf/VBAT_MODEM': 151, '/modem_rf/USIM_RST_M': 147, 'VIN': 95, '/modem_rf/USIM_DATA_M': 95}
+       DEBUG unknown wall cell L0 (2.55,61.15)
+       DEBUG unknown wall cell L1 (51.15,28.25)
+       DEBUG unknown wall cell L1 (76.45,35.45)
+       DEBUG unknown wall cell L1 (0.75,55.55)
+       DEBUG unknown wall cell L1 (6.45,0.75)
+       DEBUG unknown wall cell L1 (76.45,16.75)
+  FAIL MODEM_STATUS                 no path R61.2 -> U2.40
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 242/242 free, goals 15/45 free
+       DEBUG flood 117648 cells, x range 40.6..76.6, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 593, 'edge/nogo': 416, '/modem_rf/USIM_RST_M': 379, 'netless': 316, '/modem_rf/VBAT_MODEM': 283, '/modem_rf/SIM_DATA': 225, '3V3': 201, 'MODEM_PWRKEY': 144}
+       DEBUG unknown wall cell L1 (76.65,40.05)
+       DEBUG unknown wall cell L1 (45.95,61.35)
+       DEBUG unknown wall cell L0 (70.65,28.55)
+       DEBUG unknown wall cell L0 (67.15,17.45)
+       DEBUG unknown wall cell L1 (76.65,45.75)
+       DEBUG unknown wall cell L1 (72.25,0.55)
+  FAIL MODEM_PWRKEY                 no path U2.29 -> R55.1
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 30/60 free, goals 40/140 free
+       DEBUG flood 31 cells, x range 30.1..30.2, y 17.2..18.8
+       DEBUG pocket walls: {'MODEM_TX': 18, 'DO2_GATE': 16, '/mcu/SWDIO': 2}
+  FAIL MODEM_RESET                  no path U2.39 -> R57.1
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 15/45 free, goals 140/140 free
+       DEBUG flood 17 cells, x range 24.4..25.9, y 20.4..20.4
+       DEBUG pocket walls: {'CAN_STB': 18, 'MODEM_STATUS': 17, '/mcu/I2C1_SCL': 1}
+  FAIL /modem_rf/Q12_B              no path R64.2 -> Q12.1
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 140/140 free, goals 81/90 free
+       DEBUG flood 143800 cells, x range 0.7..76.6, y 0.7..61.9
+       DEBUG pocket walls: {'GND': 623, 'edge/nogo': 425, '3V3': 234, '/modem_rf/SIM_DATA': 173, 'netless': 157, '/io/Q1_G': 141, 'VIN': 128, '/power/VIN_B': 112}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (29.55,61.35)
+       DEBUG unknown wall cell L1 (45.95,61.35)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (44.05,61.35)
+       DEBUG unknown wall cell L0 (60.45,61.35)
+  FAIL /io/CANH                     no path D3.1 -> J1.4
+       DEBUG round 0: 4 clusters (pad counts [1, 1, 1, 1])
+       DEBUG starts 87/90 free, goals 392/392 free
+       DEBUG flood 980 cells, x range 30.9..38.2, y 46.8..51.4
+       DEBUG pocket walls: {'3V3': 81, '/power/U6_ICHG': 71, '/power/VBAT_BT': 59, 'GND': 33, '/mcu/BOOT0': 32, '/mcu/NSL_BASE': 29, '/io/CAN_SPLIT': 19, '/io/CANL': 18}
+  FAIL /modem_rf/SIM_DATA           no path X2.3 -> R66.2
+       DEBUG round 0: 4 clusters (pad counts [2, 1, 1, 1])
+       DEBUG starts 133/133 free, goals 140/140 free
+       DEBUG flood 72964 cells, x range 40.6..76.6, y 35.8..61.3
+       DEBUG pocket walls: {'GND': 594, 'netless': 431, '3V3': 328, 'edge/nogo': 284, '/modem_rf/VDD_EXT_1V8': 246, '/modem_rf/SIM_CLK': 225, '/io/DO2_DRV': 208, '/modem_rf/Q12_B': 193}
+       DEBUG unknown wall cell L1 (55.75,61.35)
+       DEBUG unknown wall cell L0 (76.65,53.05)
+       DEBUG unknown wall cell L1 (45.95,61.35)
+       DEBUG unknown wall cell L1 (48.95,61.35)
+       DEBUG unknown wall cell L1 (67.45,61.35)
+       DEBUG unknown wall cell L1 (70.45,61.35)
+  FAIL /io/CANL                     no path L2.2 -> J1.5
+       DEBUG round 0: 3 clusters (pad counts [2, 1, 1])
+       DEBUG starts 213/218 free, goals 390/392 free
+       DEBUG flood 78802 cells, x range 25.7..76.6, y 35.8..61.3
+       DEBUG pocket walls: {'GND': 563, '/modem_rf/SIM_DATA': 293, '3V3': 275, 'netless': 248, 'edge/nogo': 193, '5V0': 183, '/io/DO2_DRV': 152, '/modem_rf/VDD_EXT_1V8': 149}
+       DEBUG unknown wall cell L1 (45.95,61.35)
+       DEBUG unknown wall cell L1 (70.45,61.35)
+       DEBUG unknown wall cell L1 (47.25,61.35)
+       DEBUG unknown wall cell L1 (64.95,61.35)
+       DEBUG unknown wall cell L1 (52.15,61.35)
+       DEBUG unknown wall cell L1 (41.75,61.35)
+  FAIL /modem_rf/U8_OE              no path R63.2 -> U8.8
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 282/282 free, goals 0/85 free
+       DEBUG pad seal (goal): {'netless': 85}
+       DEBUG flood 71356 cells, x range 40.6..76.6, y 35.8..61.3
+       DEBUG pocket walls: {'GND': 552, '/modem_rf/SIM_DATA': 428, 'netless': 369, '3V3': 296, 'edge/nogo': 275, '/modem_rf/VDD_EXT_1V8': 265, '/io/DO2_DRV': 205, '/modem_rf/Q12_B': 196}
+       DEBUG unknown wall cell L1 (55.75,61.35)
+       DEBUG unknown wall cell L0 (76.65,53.05)
+       DEBUG unknown wall cell L1 (45.95,61.35)
+       DEBUG unknown wall cell L1 (48.95,61.35)
+       DEBUG unknown wall cell L1 (67.45,61.35)
+       DEBUG unknown wall cell L1 (70.45,61.35)
+  FAIL /io/VIN_SENSE                no path R32.2 -> R36.1
+       DEBUG round 0: 3 clusters (pad counts [2, 1, 1])
+       DEBUG starts 129/140 free, goals 140/140 free
+       DEBUG flood 8224 cells, x range 0.1..9.8, y 14.2..40.4
+       DEBUG pocket walls: {'edge/nogo': 503, '/io/DO2_OUT': 214, '/io/VIN_D1': 183, '/io/IGN_D0': 169, 'VIN': 169, '/io/IGN_D1': 141, '/power/VIN_B': 100, '/io/DI1_IN': 54}
+       DEBUG unknown wall cell L0 (0.45,20.25)
+       DEBUG unknown wall cell L1 (0.55,24.15)
+       DEBUG unknown wall cell L1 (0.55,36.25)
+       DEBUG unknown wall cell L1 (0.55,25.45)
+       DEBUG unknown wall cell L0 (0.55,22.35)
+       DEBUG unknown wall cell L1 (0.55,37.55)
+  FAIL MODEM_PWR_EN                 no path R53.1 -> U2.21
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 139/142 free, goals 15/45 free
+       DEBUG flood 120377 cells, x range 40.6..76.6, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 550, '/modem_rf/USIM_RST_M': 436, 'edge/nogo': 387, 'netless': 322, '/modem_rf/VBAT_MODEM': 259, '/modem_rf/SIM_DATA': 207, '3V3': 204, 'MODEM_PWRKEY': 149}
+       DEBUG unknown wall cell L1 (76.65,40.05)
+       DEBUG unknown wall cell L1 (45.95,61.35)
+       DEBUG unknown wall cell L0 (70.65,28.55)
+       DEBUG unknown wall cell L0 (67.15,17.45)
+       DEBUG unknown wall cell L1 (76.65,45.75)
+       DEBUG unknown wall cell L1 (72.25,0.55)
+  FAIL /power/SYS                   no path U9.3 -> L3.2
+       DEBUG round 0: 4 clusters (pad counts [4, 2, 1, 1])
+       DEBUG starts 423/426 free, goals 300/300 free
+       DEBUG flood 109019 cells, x range 0.7..64.6, y 0.1..61.3
+       DEBUG pocket walls: {'GND': 647, 'edge/nogo': 325, '/power/VIN_B': 221, '/modem_rf/USIM_DATA_M': 162, '3V3': 150, 'VIN': 148, '/io/Q1_G': 136, '5V0': 130}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (38.15,0.55)
+       DEBUG unknown wall cell L0 (29.45,0.55)
+       DEBUG unknown wall cell L0 (35.45,0.55)
+       DEBUG unknown wall cell L1 (40.35,10.05)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+  FAIL /modem_rf/USIM_VDD           no path C47.1 -> U1.14
+       DEBUG round 0: 4 clusters (pad counts [3, 1, 1, 1])
+       DEBUG starts 374/374 free, goals 184/184 free
+       DEBUG flood 53360 cells, x range 50.1..76.6, y 0.1..51.2
+       DEBUG pocket walls: {'GND': 557, 'edge/nogo': 547, '/modem_rf/VBAT_MODEM': 537, '/modem_rf/USIM_RST_M': 498, 'netless': 195, '/modem_rf/USB_DM_TP': 135, '/modem_rf/Q14_B': 125, '/modem_rf/USIM_VDD_ESIM': 101}
+       DEBUG unknown wall cell L1 (76.65,26.65)
+       DEBUG unknown wall cell L1 (76.65,40.05)
+       DEBUG unknown wall cell L1 (61.35,0.55)
+       DEBUG unknown wall cell L1 (64.35,0.55)
+       DEBUG unknown wall cell L1 (67.35,0.55)
+       DEBUG unknown wall cell L0 (58.65,0.55)
+  FAIL /io/IGN_SENSE                no path R37.1 -> R35.2
+       DEBUG round 0: 2 clusters (pad counts [3, 1])
+       DEBUG starts 331/351 free, goals 130/140 free
+       DEBUG flood 16214 cells, x range 25.7..42.9, y 25.9..55.9
+       DEBUG pocket walls: {'GND': 1009, '5V0': 326, '3V3': 287, 'DI1': 204, '/io/DO2_DRV': 161, 'DI2': 150, '/power/REGN': 145, '/io/VIN_SENSE': 143}
+  FAIL /mcu/I2C1_SCL                no path R7.2 -> U3.13
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 155/187 free, goals 12/28 free
+       DEBUG flood 5546 cells, x range 21.2..31.2, y 7.4..21.9
+       DEBUG pocket walls: {'GND': 222, '/modem_rf/USIM_DATA_M': 212, '/mcu/I2C1_SDA': 188, '5V0': 164, '/power/U5_FB': 151, '/power/VIN_B': 143, '3V3': 83, '/mcu/OSC_OUT': 61}
+  FAIL DO1_GATE                     no path U2.27 -> R42.1
+       DEBUG round 0: 3 clusters (pad counts [1, 1, 1])
+       DEBUG starts 30/60 free, goals 127/140 free
+       DEBUG flood 121 cells, x range 30.6..31.6, y 17.2..19.8
+       DEBUG pocket walls: {'DO2_GATE': 24, 'DI2': 23, '3V3': 21, 'MODEM_TX': 15, '/mcu/OSC_OUT': 13, '/mcu/OSC_IN': 10, '/mcu/SWDIO': 2}
+  FAIL /mcu/I2C1_SDA                no path R8.2 -> U3.14
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 153/187 free, goals 9/28 free
+       DEBUG flood 73554 cells, x range 0.7..31.2, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 692, 'edge/nogo': 281, '/power/VIN_B': 234, 'VIN': 208, '/io/DO1_OUT': 198, '3V3': 188, '/io/Q1_G': 185, '/modem_rf/USIM_DATA_M': 183}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (16.55,61.35)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (17.85,61.35)
+       DEBUG unknown wall cell L0 (12.15,61.35)
+       DEBUG unknown wall cell L1 (21.05,61.35)
+  FAIL /modem_rf/USIM_CLK_M         no path U1.16 -> R67.1
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 184/184 free, goals 137/140 free
+       DEBUG flood 78445 cells, x range 40.6..76.6, y 18.6..61.3
+       DEBUG pocket walls: {'GND': 432, '/modem_rf/SIM_DATA': 338, '3V3': 323, 'edge/nogo': 317, 'netless': 302, '/modem_rf/VDD_EXT_1V8': 266, '/modem_rf/USIM_RST_M': 215, '/io/DO2_DRV': 165}
+       DEBUG unknown wall cell L1 (55.75,61.35)
+       DEBUG unknown wall cell L0 (76.65,53.05)
+       DEBUG unknown wall cell L1 (45.95,61.35)
+       DEBUG unknown wall cell L1 (51.25,21.35)
+       DEBUG unknown wall cell L1 (48.95,61.35)
+       DEBUG unknown wall cell L1 (51.25,34.75)
+  FAIL /mcu/NET_STATUS_LED          no path U2.22 -> R5.1
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 15/45 free, goals 127/140 free
+       DEBUG flood 17 cells, x range 32.7..34.3, y 20.4..20.4
+       DEBUG pocket walls: {'GND': 18, 'MODEM_PWR_EN': 17, '3V3': 1}
+  FAIL MODEM_RX                     child crashed (rc=1)
+       DEBUG round 0: 4 clusters (pad counts [1, 1, 1, 1])
+       DEBUG starts 209/210 free, goals 4/12 free
+       DEBUG flood 2156 cells, x range 37.6..42.7, y 44.3..50.2
+       DEBUG pocket walls: {'GND': 81, '/power/U6_TS': 75, '/io/IGN_SENSE': 73, '/mcu/BOOT0': 59, '/power/U6_ILIM': 56, '5V0': 30, '/mcu/NSL_A': 30, '/power/REGN': 28}
+  FAIL /io/Q2_G                     no path R24.2 -> Q2.1
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 278/282 free, goals 38/70 free
+       DEBUG flood 12187 cells, x range 20.2..42.7, y 36.1..53.2
+       DEBUG pocket walls: {'GND': 720, '/io/IGN_SENSE': 273, '/power/REGN': 230, '/mcu/BOOT0': 205, '/power/VBAT_BT': 193, '5V0': 175, '3V3': 163, '/io/CANL_T': 138}
+  FAIL DI1                          no path OK1.4 -> U2.25
+       DEBUG round 0: 2 clusters (pad counts [3, 1])
+       DEBUG starts 314/322 free, goals 42/60 free
+       DEBUG flood 79865 cells, x range 0.7..39.1, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 852, '3V3': 231, 'edge/nogo': 216, '/io/Q1_G': 208, 'VIN': 186, '/io/DI2_LED': 167, '/power/VIN_B': 141, '/io/DO1_OUT': 137}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (23.95,0.55)
+       DEBUG unknown wall cell L0 (0.55,53.55)
+       DEBUG unknown wall cell L0 (6.75,0.55)
+       DEBUG unknown wall cell L0 (9.35,61.35)
+  FAIL DI2                          no path OK2.4 -> U2.26
+       DEBUG round 0: 2 clusters (pad counts [3, 1])
+       DEBUG starts 306/322 free, goals 30/60 free
+       DEBUG flood 14776 cells, x range 25.7..44.0, y 25.9..44.4
+       DEBUG pocket walls: {'GND': 990, '3V3': 344, '5V0': 310, '/io/IGN_SENSE': 275, '/mcu/NRST': 223, 'DI1': 188, '/modem_rf/USIM_DATA_M': 134, '/io/CANL_T': 122}
+  FAIL /mcu/IMU_INT1                no path U3.4 -> U2.41
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 8/23 free, goals 15/45 free
+       DEBUG flood 4671 cells, x range 26.2..39.4, y 51.0..59.1
+       DEBUG pocket walls: {'GND': 172, '/power/VBAT_BT': 157, '3V3': 155, '/io/VBAT_SENSE': 118, '/io/CAN_MID': 100, '/power/U6_TS': 98, '/io/CAN_SPLIT': 75, '/mcu/SYS_LED_A': 53}
+  FAIL /modem_rf/MRI_1V8            no path U1.62 -> U8.4
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 161/207 free, goals 51/68 free
+       DEBUG flood 73310 cells, x range 31.4..76.6, y 0.7..51.2
+       DEBUG pocket walls: {'GND': 540, '/modem_rf/VBAT_MODEM': 515, 'edge/nogo': 481, '/modem_rf/USIM_RST_M': 319, 'netless': 281, '/power/SYS': 194, '/modem_rf/USB_VBUS': 119, '/modem_rf/NETLIGHT_MOD': 115}
+       DEBUG unknown wall cell L1 (76.65,26.65)
+       DEBUG unknown wall cell L1 (76.65,40.05)
+       DEBUG unknown wall cell L1 (38.15,0.55)
+       DEBUG unknown wall cell L0 (32.45,0.55)
+       DEBUG unknown wall cell L0 (35.45,0.55)
+       DEBUG unknown wall cell L1 (40.35,10.05)
+  FAIL /io/CANH_T                   no path R11.1 -> L2.4
+       DEBUG round 0: 3 clusters (pad counts [1, 1, 1])
+       DEBUG starts 144/144 free, goals 116/117 free
+       DEBUG flood 6756 cells, x range 20.7..39.4, y 48.0..60.4
+       DEBUG pocket walls: {'GND': 363, '/power/VBAT_BT': 157, '/io/VBAT_SENSE': 147, '/io/CAN_MID': 135, '3V3': 102, '/power/U6_TS': 98, '/io/DO1_B': 92, 'SYS': 86}
+  FAIL /io/DO1_B                    no path Q5.1 -> R42.2
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 89/90 free, goals 130/140 free
+       DEBUG flood 68392 cells, x range 0.7..29.1, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 687, 'edge/nogo': 330, 'VIN': 249, '/io/DO1_OUT': 215, '/io/Q1_G': 212, '/io/DO2_OUT': 182, '/power/VIN_B': 179, '3V3': 166}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (17.85,61.35)
+       DEBUG unknown wall cell L1 (21.05,61.35)
+       DEBUG unknown wall cell L0 (23.95,0.55)
+       DEBUG unknown wall cell L0 (0.55,53.55)
+  PARTIAL /mcu/SWCLK                 kept copper; remainder requeued (cluster count stuck at 2)
+  OK /mcu/SWCLK                   vias=0 len= 16.2 man= 94.3 ratio=0.17 [2/68   3%]
+  FAIL /mcu/VBAT_MCU                no path R3.2 -> U2.1
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 238/242 free, goals 45/64 free
+       DEBUG flood 15301 cells, x range 20.2..42.2, y 27.4..59.1
+       DEBUG pocket walls: {'GND': 730, '3V3': 316, '/io/IGN_SENSE': 216, 'CAN1_RX': 188, '/io/DI2_LED': 161, '5V0': 154, '/power/VBAT_BT': 147, '/io/VIN_SENSE': 138}
+  FAIL /modem_rf/MDTR_1V8           no path U1.66 -> U8.5
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 163/209 free, goals 0/85 free
+       DEBUG pad seal (goal): {'netless': 68, '/modem_rf/MRI_1V8': 17}
+       DEBUG flood 74209 cells, x range 31.4..76.6, y 0.7..51.2
+       DEBUG pocket walls: {'GND': 526, 'edge/nogo': 510, '/modem_rf/VBAT_MODEM': 503, '/modem_rf/USIM_RST_M': 307, 'netless': 272, '/power/SYS': 191, '/modem_rf/NETLIGHT_MOD': 162, '/modem_rf/USB_VBUS': 116}
+       DEBUG unknown wall cell L1 (76.65,26.65)
+       DEBUG unknown wall cell L1 (76.65,40.05)
+       DEBUG unknown wall cell L1 (38.15,0.55)
+       DEBUG unknown wall cell L0 (32.45,0.55)
+       DEBUG unknown wall cell L0 (35.45,0.55)
+       DEBUG unknown wall cell L1 (40.35,10.05)
+  FAIL /modem_rf/MTXD_1V8           no path U1.67 -> U8.3
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 207/209 free, goals 51/85 free
+       DEBUG flood 47678 cells, x range 51.0..76.6, y 0.7..51.2
+       DEBUG pocket walls: {'GND': 610, '/modem_rf/VBAT_MODEM': 583, 'edge/nogo': 582, '/modem_rf/USIM_RST_M': 543, 'netless': 254, '/modem_rf/Q14_B': 143, '/modem_rf/USB_DM_TP': 123, '/modem_rf/USB_DM_M': 118}
+       DEBUG unknown wall cell L1 (76.65,26.65)
+       DEBUG unknown wall cell L1 (76.65,40.05)
+       DEBUG unknown wall cell L1 (76.65,7.95)
+       DEBUG unknown wall cell L0 (70.65,33.85)
+       DEBUG unknown wall cell L0 (76.65,15.65)
+       DEBUG unknown wall cell L1 (76.65,51.05)
+  FAIL /mcu/SYS_LED_A               no path D20.2 -> R4.2
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 82/90 free, goals 140/140 free
+       DEBUG flood 391 cells, x range 33.1..36.8, y 44.4..46.9
+       DEBUG pocket walls: {'/power/U6_ICHG': 45, '/mcu/SYS_LED': 36, '/power/REGN': 23, 'GND': 22, '/power/SYS': 10, '/power/VBAT_BT': 5, '/mcu/NSL_K': 5}
+  FAIL /modem_rf/MRXD_1V8           no path U1.68 -> U8.2
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 209/209 free, goals 51/68 free
+       DEBUG flood 73462 cells, x range 31.4..76.6, y 0.7..51.2
+       DEBUG pocket walls: {'GND': 540, '/modem_rf/VBAT_MODEM': 521, 'edge/nogo': 472, '/modem_rf/USIM_RST_M': 318, 'netless': 270, '/power/SYS': 196, '/modem_rf/USB_VBUS': 119, '/modem_rf/NETLIGHT_MOD': 115}
+       DEBUG unknown wall cell L1 (76.65,26.65)
+       DEBUG unknown wall cell L1 (76.65,40.05)
+       DEBUG unknown wall cell L1 (38.15,0.55)
+       DEBUG unknown wall cell L0 (32.45,0.55)
+       DEBUG unknown wall cell L0 (35.45,0.55)
+       DEBUG unknown wall cell L1 (40.35,10.05)
+  FAIL /io/VBAT_SENSE               no path R39.1 -> C29.1
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 282/282 free, goals 92/100 free
+       DEBUG flood 5408 cells, x range 27.2..39.4, y 52.0..60.4
+       DEBUG pocket walls: {'GND': 243, '/power/VBAT_BT': 220, '3V3': 119, '/io/DO2_DRV': 99, '/power/U6_TS': 98, '/mcu/NET_STATUS_LED': 70, '/io/CAN_SPLIT': 68, '5V0': 64}
+  FAIL /io/CAN_SPLIT                no path C22.1 -> JP2.2
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 80/100 free, goals 140/140 free
+       DEBUG flood 248 cells, x range 35.4..39.4, y 28.8..34.0
+       DEBUG pocket walls: {'/modem_rf/USIM_DATA_M': 86, '/mcu/NRST': 82, 'DI2': 20}
+  FAIL /power/U6_TS                 no path R88.2 -> U6.11
+       DEBUG round 0: 2 clusters (pad counts [3, 1])
+       DEBUG starts 828/858 free, goals 0/36 free
+       DEBUG pad seal (goal): {'/power/U6_ICHG': 18, 'netless': 18}
+       DEBUG flood 78700 cells, x range 27.2..76.6, y 35.8..61.3
+       DEBUG pocket walls: {'GND': 546, '/modem_rf/SIM_DATA': 319, '3V3': 271, 'netless': 262, '/io/DO2_DRV': 211, 'edge/nogo': 208, '5V0': 196, '/modem_rf/VDD_EXT_1V8': 161}
+       DEBUG unknown wall cell L1 (45.95,61.35)
+       DEBUG unknown wall cell L1 (70.45,61.35)
+       DEBUG unknown wall cell L1 (47.25,61.35)
+       DEBUG unknown wall cell L1 (64.95,61.35)
+       DEBUG unknown wall cell L1 (52.15,61.35)
+       DEBUG unknown wall cell L1 (41.75,61.35)
+  FAIL DO2_GATE                     no path R46.1 -> U2.28
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 275/284 free, goals 30/60 free
+       DEBUG flood 74163 cells, x range 0.7..39.1, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 787, 'edge/nogo': 246, '3V3': 213, 'VIN': 191, '/io/DO1_OUT': 180, '/io/Q1_G': 164, '5V0': 149, '/io/DO2_OUT': 137}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (17.85,61.35)
+       DEBUG unknown wall cell L1 (21.05,61.35)
+       DEBUG unknown wall cell L0 (23.95,0.55)
+       DEBUG unknown wall cell L0 (0.55,53.55)
+  FAIL /mcu/SYS_LED                 no path U2.2 -> D20.1
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 32/64 free, goals 87/90 free
+       DEBUG flood 1242 cells, x range 26.9..32.5, y 25.4..39.3
+       DEBUG pocket walls: {'GND': 194, 'CAN1_RX': 122, '3V3': 102, '/mcu/VBAT_MCU': 93, '/io/IGN_SENSE': 56, '/mcu/3V3A': 33, '/io/CANL_T': 32, 'DI1': 30}
+  FAIL CAN1_TX                      no path U4.1 -> U2.46
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 125/126 free, goals 15/45 free
+       DEBUG flood 2670 cells, x range 20.2..29.4, y 42.0..49.0
+       DEBUG pocket walls: {'GND': 120, '/io/DI2_LED': 114, '/io/DI1_LED': 102, '/io/CANL_T': 63, '/io/Q1_G': 58, '/io/Q2_G': 51, 'SYS': 43, '/mcu/3V3A': 39}
+  FAIL FLASH_CS                     no path U7.1 -> U2.14
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 125/126 free, goals 15/45 free
+       DEBUG flood 68326 cells, x range 0.7..29.1, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 684, 'edge/nogo': 333, 'VIN': 250, '/io/DO1_OUT': 217, '/io/Q1_G': 216, '/io/DO2_OUT': 183, '/power/VIN_B': 179, '3V3': 166}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (17.85,61.35)
+       DEBUG unknown wall cell L1 (21.05,61.35)
+       DEBUG unknown wall cell L0 (23.95,0.55)
+       DEBUG unknown wall cell L0 (0.55,53.55)
+  FAIL SPI1_MISO                    no path U7.2 -> U2.16
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 126/147 free, goals 15/45 free
+       DEBUG flood 68352 cells, x range 0.7..29.1, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 673, 'edge/nogo': 331, 'VIN': 244, '/io/DO1_OUT': 214, '/io/Q1_G': 210, '3V3': 197, '/io/DO2_OUT': 181, '/power/VIN_B': 174}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (17.85,61.35)
+       DEBUG unknown wall cell L1 (21.05,61.35)
+       DEBUG unknown wall cell L0 (23.95,0.55)
+       DEBUG unknown wall cell L0 (0.55,53.55)
+  FAIL /power/VBAT_BT               no path J2.1 -> C67.1
+       DEBUG round 0: 2 clusters (pad counts [3, 1])
+       DEBUG starts 608/628 free, goals 138/140 free
+       DEBUG flood 7926 cells, x range 27.2..39.5, y 44.4..59.1
+       DEBUG pocket walls: {'GND': 301, '3V3': 195, '/io/VBAT_SENSE': 118, '/mcu/SYS_LED_A': 110, '/power/U6_TS': 98, '/io/Q2_G': 98, '/power/U6_ICHG': 97, '/io/DO2_DRV': 96}
+  PARTIAL CAN_STB                    kept copper; remainder requeued (cluster count stuck at 2)
+  OK CAN_STB                      vias=6 len= 66.8 man= 71.8 ratio=0.93 [3/68   4%]  VIAS>4
+  FAIL /io/DO1_DRV                  no path Q6.3 -> R23.1
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 242/242 free, goals 139/140 free
+       DEBUG flood 6794 cells, x range 28.6..44.0, y 25.9..37.4
+       DEBUG pocket walls: {'GND': 602, '5V0': 303, '3V3': 298, 'DI1': 200, '/mcu/NRST': 164, 'DI2': 143, '/io/DO1_X': 135, 'MODEM_TX': 115}
+  FAIL /modem_rf/USIM_DET           no path X1.CD -> U1.13
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 63/88 free, goals 138/184 free
+       DEBUG flood 4943 cells, x range 51.0..66.2, y 40.7..47.8
+       DEBUG pocket walls: {'edge/nogo': 255, '/modem_rf/USIM_RST_M': 131, '/modem_rf/VDD_EXT_1V8': 130, 'netless': 110, '/modem_rf/SIM_RST': 70, 'GND': 59, '/modem_rf/PWRKEY_MOD': 58, '/modem_rf/USIM_VDD_SIM': 52}
+       DEBUG unknown wall cell L1 (65.15,40.55)
+       DEBUG unknown wall cell L0 (59.45,40.55)
+       DEBUG unknown wall cell L0 (62.45,40.55)
+       DEBUG unknown wall cell L1 (53.25,40.55)
+       DEBUG unknown wall cell L1 (56.25,40.55)
+       DEBUG unknown wall cell L1 (54.35,40.55)
+  FAIL /mcu/BOOT1                   no path U2.20 -> R2.1
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 0/45 free, goals 140/140 free
+       DEBUG pad seal (start): {'netless': 45}
+       DEBUG flood 0 cells - ALL start cells blocked
+       DEBUG pocket walls: {}
+  FAIL /mcu/NSL_A                   no path D21.2 -> R6.2
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 90/90 free, goals 140/140 free
+       DEBUG flood 1990 cells, x range 37.6..42.7, y 44.3..50.2
+       DEBUG pocket walls: {'GND': 109, '/power/U6_TS': 75, '/mcu/BOOT0': 59, '/power/U6_ILIM': 56, 'MODEM_RX': 51, '/io/IGN_SENSE': 46, '/power/REGN': 40, '/io/CANL': 39}
+  FAIL SPI1_SCK                     no path U7.6 -> U2.15
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 145/147 free, goals 15/45 free
+       DEBUG flood 68584 cells, x range 0.7..29.1, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 673, 'edge/nogo': 328, 'VIN': 244, '/io/DO1_OUT': 213, '/io/Q1_G': 208, '3V3': 182, '/io/DO2_OUT': 181, '/power/VIN_B': 173}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (17.85,61.35)
+       DEBUG unknown wall cell L1 (21.05,61.35)
+       DEBUG unknown wall cell L0 (23.95,0.55)
+       DEBUG unknown wall cell L0 (0.55,53.55)
+  FAIL /io/DO2_X                    no path R48.2 -> Q7.3
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 248/252 free, goals 96/98 free
+       DEBUG flood 6696 cells, x range 28.6..44.0, y 25.9..37.4
+       DEBUG pocket walls: {'GND': 546, '5V0': 321, '3V3': 256, 'DI1': 200, '/mcu/NRST': 164, 'DI2': 159, '/io/IGN_SENSE': 95, '/io/DO1_X': 92}
+  FAIL /mcu/OSC32_IN                no path C3.1 -> U2.3
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 249/260 free, goals 32/64 free
+       DEBUG flood 68937 cells, x range 0.7..29.1, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 704, 'edge/nogo': 334, 'VIN': 259, '/io/DO1_OUT': 248, '/io/Q1_G': 216, '/io/DO2_OUT': 183, '/power/VIN_B': 181, '3V3': 169}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (17.85,61.35)
+       DEBUG unknown wall cell L1 (21.05,61.35)
+       DEBUG unknown wall cell L0 (23.95,0.55)
+       DEBUG unknown wall cell L0 (0.55,53.55)
+  FAIL MODEM_DTR                    no path U2.33 -> U8.10
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 29/60 free, goals 0/85 free
+       DEBUG pad seal (goal): {'netless': 85}
+       DEBUG flood 101 cells, x range 28.1..29.6, y 17.2..19.6
+       DEBUG pocket walls: {'MODEM_RI': 24, '/mcu/SWDIO': 18, '/mcu/SWCLK': 15, 'GND': 9, 'MODEM_TX': 9, 'MODEM_RX': 5}
+  FAIL /power/U6_OTG                no path U6.6 -> R87.1
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 13/24 free, goals 142/143 free
+       DEBUG flood 25 cells, x range 27.9..28.6, y 47.3..47.7
+       DEBUG pocket walls: {'/mcu/VBAT_MCU': 12, '/power/U6_STAT': 7, '/power/U6_PG': 4, 'GND': 1}
+  FAIL MODEM_RI                     no path U2.32 -> U8.11
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 30/60 free, goals 51/68 free
+       DEBUG flood 106 cells, x range 28.2..29.6, y 17.2..19.6
+       DEBUG pocket walls: {'MODEM_RX': 24, 'MODEM_DTR': 23, '/mcu/SWCLK': 15, 'MODEM_TX': 9, 'GND': 5, '/mcu/SWDIO': 2}
+  FAIL /power/U5_VCC                no path C75.1 -> U5.1
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 228/230 free, goals 105/108 free
+       DEBUG flood 8915 cells, x range 26.8..36.8, y 1.6..13.8
+       DEBUG pocket walls: {'5V0': 334, 'GND': 194, '/power/SW_BUCK': 187, '/power/U5_IS': 116, '3V3': 87, '/power/VIN_B': 77, '/power/SYS': 65, 'MODEM_RX': 62}
+  FAIL /io/DO1_X                    no path Q6.1 -> Q5.3
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 225/228 free, goals 98/98 free
+       DEBUG flood 5412 cells, x range 28.6..39.1, y 25.9..37.4
+       DEBUG pocket walls: {'GND': 488, 'DI1': 217, '5V0': 195, '3V3': 174, '/mcu/NRST': 164, '/io/IGN_SENSE': 117, '/io/DO1_DRV': 78, 'MODEM_TX': 61}
+  FAIL /power/SW_CHG                no path C64.2 -> L3.1
+       DEBUG round 0: 3 clusters (pad counts [2, 1, 1])
+       DEBUG starts 81/81 free, goals 320/320 free
+       DEBUG flood 5398 cells, x range 25.7..42.2, y 36.1..44.4
+       DEBUG pocket walls: {'GND': 361, '/io/IGN_SENSE': 227, '/power/REGN': 156, '/io/VIN_SENSE': 124, '5V0': 119, '/io/CANL_T': 98, 'DI2': 95, '3V3': 68}
+  FAIL /mcu/DBG_TX                  no path U2.12 -> TP4.1
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 42/64 free, goals 210/210 free
+       DEBUG flood 4764 cells, x range 28.6..39.1, y 24.2..37.4
+       DEBUG pocket walls: {'GND': 467, 'DI1': 200, '/mcu/NRST': 176, '3V3': 174, '5V0': 159, '/io/IGN_SENSE': 95, '/io/DO1_X': 92, '/modem_rf/USIM_DATA_M': 67}
+  FAIL /power/U5_EN                 no path U5.2 -> R81.2
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 119/126 free, goals 139/140 free
+       DEBUG flood 26610 cells, x range 31.4..64.6, y 0.7..24.1
+       DEBUG pocket walls: {'/power/SYS': 472, 'GND': 414, '/modem_rf/VBAT_MODEM': 404, 'edge/nogo': 310, 'netless': 288, '/modem_rf/NETLIGHT_MOD': 279, '/modem_rf/USB_VBUS': 270, '/modem_rf/USIM_DATA_M': 258}
+       DEBUG unknown wall cell L1 (38.15,0.55)
+       DEBUG unknown wall cell L0 (32.45,0.55)
+       DEBUG unknown wall cell L0 (35.45,0.55)
+       DEBUG unknown wall cell L1 (40.35,10.05)
+       DEBUG unknown wall cell L1 (37.75,10.65)
+       DEBUG unknown wall cell L1 (42.45,0.55)
+  FAIL /power/U6_ILIM               no path U6.8 -> R86.1
+       DEBUG round 0: 3 clusters (pad counts [1, 1, 1])
+       DEBUG starts 8/36 free, goals 129/130 free
+       DEBUG flood 283 cells, x range 27.1..30.4, y 47.8..50.4
+       DEBUG pocket walls: {'/io/CAN_MID': 38, '/mcu/VBAT_MCU': 24, 'SYS': 19, '/power/U6_PG': 18, 'GND': 17, '/io/CAN_SPLIT': 8, '/io/CANH_T': 8, '/power/U6_ICHG': 7}
+  FAIL /mcu/NSL_K                   no path D21.1 -> Q4.3
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 84/90 free, goals 105/105 free
+       DEBUG flood 1945 cells, x range 36.4..42.7, y 44.3..50.2
+       DEBUG pocket walls: {'GND': 81, '/power/U6_TS': 75, '/mcu/BOOT0': 59, '/power/U6_ILIM': 56, 'MODEM_RX': 51, '/power/REGN': 47, '/io/IGN_SENSE': 46, '5V0': 30}
+  FAIL /mcu/OSC32_OUT               no path Y2.2 -> U2.4
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 259/260 free, goals 32/64 free
+       DEBUG flood 69495 cells, x range 0.7..29.1, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 662, 'edge/nogo': 321, 'VIN': 238, '/io/DO1_OUT': 209, '/io/Q1_G': 206, '3V3': 181, '/io/DO2_OUT': 179, '/power/VIN_B': 170}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (17.85,61.35)
+       DEBUG unknown wall cell L1 (21.05,61.35)
+       DEBUG unknown wall cell L0 (23.95,0.55)
+       DEBUG unknown wall cell L0 (0.55,53.55)
+  FAIL /power/U6_BTST               no path U6.21 -> C64.1
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 7/36 free, goals 80/81 free
+       DEBUG flood 7 cells, x range 30.6..30.6, y 43.7..44.3
+       DEBUG pocket walls: {'/power/REGN': 8, '/power/SW_CHG': 7, 'GND': 1}
+  FAIL /power/PMID                  no path U6.23 -> C62.1
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 8/36 free, goals 139/140 free
+       DEBUG flood 5190 cells, x range 25.7..42.2, y 36.1..44.4
+       DEBUG pocket walls: {'GND': 362, '/io/IGN_SENSE': 227, '/power/REGN': 166, '5V0': 133, '/io/VIN_SENSE': 123, '/io/CANL_T': 98, 'DI2': 95, '3V3': 68}
+--- pass 2: 68 net(s)
+  RIP-RETRY 3V3: ripping ['CAN1_RX', '/io/IGN_SENSE', 'GND']
+  FAIL 3V3                          rip-retry stalled on 3V3: no path C21.1 -> C12.1
+       DEBUG island (layer 6) at (44.0,22.5) has no legal tap spot
+       DEBUG island (layer 6) at (44.5,22.5) has no legal tap spot
+       DEBUG round 0: 16 clusters (pad counts [22, 4, 2, 2, 1, 1, 1, 1])
+       DEBUG tapped PAD vias at ['(38.4,30.1)', '(25.6,51.3)']
+       DEBUG round 1: 15 clusters (pad counts [26, 2, 2, 1, 1, 1, 1, 1])
+       DEBUG tapped PAD vias at ['(40.2,31.6)', '(38.4,30.1)', '(25.6,51.3)']
+       DEBUG round 2: 12 clusters (pad counts [30, 2, 1, 1, 1, 1, 1, 1])
+       DEBUG tapped PAD vias at ['(40.2,31.6)', '(38.4,30.1)', '(25.6,51.3)']
+       DEBUG round 3: 11 clusters (pad counts [32, 1, 1, 1, 1, 1, 1, 1])
+       DEBUG tapped PAD vias at ['(40.2,31.6)', '(38.4,30.1)', '(25.6,51.3)']
+       DEBUG round 4: 10 clusters (pad counts [33, 1, 1, 1, 1, 1, 1, 1])
+       DEBUG tapped PAD vias at ['(23.6,25.4)', '(26.6,22.4)', '(23.6,25.4)', '(26.6,22.4)', '(23.6,25.4)', '(26.6,22.4)', '(26.6,22.4)', '(23.6,25.4)', '(26.6,22.4)', '(26.6,22.4)', '(23.6,25.4)', '(26.6,22.4)', '(23.6,25.4)', '(23.6,25.4)', '(26.6,22.4)', '(23.6,25.4)', '(23.6,25.4)', '(26.6,22.4)', '(23.6,25.4)', '(23.6,25.4)', '(26.6,22.4)', '(26.6,22.4)', '(26.6,22.4)', '(23.6,25.4)', '(23.6,25.4)', '(23.6,25.4)', '(26.6,22.4)', '(26.6,22.4)', '(26.6,22.4)', '(23.6,25.4)']
+       DEBUG round 5: 9 clusters (pad counts [34, 1, 1, 1, 1, 1, 1, 1])
+       DEBUG tapped PAD vias at ['(40.2,31.6)', '(38.4,30.1)', '(25.6,51.3)']
+       DEBUG round 6: 8 clusters (pad counts [35, 1, 1, 1, 1, 1, 1, 1])
+       DEBUG tapped PAD vias at ['(58.2,56.1)', '(34.0,37.0)', '(34.9,41.5)', '(56.1,6.5)', '(66.9,41.0)', '(33.0,57.6)', '(70.1,45.2)', '(60.1,7.6)', '(58.5,11.5)', '(58.2,41.0)', '(65.7,59.6)', '(52.1,0.9)']
+       DEBUG round 7: 7 clusters (pad counts [36, 1, 1, 1, 1, 1, 1])
+       DEBUG starts 3036/3759 free, goals 119/140 free
+       DEBUG flood 226247 cells, x range 0.8..76.4, y 0.8..61.1
+       DEBUG pocket walls: {'GND': 576, 'edge/nogo': 265, '5V0': 188, '/modem_rf/USIM_RST_M': 183, 'netless': 162, '/modem_rf/SIM_DATA': 98, '/modem_rf/VBAT_MODEM': 88, '/modem_rf/USIM_DATA_M': 84}
+       DEBUG unknown wall cell L1 (51.15,28.25)
+       DEBUG unknown wall cell L1 (76.45,35.45)
+       DEBUG unknown wall cell L0 (70.75,29.35)
+       DEBUG unknown wall cell L1 (76.45,33.05)
+       DEBUG unknown wall cell L1 (62.55,61.15)
+       DEBUG unknown wall cell L0 (7.45,61.15)
+  FAIL SYS                          no path Q13.2 -> R38.1
+       DEBUG round 0: 5 clusters (pad counts [1, 2, 1, 1, 1])
+       DEBUG starts 146/234 free, goals 126/140 free
+       DEBUG flood 1894 cells, x range 49.4..58.2, y 6.3..13.2
+       DEBUG pocket walls: {'/modem_rf/Q13_B': 112, '/modem_rf/USB_VBUS': 110, '/modem_rf/Q3_G': 91, '/modem_rf/VBAT_MODEM': 68, '/modem_rf/USIM_VDD': 53, 'GND': 50, '/modem_rf/USB_DM_M': 44, '/modem_rf/Q14_B': 24}
+  RIP-RETRY /modem_rf/VDD_EXT_1V8: ripping ['GND', '/modem_rf/SIM_DATA', '/modem_rf/USIM_RST_M']
+  FAIL /modem_rf/VDD_EXT_1V8        rip-retry stalled on /modem_rf/VDD_EXT_1V8: no path R63.1 -> C44.1
+       DEBUG round 0: 5 clusters (pad counts [1, 1, 1, 1, 1])
+       DEBUG starts 102/142 free, goals 90/90 free
+       DEBUG flood 74591 cells, x range 41.1..76.4, y 18.9..61.1
+       DEBUG pocket walls: {'GND': 488, 'edge/nogo': 481, '/modem_rf/SIM_DATA': 330, 'netless': 305, '/modem_rf/USIM_RST_M': 277, '3V3': 273, 'MODEM_PWRKEY': 199, '5V0': 176}
+       DEBUG unknown wall cell L1 (51.15,28.25)
+       DEBUG unknown wall cell L0 (76.45,53.75)
+       DEBUG unknown wall cell L1 (51.15,22.95)
+       DEBUG unknown wall cell L1 (42.35,61.15)
+       DEBUG unknown wall cell L1 (45.35,61.15)
+       DEBUG unknown wall cell L1 (62.55,61.15)
+  RIP-RETRY 5V0: ripping ['GND', '/modem_rf/SIM_DATA', '3V3']
+  FAIL 5V0                          child crashed (rc=1)
+       DEBUG round 0: 10 clusters (pad counts [4, 4, 2, 1, 1, 1, 1, 1])
+       DEBUG round 1: 9 clusters (pad counts [4, 4, 3, 1, 1, 1, 1, 1])
+       DEBUG round 2: 8 clusters (pad counts [4, 4, 3, 2, 1, 1, 1, 1])
+       DEBUG starts 530/577 free, goals 92/162 free
+       DEBUG flood 80805 cells, x range 27.9..76.4, y 18.9..61.1
+       DEBUG pocket walls: {'GND': 528, 'edge/nogo': 282, 'netless': 250, '/modem_rf/SIM_DATA': 248, '/modem_rf/VDD_EXT_1V8': 226, '/io/DO2_DRV': 209, '3V3': 183, '/io/IGN_SENSE': 151}
+       DEBUG unknown wall cell L1 (51.15,28.25)
+       DEBUG unknown wall cell L0 (76.45,53.75)
+       DEBUG unknown wall cell L1 (45.35,61.15)
+       DEBUG unknown wall cell L1 (62.55,61.15)
+       DEBUG unknown wall cell L1 (68.55,61.15)
+       DEBUG unknown wall cell L1 (51.15,33.95)
+  RIP-RETRY /mcu/3V3A: ripping ['GND', 'IGN_SENSE', '/io/Q1_G']
+  FAIL /mcu/3V3A                    rip-retry stalled on /mcu/3V3A: no path FB1.2 -> U2.9
+       DEBUG round 0: 4 clusters (pad counts [1, 1, 1, 1])
+       DEBUG starts 108/108 free, goals 0/64 free
+       DEBUG pad seal (goal): {'GND': 48, 'IGN_SENSE': 16}
+       DEBUG flood 1587 cells, x range 20.9..25.8, y 46.6..51.7
+       DEBUG pocket walls: {'GND': 74, '/io/DI1_LED': 52, '/io/DI2_LED': 51, 'SYS': 37, '3V3': 33, '/io/DO1_B': 31, '/modem_rf/Q12_B': 19, 'CAN1_TX': 11}
+  RIP-RETRY GND: ripping ['/power/U6_ILIM', '/power/U6_ICHG', '3V3']
+  FAIL GND                          rip-retry stalled on GND: no path U6.18 -> U6.9
+       DEBUG island (layer 0) at (32.2,32.5) has no legal tap spot
+       DEBUG island (layer 0) at (40.4,27.5) has no legal tap spot
+       DEBUG island (layer 0) at (58.0,10.0) has no legal tap spot
+       DEBUG island (layer 0) at (48.6,0.7) has no legal tap spot
+       DEBUG island (layer 0) at (46.4,2.1) has no legal tap spot
+       DEBUG island (layer 0) at (66.7,1.6) has no legal tap spot
+       DEBUG island (layer 2) at (38.4,51.5) has no legal tap spot
+       DEBUG island (layer 2) at (41.6,44.4) has no legal tap spot
+       DEBUG island (layer 2) at (28.8,17.4) has no legal tap spot
+       DEBUG round 0: 7 clusters (pad counts [180, 1, 1, 1, 1, 1, 1])
+       DEBUG starts 32394/64084 free, goals 0/36 free
+       DEBUG pad seal (goal): {'/power/U6_ILIM': 27, '/power/U6_ICHG': 9}
+       DEBUG flood 300395 cells, x range 0.1..76.5, y 0.1..61.9
+       DEBUG pocket walls: {'edge/nogo': 408, 'netless': 196, '5V0': 168, '/modem_rf/USIM_RST_M': 147, '/modem_rf/VBAT_MODEM': 147, '3V3': 125, '/modem_rf/USIM_DATA_M': 94, 'VIN': 86}
+       DEBUG unknown wall cell L0 (2.55,61.15)
+       DEBUG unknown wall cell L1 (51.15,28.25)
+       DEBUG unknown wall cell L1 (76.45,35.45)
+       DEBUG unknown wall cell L1 (0.75,55.55)
+       DEBUG unknown wall cell L1 (6.45,0.75)
+       DEBUG unknown wall cell L1 (76.45,16.75)
+  RIP-RETRY MODEM_STATUS: ripping ['GND', '/modem_rf/USIM_RST_M', '/modem_rf/VBAT_MODEM']
+  FAIL MODEM_STATUS                 rip-retry stalled on MODEM_STATUS: no path R61.2 -> U2.40
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 242/242 free, goals 15/45 free
+       DEBUG flood 119630 cells, x range 40.6..76.6, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 608, 'edge/nogo': 427, '/modem_rf/USIM_RST_M': 379, 'netless': 317, '/modem_rf/VBAT_MODEM': 243, '/modem_rf/SIM_DATA': 225, '3V3': 201, 'MODEM_PWRKEY': 144}
+       DEBUG unknown wall cell L1 (76.65,40.05)
+       DEBUG unknown wall cell L1 (45.95,61.35)
+       DEBUG unknown wall cell L0 (70.65,28.55)
+       DEBUG unknown wall cell L0 (67.15,17.45)
+       DEBUG unknown wall cell L1 (76.65,45.75)
+       DEBUG unknown wall cell L1 (72.25,0.55)
+  RIP-RETRY MODEM_PWRKEY: ripping ['MODEM_TX', 'DO2_GATE', '/mcu/SWDIO']
+  FAIL MODEM_PWRKEY                 rip-retry stalled on MODEM_PWRKEY: no path U2.29 -> R55.1
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 30/60 free, goals 40/140 free
+       DEBUG flood 35374 cells, x range 23.9..64.6, y 0.7..27.6
+       DEBUG pocket walls: {'GND': 408, '/power/SYS': 323, '/modem_rf/VBAT_MODEM': 289, '/modem_rf/USIM_DATA_M': 268, 'netless': 234, 'edge/nogo': 221, '/modem_rf/USB_VBUS': 198, '/modem_rf/NETLIGHT_MOD': 184}
+       DEBUG unknown wall cell L1 (38.15,0.55)
+       DEBUG unknown wall cell L0 (32.45,0.55)
+       DEBUG unknown wall cell L0 (35.45,0.55)
+       DEBUG unknown wall cell L1 (40.35,10.05)
+       DEBUG unknown wall cell L1 (37.75,10.65)
+       DEBUG unknown wall cell L1 (42.45,0.55)
+  RIP-RETRY MODEM_RESET: ripping ['CAN_STB', 'MODEM_STATUS', '/mcu/I2C1_SCL']
+  FAIL MODEM_RESET                  rip-retry stalled on MODEM_RESET: no path U2.39 -> R57.1
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 15/45 free, goals 140/140 free
+       DEBUG flood 5438 cells, x range 21.9..31.2, y 11.8..27.6
+       DEBUG pocket walls: {'/modem_rf/USIM_DATA_M': 247, '/mcu/OSC_IN': 205, 'GND': 178, '/mcu/I2C1_SDA': 146, '/mcu/OSC_OUT': 133, '/mcu/BOOT0': 91, '/power/VIN_B': 81, '/mcu/SWCLK': 80}
+  RIP-RETRY /modem_rf/Q12_B: ripping ['GND', '3V3', '/modem_rf/SIM_DATA']
+  FAIL /modem_rf/Q12_B              rip-retry stalled on /modem_rf/Q12_B: no path R64.2 -> Q12.1
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 140/140 free, goals 81/90 free
+       DEBUG flood 143970 cells, x range 0.7..76.6, y 0.7..61.9
+       DEBUG pocket walls: {'GND': 622, 'edge/nogo': 425, '3V3': 235, '/modem_rf/SIM_DATA': 173, 'netless': 157, '/io/Q1_G': 140, 'VIN': 128, '/power/VIN_B': 110}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (29.55,61.35)
+       DEBUG unknown wall cell L1 (45.95,61.35)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (44.05,61.35)
+       DEBUG unknown wall cell L0 (60.45,61.35)
+  RIP-RETRY /io/CANH: ripping ['3V3', '/power/U6_ICHG', '/power/VBAT_BT']
+  FAIL /io/CANH                     rip-retry stalled on /io/CANH: no path D3.1 -> J1.4
+       DEBUG round 0: 4 clusters (pad counts [1, 1, 1, 1])
+       DEBUG starts 90/90 free, goals 392/392 free
+       DEBUG flood 8846 cells, x range 25.7..42.2, y 36.1..52.4
+       DEBUG pocket walls: {'GND': 551, '/io/IGN_SENSE': 227, '/power/REGN': 164, '/io/Q2_G': 161, '/io/CANL': 143, '/io/VIN_SENSE': 135, '/power/SW_CHG': 130, '5V0': 119}
+  RIP-RETRY /modem_rf/SIM_DATA: ripping ['GND', '3V3', '/modem_rf/VDD_EXT_1V8']
+  FAIL /modem_rf/SIM_DATA           rip-retry stalled on /modem_rf/SIM_DATA: no path X2.3 -> R66.2
+       DEBUG round 0: 4 clusters (pad counts [2, 1, 1, 1])
+       DEBUG starts 133/133 free, goals 140/140 free
+       DEBUG flood 74861 cells, x range 40.6..76.6, y 35.8..61.3
+       DEBUG pocket walls: {'GND': 592, 'netless': 440, 'edge/nogo': 293, '/modem_rf/SIM_CLK': 246, '/modem_rf/VDD_EXT_1V8': 241, '/io/DO2_DRV': 212, 'MODEM_PWRKEY': 197, '5V0': 196}
+       DEBUG unknown wall cell L1 (55.75,61.35)
+       DEBUG unknown wall cell L0 (76.65,53.05)
+       DEBUG unknown wall cell L1 (45.95,61.35)
+       DEBUG unknown wall cell L1 (48.95,61.35)
+       DEBUG unknown wall cell L1 (67.45,61.35)
+       DEBUG unknown wall cell L1 (70.45,61.35)
+  RIP-RETRY /io/CANL: ripping ['GND', '/modem_rf/SIM_DATA', '3V3']
+  FAIL /io/CANL                     rip-retry stalled on /io/CANL: no path L2.2 -> J1.5
+       DEBUG round 0: 3 clusters (pad counts [2, 1, 1])
+       DEBUG starts 213/218 free, goals 390/392 free
+       DEBUG flood 80252 cells, x range 25.7..76.6, y 35.8..61.3
+       DEBUG pocket walls: {'GND': 555, '/modem_rf/SIM_DATA': 292, 'netless': 245, '3V3': 238, 'edge/nogo': 189, '5V0': 182, '/io/DO2_DRV': 155, '/modem_rf/VDD_EXT_1V8': 148}
+       DEBUG unknown wall cell L1 (45.95,61.35)
+       DEBUG unknown wall cell L1 (70.45,61.35)
+       DEBUG unknown wall cell L1 (47.25,61.35)
+       DEBUG unknown wall cell L1 (64.95,61.35)
+       DEBUG unknown wall cell L1 (52.15,61.35)
+       DEBUG unknown wall cell L1 (41.75,61.35)
+  RIP-RETRY /modem_rf/U8_OE: ripping ['GND', '/modem_rf/SIM_DATA', '3V3']
+  FAIL /modem_rf/U8_OE              rip-retry stalled on /modem_rf/U8_OE: no path R63.2 -> U8.8
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 282/282 free, goals 0/85 free
+       DEBUG pad seal (goal): {'netless': 85}
+       DEBUG flood 73193 cells, x range 40.6..76.6, y 35.8..61.3
+       DEBUG pocket walls: {'GND': 552, 'netless': 382, '/modem_rf/VDD_EXT_1V8': 281, 'edge/nogo': 281, '3V3': 279, '/modem_rf/SIM_DATA': 274, '/io/DO2_DRV': 206, '/modem_rf/Q12_B': 201}
+       DEBUG unknown wall cell L1 (55.75,61.35)
+       DEBUG unknown wall cell L0 (76.65,53.05)
+       DEBUG unknown wall cell L1 (45.95,61.35)
+       DEBUG unknown wall cell L1 (48.95,61.35)
+       DEBUG unknown wall cell L1 (67.45,61.35)
+       DEBUG unknown wall cell L1 (70.45,61.35)
+  FAIL /io/VIN_SENSE                no path R32.2 -> R36.1
+       DEBUG round 0: 3 clusters (pad counts [2, 1, 1])
+       DEBUG starts 129/140 free, goals 140/140 free
+       DEBUG flood 8224 cells, x range 0.1..9.8, y 14.2..40.4
+       DEBUG pocket walls: {'edge/nogo': 503, '/io/DO2_OUT': 214, '/io/VIN_D1': 183, '/io/IGN_D0': 169, 'VIN': 169, '/io/IGN_D1': 141, '/power/VIN_B': 100, '/io/DI1_IN': 54}
+       DEBUG unknown wall cell L0 (0.45,20.25)
+       DEBUG unknown wall cell L1 (0.55,24.15)
+       DEBUG unknown wall cell L1 (0.55,36.25)
+       DEBUG unknown wall cell L1 (0.55,25.45)
+       DEBUG unknown wall cell L0 (0.55,22.35)
+       DEBUG unknown wall cell L1 (0.55,37.55)
+  RIP-RETRY MODEM_PWR_EN: ripping ['GND', '/modem_rf/USIM_RST_M', '/modem_rf/VBAT_MODEM']
+  FAIL MODEM_PWR_EN                 rip-retry stalled on MODEM_PWR_EN: no path R53.1 -> U2.21
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 139/142 free, goals 15/45 free
+       DEBUG flood 120759 cells, x range 40.6..76.6, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 529, '/modem_rf/USIM_RST_M': 426, 'edge/nogo': 391, 'netless': 324, '/modem_rf/VBAT_MODEM': 260, '3V3': 215, '/modem_rf/SIM_DATA': 210, 'MODEM_PWRKEY': 152}
+       DEBUG unknown wall cell L1 (76.65,40.05)
+       DEBUG unknown wall cell L1 (45.95,61.35)
+       DEBUG unknown wall cell L0 (70.65,28.55)
+       DEBUG unknown wall cell L0 (67.15,17.45)
+       DEBUG unknown wall cell L1 (76.65,45.75)
+       DEBUG unknown wall cell L1 (72.25,0.55)
+  RIP-RETRY /power/SYS: ripping ['GND', '/modem_rf/USIM_DATA_M', '3V3']
+  FAIL /power/SYS                   rip-retry stalled on /power/SYS: no path U9.3 -> L3.2
+       DEBUG round 0: 4 clusters (pad counts [4, 2, 1, 1])
+       DEBUG starts 423/426 free, goals 300/300 free
+       DEBUG flood 112063 cells, x range 0.7..64.6, y 0.1..61.3
+       DEBUG pocket walls: {'GND': 647, 'edge/nogo': 312, '/power/VIN_B': 261, '5V0': 179, '/modem_rf/USIM_DATA_M': 167, 'VIN': 142, '3V3': 136, '/io/Q1_G': 129}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (38.15,0.55)
+       DEBUG unknown wall cell L0 (29.45,0.55)
+       DEBUG unknown wall cell L0 (35.45,0.55)
+       DEBUG unknown wall cell L1 (40.35,10.05)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+  RIP-RETRY /modem_rf/USIM_VDD: ripping ['GND', '/modem_rf/VBAT_MODEM', '/modem_rf/USIM_RST_M']
+  FAIL /modem_rf/USIM_VDD           rip-retry stalled on /modem_rf/USIM_VDD: no path C47.1 -> U1.14
+       DEBUG round 0: 4 clusters (pad counts [3, 1, 1, 1])
+       DEBUG starts 374/374 free, goals 184/184 free
+       DEBUG flood 56665 cells, x range 48.5..76.6, y 0.1..51.2
+       DEBUG pocket walls: {'/modem_rf/VBAT_MODEM': 550, 'edge/nogo': 530, 'GND': 476, '/modem_rf/USIM_RST_M': 421, 'netless': 194, '/modem_rf/Q14_B': 136, '/modem_rf/USB_DM_TP': 120, '/modem_rf/USB_VBUS': 96}
+       DEBUG unknown wall cell L1 (76.65,26.65)
+       DEBUG unknown wall cell L1 (76.65,40.05)
+       DEBUG unknown wall cell L1 (61.35,0.55)
+       DEBUG unknown wall cell L1 (64.35,0.55)
+       DEBUG unknown wall cell L0 (55.65,0.55)
+       DEBUG unknown wall cell L1 (67.35,0.55)
+  RIP-RETRY /io/IGN_SENSE: ripping ['GND', '5V0', '3V3']
+  FAIL /io/IGN_SENSE                rip-retry stalled on /io/IGN_SENSE: no path R37.1 -> R35.2
+       DEBUG round 0: 2 clusters (pad counts [3, 1])
+       DEBUG starts 331/351 free, goals 130/140 free
+       DEBUG flood 87746 cells, x range 25.7..76.6, y 25.9..61.3
+       DEBUG pocket walls: {'GND': 727, '3V3': 299, '/modem_rf/SIM_DATA': 225, '5V0': 206, 'netless': 201, '/io/DO2_DRV': 173, 'edge/nogo': 146, '/modem_rf/VDD_EXT_1V8': 109}
+       DEBUG unknown wall cell L1 (45.95,61.35)
+       DEBUG unknown wall cell L1 (70.45,61.35)
+       DEBUG unknown wall cell L1 (47.25,61.35)
+       DEBUG unknown wall cell L1 (64.95,61.35)
+       DEBUG unknown wall cell L1 (52.15,61.35)
+       DEBUG unknown wall cell L1 (41.75,61.35)
+  RIP-RETRY /mcu/I2C1_SCL: ripping ['GND', '/modem_rf/USIM_DATA_M', '/mcu/I2C1_SDA']
+  FAIL /mcu/I2C1_SCL                rip-retry stalled on /mcu/I2C1_SCL: no path R7.2 -> U3.13
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 155/187 free, goals 12/28 free
+       DEBUG flood 79052 cells, x range 0.7..31.2, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 637, '/power/VIN_B': 283, 'edge/nogo': 252, 'VIN': 209, '5V0': 190, '/io/Q1_G': 187, '3V3': 185, '/io/DO1_OUT': 159}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (23.95,0.55)
+       DEBUG unknown wall cell L0 (0.55,53.55)
+       DEBUG unknown wall cell L0 (6.75,0.55)
+       DEBUG unknown wall cell L0 (9.35,61.35)
+  RIP-RETRY DO1_GATE: ripping ['DO2_GATE', 'DI2', '3V3']
+  FAIL DO1_GATE                     rip-retry stalled on DO1_GATE: no path U2.27 -> R42.1
+       DEBUG round 0: 3 clusters (pad counts [1, 1, 1])
+       DEBUG starts 30/60 free, goals 127/140 free
+       DEBUG flood 438 cells, x range 30.6..32.4, y 17.2..21.7
+       DEBUG pocket walls: {'MODEM_TX': 50, '/mcu/OSC_OUT': 47, 'DI2': 24, 'DO2_GATE': 24, '/mcu/SWCLK': 16, 'netless': 11, '/mcu/OSC_IN': 10, 'DI1': 7}
+  RIP-RETRY /mcu/I2C1_SDA: ripping ['GND', '3V3', '/io/Q1_G']
+  FAIL /mcu/I2C1_SDA                rip-retry stalled on /mcu/I2C1_SDA: no path R8.2 -> U3.14
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 153/187 free, goals 18/28 free
+       DEBUG flood 74184 cells, x range 0.7..31.2, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 665, 'edge/nogo': 282, '/power/VIN_B': 236, 'VIN': 209, '/io/DO1_OUT': 199, '/modem_rf/USIM_DATA_M': 194, '/io/Q1_G': 187, '3V3': 162}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (16.55,61.35)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (17.85,61.35)
+       DEBUG unknown wall cell L0 (12.15,61.35)
+       DEBUG unknown wall cell L1 (21.05,61.35)
+  RIP-RETRY /modem_rf/USIM_CLK_M: ripping ['GND', '/modem_rf/SIM_DATA', '3V3']
+  FAIL /modem_rf/USIM_CLK_M         rip-retry stalled on /modem_rf/USIM_CLK_M: no path U1.16 -> R67.1
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 184/184 free, goals 140/140 free
+       DEBUG flood 78831 cells, x range 40.6..76.6, y 18.6..61.3
+       DEBUG pocket walls: {'GND': 442, '/modem_rf/SIM_DATA': 347, 'edge/nogo': 317, '3V3': 306, 'netless': 283, '/modem_rf/VDD_EXT_1V8': 254, '/modem_rf/USIM_RST_M': 239, 'MODEM_PWRKEY': 162}
+       DEBUG unknown wall cell L1 (45.95,61.35)
+       DEBUG unknown wall cell L1 (51.25,34.75)
+       DEBUG unknown wall cell L1 (70.45,61.35)
+       DEBUG unknown wall cell L1 (51.25,21.75)
+       DEBUG unknown wall cell L1 (47.25,61.35)
+       DEBUG unknown wall cell L1 (64.95,61.35)
+  RIP-RETRY /mcu/NET_STATUS_LED: ripping ['GND', 'MODEM_PWR_EN', '3V3']
+  FAIL /mcu/NET_STATUS_LED          rip-retry stalled on /mcu/NET_STATUS_LED: no path U2.22 -> R5.1
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 15/45 free, goals 127/140 free
+       DEBUG flood 3374 cells, x range 30.6..40.4, y 18.9..25.8
+       DEBUG pocket walls: {'/mcu/SWDIO': 109, 'MODEM_TX': 82, '/mcu/NRST': 79, '/mcu/SWCLK': 73, 'SPI1_MOSI': 57, '/mcu/OSC_OUT': 47, '/mcu/DBG_RX': 44, 'GND': 38}
+  RIP-RETRY MODEM_RX: ripping ['GND', '/power/U6_TS', '/io/IGN_SENSE']
+  FAIL MODEM_RX                     child crashed (rc=1)
+       DEBUG round 0: 4 clusters (pad counts [1, 1, 1, 1])
+       DEBUG starts 210/210 free, goals 4/12 free
+       DEBUG flood 3090 cells, x range 37.6..42.9, y 42.9..50.4
+       DEBUG pocket walls: {'5V0': 132, 'GND': 110, '/mcu/BOOT0': 79, '/io/CANL': 67, '/power/REGN': 65, '/power/U6_ILIM': 56, '/power/U6_TS': 42, '/mcu/NSL_A': 39}
+  RIP-RETRY /io/Q2_G: ripping ['GND', '/io/IGN_SENSE', '/power/REGN']
+  FAIL /io/Q2_G                     rip-retry stalled on /io/Q2_G: no path R24.2 -> Q2.1
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 278/282 free, goals 38/70 free
+       DEBUG flood 12930 cells, x range 20.2..42.7, y 36.1..53.2
+       DEBUG pocket walls: {'GND': 651, '/io/IGN_SENSE': 266, '/power/REGN': 219, '3V3': 210, '/power/VBAT_BT': 206, '/mcu/BOOT0': 205, '5V0': 204, '/io/CANL_T': 141}
+  RIP-RETRY DI1: ripping ['GND', '3V3', '/io/Q1_G']
+  FAIL DI1                          rip-retry stalled on DI1: no path OK1.4 -> U2.25
+       DEBUG round 0: 2 clusters (pad counts [3, 1])
+       DEBUG starts 319/322 free, goals 44/60 free
+       DEBUG flood 81965 cells, x range 0.7..39.1, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 818, '3V3': 239, 'edge/nogo': 210, 'VIN': 184, '/io/DI2_LED': 166, '/power/VIN_B': 141, '/io/DO1_OUT': 133, '5V0': 133}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (23.95,0.55)
+       DEBUG unknown wall cell L0 (0.55,53.55)
+       DEBUG unknown wall cell L0 (6.75,0.55)
+       DEBUG unknown wall cell L0 (9.35,61.35)
+  RIP-RETRY DI2: ripping ['GND', '3V3', '5V0']
+  FAIL DI2                          rip-retry stalled on DI2: no path OK2.4 -> U2.26
+       DEBUG round 0: 2 clusters (pad counts [3, 1])
+       DEBUG starts 306/322 free, goals 30/60 free
+       DEBUG flood 88357 cells, x range 25.7..76.6, y 24.7..61.3
+       DEBUG pocket walls: {'GND': 698, '3V3': 344, 'netless': 222, '/modem_rf/SIM_DATA': 215, '5V0': 195, '/io/DO2_DRV': 142, '/io/IGN_SENSE': 142, 'edge/nogo': 141}
+       DEBUG unknown wall cell L1 (45.95,61.35)
+       DEBUG unknown wall cell L1 (70.45,61.35)
+       DEBUG unknown wall cell L1 (47.25,61.35)
+       DEBUG unknown wall cell L1 (64.95,61.35)
+       DEBUG unknown wall cell L1 (52.15,61.35)
+       DEBUG unknown wall cell L1 (41.75,61.35)
+  RIP-RETRY /mcu/IMU_INT1: ripping ['GND', '/power/VBAT_BT', '3V3']
+  FAIL /mcu/IMU_INT1                rip-retry stalled on /mcu/IMU_INT1: no path U3.4 -> U2.41
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 16/23 free, goals 15/45 free
+       DEBUG flood 6278 cells, x range 26.2..39.4, y 51.0..60.4
+       DEBUG pocket walls: {'GND': 246, '/io/VBAT_SENSE': 191, '/power/VBAT_BT': 157, '/io/CAN_SPLIT': 122, '3V3': 119, '/io/CAN_MID': 116, '/power/U6_TS': 98, '/io/CANH_T': 85}
+  RIP-RETRY /modem_rf/MRI_1V8: ripping ['GND', '/modem_rf/VBAT_MODEM', '/modem_rf/USIM_RST_M']
+  FAIL /modem_rf/MRI_1V8            rip-retry stalled on /modem_rf/MRI_1V8: no path U1.62 -> U8.4
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 161/207 free, goals 51/68 free
+       DEBUG flood 77683 cells, x range 31.4..76.6, y 0.7..51.2
+       DEBUG pocket walls: {'GND': 561, 'edge/nogo': 489, '/modem_rf/VBAT_MODEM': 454, '/modem_rf/USIM_RST_M': 321, 'netless': 284, '/power/SYS': 197, '/modem_rf/USB_VBUS': 119, '/modem_rf/NETLIGHT_MOD': 115}
+       DEBUG unknown wall cell L1 (76.65,26.65)
+       DEBUG unknown wall cell L1 (76.65,40.05)
+       DEBUG unknown wall cell L1 (38.15,0.55)
+       DEBUG unknown wall cell L0 (32.45,0.55)
+       DEBUG unknown wall cell L0 (35.45,0.55)
+       DEBUG unknown wall cell L1 (40.35,10.05)
+  RIP-RETRY /io/CANH_T: ripping ['GND', '/power/VBAT_BT', '/io/VBAT_SENSE']
+  FAIL /io/CANH_T                   rip-retry stalled on /io/CANH_T: no path R11.1 -> L2.4
+       DEBUG round 0: 3 clusters (pad counts [1, 1, 1])
+       DEBUG starts 144/144 free, goals 116/117 free
+       DEBUG flood 7252 cells, x range 20.7..39.4, y 48.0..60.4
+       DEBUG pocket walls: {'GND': 338, '/io/VBAT_SENSE': 191, '/power/VBAT_BT': 157, '/io/CAN_MID': 141, '3V3': 115, 'SYS': 104, '/io/DO1_B': 101, '/power/U6_TS': 98}
+  RIP-RETRY /io/DO1_B: ripping ['GND', '/io/Q1_G', '3V3']
+  FAIL /io/DO1_B                    rip-retry stalled on /io/DO1_B: no path Q5.1 -> R42.2
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 89/90 free, goals 130/140 free
+       DEBUG flood 74905 cells, x range 0.7..39.1, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 730, '3V3': 260, 'edge/nogo': 241, 'VIN': 182, '/io/DO1_OUT': 171, '/io/Q1_G': 156, '5V0': 138, 'DI1': 137}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (16.55,61.35)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (17.85,61.35)
+       DEBUG unknown wall cell L1 (21.05,61.35)
+       DEBUG unknown wall cell L0 (23.95,0.55)
+  PARTIAL /mcu/SWCLK                 kept copper; remainder requeued (cluster count stuck at 2)
+  RIP-RETRY /mcu/VBAT_MCU: ripping ['GND', '3V3', '/io/IGN_SENSE']
+  OK /mcu/SWCLK                   vias=0 len= 16.2 man= 94.3 ratio=0.17 [4/68   6%]
+  FAIL /mcu/VBAT_MCU                rip-retry stalled on /mcu/VBAT_MCU: no path R3.2 -> U2.1
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 242/242 free, goals 45/64 free
+       DEBUG flood 23413 cells, x range 20.2..42.2, y 25.9..60.4
+       DEBUG pocket walls: {'GND': 723, '3V3': 317, '5V0': 203, '/io/IGN_SENSE': 203, '/power/VBAT_BT': 154, 'DI1': 148, 'CAN1_RX': 124, '/io/VIN_SENSE': 113}
+  RIP-RETRY /modem_rf/MDTR_1V8: ripping ['/modem_rf/MRI_1V8', 'GND', '/modem_rf/VBAT_MODEM']
+  FAIL /modem_rf/MDTR_1V8           rip-retry stalled on /modem_rf/MDTR_1V8: no path U1.66 -> U8.5
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 163/209 free, goals 0/85 free
+       DEBUG pad seal (goal): {'netless': 68, '/modem_rf/MRI_1V8': 17}
+       DEBUG flood 77943 cells, x range 31.4..76.6, y 0.7..51.2
+       DEBUG pocket walls: {'GND': 528, 'edge/nogo': 513, '/modem_rf/VBAT_MODEM': 404, '/modem_rf/USIM_RST_M': 312, 'netless': 275, '/power/SYS': 194, '/modem_rf/NETLIGHT_MOD': 166, '/modem_rf/USB_VBUS': 126}
+       DEBUG unknown wall cell L1 (76.65,26.65)
+       DEBUG unknown wall cell L1 (76.65,40.05)
+       DEBUG unknown wall cell L1 (38.15,0.55)
+       DEBUG unknown wall cell L0 (32.45,0.55)
+       DEBUG unknown wall cell L0 (35.45,0.55)
+       DEBUG unknown wall cell L1 (40.35,10.05)
+  RIP-RETRY /modem_rf/MTXD_1V8: ripping ['GND', '/modem_rf/VBAT_MODEM', '/modem_rf/USIM_RST_M']
+  FAIL /modem_rf/MTXD_1V8           rip-retry stalled on /modem_rf/MTXD_1V8: no path U1.67 -> U8.3
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 207/209 free, goals 51/85 free
+       DEBUG flood 86477 cells, x range 31.4..76.6, y 0.7..51.2
+       DEBUG pocket walls: {'GND': 490, 'edge/nogo': 490, '/modem_rf/VBAT_MODEM': 359, '/modem_rf/USIM_RST_M': 347, 'netless': 250, '/power/SYS': 189, '/modem_rf/NETLIGHT_MOD': 134, '3V3': 131}
+       DEBUG unknown wall cell L1 (76.65,40.05)
+       DEBUG unknown wall cell L1 (38.15,0.55)
+       DEBUG unknown wall cell L0 (35.45,0.55)
+       DEBUG unknown wall cell L1 (40.35,10.05)
+       DEBUG unknown wall cell L1 (51.25,34.75)
+       DEBUG unknown wall cell L0 (70.65,28.55)
+  RIP-RETRY /mcu/SYS_LED_A: ripping ['/power/U6_ICHG', '/mcu/SYS_LED', '/power/REGN']
+  FAIL /mcu/SYS_LED_A               rip-retry stalled on /mcu/SYS_LED_A: no path D20.2 -> R4.2
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 90/90 free, goals 140/140 free
+       DEBUG flood 9217 cells, x range 25.7..42.7, y 36.1..51.4
+       DEBUG pocket walls: {'GND': 545, '/io/IGN_SENSE': 273, '/io/CANL': 166, '5V0': 149, '/mcu/BOOT0': 141, '3V3': 132, '/io/VIN_SENSE': 123, '/power/REGN': 102}
+  RIP-RETRY /modem_rf/MRXD_1V8: ripping ['GND', '/modem_rf/VBAT_MODEM', '/modem_rf/USIM_RST_M']
+  FAIL /modem_rf/MRXD_1V8           rip-retry stalled on /modem_rf/MRXD_1V8: no path U1.68 -> U8.2
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 209/209 free, goals 51/68 free
+       DEBUG flood 74764 cells, x range 31.4..76.6, y 0.7..51.2
+       DEBUG pocket walls: {'GND': 538, '/modem_rf/VBAT_MODEM': 481, 'edge/nogo': 470, '/modem_rf/USIM_RST_M': 314, 'netless': 267, '/power/SYS': 194, '/modem_rf/USB_VBUS': 126, '/modem_rf/NETLIGHT_MOD': 115}
+       DEBUG unknown wall cell L1 (76.65,26.65)
+       DEBUG unknown wall cell L1 (76.65,40.05)
+       DEBUG unknown wall cell L1 (38.15,0.55)
+       DEBUG unknown wall cell L0 (32.45,0.55)
+       DEBUG unknown wall cell L0 (35.45,0.55)
+       DEBUG unknown wall cell L1 (40.35,10.05)
+  RIP-RETRY /io/VBAT_SENSE: ripping ['GND', '/power/VBAT_BT', '3V3']
+  FAIL /io/VBAT_SENSE               rip-retry stalled on /io/VBAT_SENSE: no path R39.1 -> C29.1
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 282/282 free, goals 92/100 free
+       DEBUG flood 8286 cells, x range 26.7..39.4, y 46.8..60.4
+       DEBUG pocket walls: {'/power/VBAT_BT': 292, 'GND': 284, '3V3': 181, '/io/CAN_SPLIT': 150, '/io/DO2_DRV': 99, '/power/U6_TS': 98, '/io/CAN_MID': 92, '/mcu/NSL_BASE': 91}
+  RIP-RETRY /io/CAN_SPLIT: ripping ['/modem_rf/USIM_DATA_M', '/mcu/NRST', 'DI2']
+  FAIL /io/CAN_SPLIT                rip-retry stalled on /io/CAN_SPLIT: no path C22.1 -> JP2.2
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 100/100 free, goals 140/140 free
+       DEBUG flood 8044 cells, x range 28.6..44.0, y 25.9..37.4
+       DEBUG pocket walls: {'GND': 657, '5V0': 290, '3V3': 275, 'DI1': 200, '/mcu/NRST': 168, '/io/DO1_DRV': 130, 'DI2': 119, 'MODEM_TX': 107}
+  RIP-RETRY /power/U6_TS: ripping ['/power/U6_ICHG', 'GND', '/modem_rf/SIM_DATA']
+  FAIL /power/U6_TS                 rip-retry stalled on /power/U6_TS: no path R88.2 -> U6.11
+       DEBUG round 0: 2 clusters (pad counts [3, 1])
+       DEBUG starts 828/858 free, goals 0/36 free
+       DEBUG pad seal (goal): {'/power/U6_ICHG': 18, 'netless': 18}
+       DEBUG flood 81299 cells, x range 27.1..76.6, y 35.8..61.3
+       DEBUG pocket walls: {'GND': 500, '3V3': 291, '/modem_rf/SIM_DATA': 285, 'netless': 256, '/io/DO2_DRV': 197, 'edge/nogo': 187, '5V0': 179, '/modem_rf/VDD_EXT_1V8': 146}
+       DEBUG unknown wall cell L1 (45.95,61.35)
+       DEBUG unknown wall cell L1 (70.45,61.35)
+       DEBUG unknown wall cell L1 (47.25,61.35)
+       DEBUG unknown wall cell L1 (64.95,61.35)
+       DEBUG unknown wall cell L1 (52.15,61.35)
+       DEBUG unknown wall cell L1 (41.75,61.35)
+  RIP-RETRY DO2_GATE: ripping ['GND', '3V3', '/io/Q1_G']
+  FAIL DO2_GATE                     rip-retry stalled on DO2_GATE: no path R46.1 -> U2.28
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 278/284 free, goals 30/60 free
+       DEBUG flood 76078 cells, x range 0.7..39.1, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 732, 'edge/nogo': 247, 'VIN': 190, '/io/DO1_OUT': 175, '3V3': 164, '/io/Q1_G': 161, '5V0': 149, 'DI1': 139}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (17.85,61.35)
+       DEBUG unknown wall cell L1 (21.05,61.35)
+       DEBUG unknown wall cell L0 (23.95,0.55)
+       DEBUG unknown wall cell L0 (0.55,53.55)
+  RIP-RETRY /mcu/SYS_LED: ripping ['GND', 'CAN1_RX', '3V3']
+  FAIL /mcu/SYS_LED                 rip-retry stalled on /mcu/SYS_LED: no path U2.2 -> D20.1
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 32/64 free, goals 87/90 free
+       DEBUG flood 74807 cells, x range 0.7..39.1, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 752, '3V3': 254, 'edge/nogo': 238, 'VIN': 181, '/io/DO1_OUT': 165, '/io/Q1_G': 152, '5V0': 147, 'DI1': 136}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (16.55,61.35)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (17.85,61.35)
+       DEBUG unknown wall cell L1 (21.05,61.35)
+       DEBUG unknown wall cell L0 (23.95,0.55)
+  RIP-RETRY CAN1_TX: ripping ['GND', '/io/CANL_T', '/io/Q1_G']
+  FAIL CAN1_TX                      rip-retry stalled on CAN1_TX: no path U4.1 -> U2.46
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 126/126 free, goals 15/45 free
+       DEBUG flood 74647 cells, x range 0.7..29.4, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 677, 'edge/nogo': 283, '/io/DI2_LED': 220, 'VIN': 205, '/io/DO1_OUT': 199, '3V3': 195, '/io/DI1_LED': 167, '/power/VIN_B': 156}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (17.85,61.35)
+       DEBUG unknown wall cell L1 (21.05,61.35)
+       DEBUG unknown wall cell L0 (23.95,0.55)
+       DEBUG unknown wall cell L0 (0.55,53.55)
+  RIP-RETRY FLASH_CS: ripping ['GND', '/io/Q1_G', '3V3']
+  FAIL FLASH_CS                     rip-retry stalled on FLASH_CS: no path U7.1 -> U2.14
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 125/126 free, goals 15/45 free
+       DEBUG flood 69607 cells, x range 0.7..29.1, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 655, 'edge/nogo': 323, 'VIN': 237, '/io/Q1_G': 229, '/io/DO1_OUT': 209, '/io/DO2_OUT': 179, '/power/VIN_B': 170, '3V3': 160}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (17.85,61.35)
+       DEBUG unknown wall cell L1 (21.05,61.35)
+       DEBUG unknown wall cell L0 (23.95,0.55)
+       DEBUG unknown wall cell L0 (0.55,53.55)
+  RIP-RETRY SPI1_MISO: ripping ['GND', '/io/Q1_G', '3V3']
+  FAIL SPI1_MISO                    rip-retry stalled on SPI1_MISO: no path U7.2 -> U2.16
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 126/147 free, goals 15/45 free
+       DEBUG flood 69526 cells, x range 0.7..29.1, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 660, 'edge/nogo': 321, 'VIN': 234, '/io/Q1_G': 225, '/io/DO1_OUT': 208, '/io/DO2_OUT': 179, '3V3': 169, '/power/VIN_B': 168}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (17.85,61.35)
+       DEBUG unknown wall cell L1 (21.05,61.35)
+       DEBUG unknown wall cell L0 (23.95,0.55)
+       DEBUG unknown wall cell L0 (0.55,53.55)
+  RIP-RETRY /power/VBAT_BT: ripping ['GND', '3V3', '/io/VBAT_SENSE']
+  FAIL /power/VBAT_BT               rip-retry stalled on /power/VBAT_BT: no path J2.1 -> C67.1
+       DEBUG round 0: 2 clusters (pad counts [3, 1])
+       DEBUG starts 608/628 free, goals 140/140 free
+       DEBUG flood 8766 cells, x range 27.2..39.5, y 44.4..59.1
+       DEBUG pocket walls: {'GND': 253, '/io/CAN_SPLIT': 115, '/mcu/SYS_LED_A': 110, '/io/VBAT_SENSE': 102, '3V3': 100, '/power/U6_TS': 98, '/io/Q2_G': 98, '/power/U6_ICHG': 97}
+  PARTIAL CAN_STB                    kept copper; remainder requeued (cluster count stuck at 2)
+  RIP-RETRY /io/DO1_DRV: ripping ['GND', '5V0', '3V3']
+  OK CAN_STB                      vias=6 len= 66.8 man= 71.8 ratio=0.93 [5/68   7%]  VIAS>4
+  FAIL /io/DO1_DRV                  rip-retry stalled on /io/DO1_DRV: no path Q6.3 -> R23.1
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 242/242 free, goals 139/140 free
+       DEBUG flood 88408 cells, x range 28.6..76.6, y 18.6..61.3
+       DEBUG pocket walls: {'GND': 533, '3V3': 410, '/modem_rf/SIM_DATA': 260, 'netless': 247, 'edge/nogo': 238, '/modem_rf/VDD_EXT_1V8': 186, '5V0': 174, '/modem_rf/USIM_RST_M': 155}
+       DEBUG unknown wall cell L1 (45.95,61.35)
+       DEBUG unknown wall cell L1 (51.25,34.75)
+       DEBUG unknown wall cell L1 (70.45,61.35)
+       DEBUG unknown wall cell L1 (51.25,21.75)
+       DEBUG unknown wall cell L1 (47.25,61.35)
+       DEBUG unknown wall cell L1 (64.95,61.35)
+  RIP-RETRY /modem_rf/USIM_DET: ripping ['/modem_rf/USIM_RST_M', '/modem_rf/VDD_EXT_1V8', '/modem_rf/SIM_RST']
+  FAIL /modem_rf/USIM_DET           rip-retry stalled on /modem_rf/USIM_DET: no path X1.CD -> U1.13
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 70/88 free, goals 138/184 free
+       DEBUG flood 76947 cells, x range 40.6..76.6, y 35.8..61.3
+       DEBUG pocket walls: {'GND': 497, 'netless': 394, 'edge/nogo': 392, '/modem_rf/SIM_DATA': 373, '3V3': 255, '/modem_rf/SIM_CLK': 198, 'MODEM_PWRKEY': 194, '/modem_rf/VDD_EXT_1V8': 182}
+       DEBUG unknown wall cell L1 (55.75,61.35)
+       DEBUG unknown wall cell L0 (76.65,53.05)
+       DEBUG unknown wall cell L1 (45.95,61.35)
+       DEBUG unknown wall cell L1 (48.95,61.35)
+       DEBUG unknown wall cell L1 (61.55,40.55)
+       DEBUG unknown wall cell L1 (64.55,40.55)
+  FAIL /mcu/BOOT1                   no path U2.20 -> R2.1
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 0/45 free, goals 140/140 free
+       DEBUG pad seal (start): {'netless': 45}
+       DEBUG flood 0 cells - ALL start cells blocked
+       DEBUG pocket walls: {}
+  RIP-RETRY /mcu/NSL_A: ripping ['GND', '/power/U6_TS', '/mcu/BOOT0']
+  FAIL /mcu/NSL_A                   rip-retry stalled on /mcu/NSL_A: no path D21.2 -> R6.2
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 90/90 free, goals 140/140 free
+       DEBUG flood 2839 cells, x range 34.3..42.7, y 42.5..50.2
+       DEBUG pocket walls: {'GND': 110, '/power/REGN': 102, '/io/CANL': 99, '/mcu/BOOT0': 72, '/power/U6_TS': 71, '/power/U6_ILIM': 56, 'MODEM_RX': 51, '/io/Q2_G': 48}
+  RIP-RETRY SPI1_SCK: ripping ['GND', '/io/Q1_G', '3V3']
+  FAIL SPI1_SCK                     rip-retry stalled on SPI1_SCK: no path U7.6 -> U2.15
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 147/147 free, goals 15/45 free
+       DEBUG flood 69917 cells, x range 0.7..29.1, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 610, 'edge/nogo': 324, 'VIN': 239, '/io/DO1_OUT': 211, '/io/Q1_G': 206, '/io/DO2_OUT': 179, '3V3': 175, '/power/VIN_B': 171}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (17.85,61.35)
+       DEBUG unknown wall cell L1 (21.05,61.35)
+       DEBUG unknown wall cell L0 (23.95,0.55)
+       DEBUG unknown wall cell L0 (0.55,53.55)
+  RIP-RETRY /io/DO2_X: ripping ['GND', '5V0', '3V3']
+  FAIL /io/DO2_X                    rip-retry stalled on /io/DO2_X: no path R48.2 -> Q7.3
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 252/252 free, goals 96/98 free
+       DEBUG flood 84207 cells, x range 25.7..76.6, y 25.9..61.3
+       DEBUG pocket walls: {'GND': 632, '3V3': 321, '/modem_rf/SIM_DATA': 240, '5V0': 235, 'netless': 229, '/io/IGN_SENSE': 162, 'edge/nogo': 158, '/io/DO2_DRV': 157}
+       DEBUG unknown wall cell L1 (45.95,61.35)
+       DEBUG unknown wall cell L1 (70.45,61.35)
+       DEBUG unknown wall cell L1 (47.25,61.35)
+       DEBUG unknown wall cell L1 (64.95,61.35)
+       DEBUG unknown wall cell L1 (52.15,61.35)
+       DEBUG unknown wall cell L1 (41.75,61.35)
+  RIP-RETRY /mcu/OSC32_IN: ripping ['GND', '/io/Q1_G', '3V3']
+  FAIL /mcu/OSC32_IN                rip-retry stalled on /mcu/OSC32_IN: no path C3.1 -> U2.3
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 249/260 free, goals 32/64 free
+       DEBUG flood 69392 cells, x range 0.7..29.1, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 688, 'edge/nogo': 334, 'VIN': 258, '/io/DO1_OUT': 248, '/io/Q1_G': 214, '/io/DO2_OUT': 183, '/power/VIN_B': 181, '/power/VIN_P': 150}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (17.85,61.35)
+       DEBUG unknown wall cell L1 (21.05,61.35)
+       DEBUG unknown wall cell L0 (23.95,0.55)
+       DEBUG unknown wall cell L0 (0.55,53.55)
+  RIP-RETRY MODEM_DTR: ripping ['MODEM_RI', '/mcu/SWDIO', '/mcu/SWCLK']
+  FAIL MODEM_DTR                    rip-retry stalled on MODEM_DTR: no path U2.33 -> U8.10
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 30/60 free, goals 0/85 free
+       DEBUG pad seal (goal): {'netless': 85}
+       DEBUG flood 5420 cells, x range 23.9..32.4, y 11.8..27.6
+       DEBUG pocket walls: {'/mcu/OSC_IN': 174, 'GND': 162, '/modem_rf/USIM_DATA_M': 152, '/mcu/OSC_OUT': 133, '/mcu/I2C1_SDA': 105, 'MODEM_TX': 101, '/power/VIN_B': 94, '/mcu/BOOT0': 84}
+  RIP-RETRY /power/U6_OTG: ripping ['/mcu/VBAT_MCU', '/power/U6_STAT', '/power/U6_PG']
+  FAIL /power/U6_OTG                rip-retry stalled on /power/U6_OTG: no path U6.6 -> R87.1
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 16/24 free, goals 142/143 free
+       DEBUG flood 3767 cells, x range 20.2..32.5, y 42.0..52.4
+       DEBUG pocket walls: {'/io/DI2_LED': 186, 'GND': 136, '/io/Q1_G': 128, '/io/DI1_LED': 102, '/power/SYS': 94, 'CAN1_RX': 67, 'SYS': 62, '3V3': 57}
+  RIP-RETRY MODEM_RI: ripping ['MODEM_RX', 'MODEM_DTR', '/mcu/SWCLK']
+  FAIL MODEM_RI                     rip-retry stalled on MODEM_RI: no path U2.32 -> U8.11
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 30/60 free, goals 51/68 free
+       DEBUG flood 2577 cells, x range 25.8..32.4, y 17.2..27.6
+       DEBUG pocket walls: {'/mcu/OSC_IN': 151, 'MODEM_TX': 96, '/mcu/BOOT0': 84, '/modem_rf/USIM_DATA_M': 74, '/mcu/OSC_OUT': 72, 'GND': 71, 'SPI1_MOSI': 52, 'CAN_STB': 37}
+  RIP-RETRY /power/U5_VCC: ripping ['5V0', 'GND', '3V3']
+  FAIL /power/U5_VCC                rip-retry stalled on /power/U5_VCC: no path C75.1 -> U5.1
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 230/230 free, goals 105/108 free
+       DEBUG flood 10550 cells, x range 26.8..36.8, y 1.6..13.8
+       DEBUG pocket walls: {'GND': 214, '/power/SW_BUCK': 205, '5V0': 164, '/power/VIN_B': 119, '/power/U5_IS': 116, '/power/SYS': 78, '/power/U5_EN': 72, '/modem_rf/USIM_DATA_M': 69}
+  RIP-RETRY /io/DO1_X: ripping ['GND', 'DI1', '5V0']
+  FAIL /io/DO1_X                    rip-retry stalled on /io/DO1_X: no path Q6.1 -> Q5.3
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 225/228 free, goals 98/98 free
+       DEBUG flood 7716 cells, x range 28.6..40.7, y 25.4..37.4
+       DEBUG pocket walls: {'GND': 413, '3V3': 267, '/mcu/NRST': 216, '/io/IGN_SENSE': 117, '5V0': 112, 'MODEM_TX': 105, 'DI1': 91, '/io/DO1_DRV': 78}
+  RIP-RETRY /power/SW_CHG: ripping ['GND', '/io/IGN_SENSE', '/power/REGN']
+  FAIL /power/SW_CHG                rip-retry stalled on /power/SW_CHG: no path C64.2 -> L3.1
+       DEBUG round 0: 3 clusters (pad counts [2, 1, 1])
+       DEBUG round 1: 2 clusters (pad counts [3, 1])
+       DEBUG starts 131/155 free, goals 320/320 free
+       DEBUG flood 14626 cells, x range 25.7..42.7, y 25.9..50.2
+       DEBUG pocket walls: {'GND': 931, '5V0': 299, '3V3': 259, 'DI1': 198, '/io/IGN_SENSE': 192, '/io/VIN_SENSE': 173, 'DI2': 164, '/mcu/NRST': 147}
+  RIP-RETRY /mcu/DBG_TX: ripping ['GND', 'DI1', '/mcu/NRST']
+  FAIL /mcu/DBG_TX                  rip-retry stalled on /mcu/DBG_TX: no path U2.12 -> TP4.1
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 42/64 free, goals 210/210 free
+       DEBUG flood 11929 cells, x range 25.8..40.4, y 20.2..37.4
+       DEBUG pocket walls: {'GND': 504, '/modem_rf/USIM_DATA_M': 334, 'DI1': 244, '3V3': 222, 'MODEM_TX': 164, '5V0': 159, '/mcu/OSC_IN': 155, '/mcu/DBG_RX': 125}
+  RIP-RETRY /power/U5_EN: ripping ['/power/SYS', 'GND', '/modem_rf/VBAT_MODEM']
+  FAIL /power/U5_EN                 rip-retry stalled on /power/U5_EN: no path U5.2 -> R81.2
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 119/126 free, goals 139/140 free
+       DEBUG flood 27055 cells, x range 31.4..64.6, y 0.7..24.1
+       DEBUG pocket walls: {'GND': 414, '/modem_rf/VBAT_MODEM': 407, '/power/SYS': 384, '/modem_rf/USIM_DATA_M': 322, 'edge/nogo': 310, 'netless': 288, '/modem_rf/NETLIGHT_MOD': 281, '/modem_rf/USB_VBUS': 271}
+       DEBUG unknown wall cell L1 (38.15,0.55)
+       DEBUG unknown wall cell L0 (32.45,0.55)
+       DEBUG unknown wall cell L0 (35.45,0.55)
+       DEBUG unknown wall cell L1 (40.35,10.05)
+       DEBUG unknown wall cell L1 (37.75,10.65)
+       DEBUG unknown wall cell L1 (42.45,0.55)
+  RIP-RETRY /power/U6_ILIM: ripping ['/io/CAN_MID', '/mcu/VBAT_MCU', 'SYS']
+  FAIL /power/U6_ILIM               rip-retry stalled on /power/U6_ILIM: no path U6.8 -> R86.1
+       DEBUG round 0: 3 clusters (pad counts [1, 1, 1])
+       DEBUG starts 8/36 free, goals 129/130 free
+       DEBUG flood 4266 cells, x range 20.2..32.5, y 42.0..52.6
+       DEBUG pocket walls: {'/io/DI2_LED': 186, 'GND': 160, '/io/Q1_G': 128, '/io/DI1_LED': 102, '/power/SYS': 94, '3V3': 84, 'CAN1_RX': 67, 'SYS': 62}
+  RIP-RETRY /mcu/NSL_K: ripping ['GND', '/power/U6_TS', '/mcu/BOOT0']
+  FAIL /mcu/NSL_K                   rip-retry stalled on /mcu/NSL_K: no path D21.1 -> Q4.3
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 84/90 free, goals 105/105 free
+       DEBUG flood 8272 cells, x range 25.7..42.7, y 36.1..50.2
+       DEBUG pocket walls: {'GND': 505, '/io/IGN_SENSE': 273, '/power/REGN': 266, '/io/VIN_SENSE': 169, '/io/CANL': 167, '5V0': 149, '/io/Q2_G': 111, '/io/CANL_T': 98}
+  RIP-RETRY /mcu/OSC32_OUT: ripping ['GND', '/io/Q1_G', '3V3']
+  FAIL /mcu/OSC32_OUT               rip-retry stalled on /mcu/OSC32_OUT: no path Y2.2 -> U2.4
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 259/260 free, goals 32/64 free
+       DEBUG flood 69977 cells, x range 0.7..29.1, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 650, 'edge/nogo': 321, 'VIN': 239, '/io/DO1_OUT': 209, '/io/Q1_G': 206, '/io/DO2_OUT': 179, '/power/VIN_B': 170, '3V3': 152}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (17.85,61.35)
+       DEBUG unknown wall cell L1 (21.05,61.35)
+       DEBUG unknown wall cell L0 (23.95,0.55)
+       DEBUG unknown wall cell L0 (0.55,53.55)
+  RIP-RETRY /power/U6_BTST: ripping ['/power/REGN', '/power/SW_CHG', 'GND']
+  FAIL /power/U6_BTST               rip-retry stalled on /power/REGN: no path U6.22 -> R88.1
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG round 0: 3 clusters (pad counts [1, 1, 1])
+       DEBUG round 1: 2 clusters (pad counts [2, 1])
+       DEBUG starts 147/178 free, goals 137/140 free
+       DEBUG flood 3246 cells, x range 25.7..35.2, y 39.6..46.9
+       DEBUG pocket walls: {'GND': 175, 'DI2': 115, '/io/VIN_SENSE': 107, '/io/Q2_G': 96, '/power/U6_BTST': 78, '3V3': 68, '/io/CANL_T': 61, '/mcu/SYS_LED': 58}
+  RIP-RETRY /power/PMID: ripping ['GND', '/io/IGN_SENSE', '/power/REGN']
+  FAIL /power/PMID                  rip-retry stalled on /power/PMID: no path U6.23 -> C62.1
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 8/36 free, goals 139/140 free
+       DEBUG flood 8159 cells, x range 25.7..42.7, y 36.1..50.2
+       DEBUG pocket walls: {'GND': 423, '/io/IGN_SENSE': 273, '5V0': 163, '/io/VIN_SENSE': 130, 'DI2': 115, '/io/CANL_T': 108, '/mcu/BOOT0': 99, '3V3': 98}
+--- pass 3: 68 net(s)
+  FAIL 3V3                          no path C10.1 -> C11.1
+       DEBUG island (layer 6) at (44.0,22.5) has no legal tap spot
+       DEBUG island (layer 6) at (44.5,22.5) has no legal tap spot
+       DEBUG round 0: 16 clusters (pad counts [22, 4, 2, 2, 1, 1, 1, 1])
+       DEBUG starts 339/400 free, goals 231/240 free
+       DEBUG flood 934 cells, x range 27.4..29.1, y 27.2..35.4
+       DEBUG pocket walls: {'CAN1_RX': 78, '/io/IGN_SENSE': 58, 'GND': 53, '/io/DO1_B': 12, '/mcu/OSC32_IN': 9, '/mcu/OSC_OUT': 5, '/mcu/SYS_LED': 5, '/mcu/BOOT0': 4}
+  RIP-RETRY SYS: ripping ['/modem_rf/Q13_B', '/modem_rf/USB_VBUS', '/modem_rf/Q3_G']
+  FAIL SYS                          rip-retry stalled on SYS: no path Q13.2 -> R38.1
+       DEBUG round 0: 5 clusters (pad counts [1, 2, 1, 1, 1])
+       DEBUG starts 232/234 free, goals 126/140 free
+       DEBUG flood 22444 cells, x range 37.5..64.4, y 6.3..23.9
+       DEBUG pocket walls: {'/modem_rf/VBAT_MODEM': 472, 'GND': 447, '/modem_rf/NETLIGHT_MOD': 279, 'netless': 249, '/power/SYS': 199, '/modem_rf/USB_VBUS': 164, '/modem_rf/USB_DM_M': 124, '/modem_rf/Q13_B': 102}
+       DEBUG unknown wall cell L1 (62.45,17.25)
+       DEBUG unknown wall cell L1 (62.35,17.25)
+       DEBUG unknown wall cell L1 (62.55,17.25)
+       DEBUG unknown wall cell L1 (63.05,17.25)
+       DEBUG unknown wall cell L1 (63.25,17.25)
+       DEBUG unknown wall cell L1 (63.15,17.25)
+  FAIL /modem_rf/VDD_EXT_1V8        no path R63.1 -> C44.1
+       DEBUG round 0: 5 clusters (pad counts [1, 1, 1, 1, 1])
+       DEBUG starts 102/142 free, goals 90/90 free
+       DEBUG flood 74316 cells, x range 41.1..76.4, y 18.9..61.1
+       DEBUG pocket walls: {'GND': 537, 'edge/nogo': 480, '/modem_rf/SIM_DATA': 327, 'netless': 304, '/modem_rf/USIM_RST_M': 277, '3V3': 257, 'MODEM_PWRKEY': 199, '5V0': 176}
+       DEBUG unknown wall cell L1 (51.15,28.25)
+       DEBUG unknown wall cell L0 (76.45,53.75)
+       DEBUG unknown wall cell L1 (51.15,22.95)
+       DEBUG unknown wall cell L1 (42.35,61.15)
+       DEBUG unknown wall cell L1 (45.35,61.15)
+       DEBUG unknown wall cell L1 (62.55,61.15)
+  FAIL 5V0                          child crashed (rc=1)
+       DEBUG round 0: 10 clusters (pad counts [4, 4, 2, 1, 1, 1, 1, 1])
+       DEBUG round 1: 9 clusters (pad counts [4, 4, 3, 1, 1, 1, 1, 1])
+       DEBUG round 2: 8 clusters (pad counts [4, 4, 3, 2, 1, 1, 1, 1])
+       DEBUG starts 472/577 free, goals 92/162 free
+       DEBUG flood 70946 cells, x range 27.9..76.4, y 26.2..61.1
+       DEBUG pocket walls: {'GND': 683, '/modem_rf/SIM_DATA': 285, '3V3': 270, 'netless': 261, 'edge/nogo': 223, '/io/DO2_DRV': 206, '/modem_rf/VDD_EXT_1V8': 193, '/io/IGN_SENSE': 162}
+       DEBUG unknown wall cell L0 (76.45,53.75)
+       DEBUG unknown wall cell L1 (42.35,61.15)
+       DEBUG unknown wall cell L1 (45.35,61.15)
+       DEBUG unknown wall cell L1 (62.55,61.15)
+       DEBUG unknown wall cell L1 (65.55,61.15)
+       DEBUG unknown wall cell L1 (68.55,61.15)
+  FAIL /mcu/3V3A                    no path FB1.2 -> U2.9
+       DEBUG round 0: 4 clusters (pad counts [1, 1, 1, 1])
+       DEBUG starts 87/108 free, goals 0/64 free
+       DEBUG pad seal (goal): {'GND': 48, 'IGN_SENSE': 16}
+       DEBUG flood 331 cells, x range 22.1..24.4, y 46.6..48.8
+       DEBUG pocket walls: {'/io/DI1_LED': 35, '/io/Q1_G': 32, '/io/DI2_LED': 31, 'GND': 15, '3V3': 13, 'CAN1_TX': 11, '5V0': 1}
+  FAIL GND                          no path U6.18 -> U6.9
+       DEBUG island (layer 0) at (33.2,45.6) has no legal tap spot
+       DEBUG island (layer 0) at (32.2,32.5) has no legal tap spot
+       DEBUG island (layer 0) at (40.4,27.5) has no legal tap spot
+       DEBUG island (layer 0) at (58.0,10.0) has no legal tap spot
+       DEBUG island (layer 0) at (48.6,0.7) has no legal tap spot
+       DEBUG island (layer 0) at (46.4,2.1) has no legal tap spot
+       DEBUG island (layer 0) at (66.7,1.6) has no legal tap spot
+       DEBUG island (layer 2) at (38.4,51.5) has no legal tap spot
+       DEBUG island (layer 2) at (41.6,44.4) has no legal tap spot
+       DEBUG island (layer 2) at (28.8,17.4) has no legal tap spot
+       DEBUG round 0: 7 clusters (pad counts [180, 1, 1, 1, 1, 1, 1])
+       DEBUG starts 32280/64084 free, goals 0/36 free
+       DEBUG pad seal (goal): {'/power/U6_ILIM': 27, '/power/U6_ICHG': 9}
+       DEBUG flood 289335 cells, x range 0.1..76.5, y 0.1..61.9
+       DEBUG pocket walls: {'edge/nogo': 426, 'netless': 193, '3V3': 183, '5V0': 167, '/modem_rf/VBAT_MODEM': 151, '/modem_rf/USIM_RST_M': 147, 'VIN': 95, '/modem_rf/USIM_DATA_M': 95}
+       DEBUG unknown wall cell L0 (2.55,61.15)
+       DEBUG unknown wall cell L1 (51.15,28.25)
+       DEBUG unknown wall cell L1 (76.45,35.45)
+       DEBUG unknown wall cell L1 (0.75,55.55)
+       DEBUG unknown wall cell L1 (6.45,0.75)
+       DEBUG unknown wall cell L1 (76.45,16.75)
+  FAIL MODEM_STATUS                 no path R61.2 -> U2.40
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 242/242 free, goals 15/45 free
+       DEBUG flood 117648 cells, x range 40.6..76.6, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 593, 'edge/nogo': 416, '/modem_rf/USIM_RST_M': 379, 'netless': 316, '/modem_rf/VBAT_MODEM': 283, '/modem_rf/SIM_DATA': 225, '3V3': 201, 'MODEM_PWRKEY': 144}
+       DEBUG unknown wall cell L1 (76.65,40.05)
+       DEBUG unknown wall cell L1 (45.95,61.35)
+       DEBUG unknown wall cell L0 (70.65,28.55)
+       DEBUG unknown wall cell L0 (67.15,17.45)
+       DEBUG unknown wall cell L1 (76.65,45.75)
+       DEBUG unknown wall cell L1 (72.25,0.55)
+  FAIL MODEM_PWRKEY                 no path U2.29 -> R55.1
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 30/60 free, goals 40/140 free
+       DEBUG flood 31 cells, x range 30.1..30.2, y 17.2..18.8
+       DEBUG pocket walls: {'MODEM_TX': 18, 'DO2_GATE': 16, '/mcu/SWDIO': 2}
+  FAIL MODEM_RESET                  no path U2.39 -> R57.1
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 15/45 free, goals 140/140 free
+       DEBUG flood 17 cells, x range 24.4..25.9, y 20.4..20.4
+       DEBUG pocket walls: {'CAN_STB': 18, 'MODEM_STATUS': 17, '/mcu/I2C1_SCL': 1}
+  FAIL /modem_rf/Q12_B              no path R64.2 -> Q12.1
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 140/140 free, goals 81/90 free
+       DEBUG flood 143800 cells, x range 0.7..76.6, y 0.7..61.9
+       DEBUG pocket walls: {'GND': 623, 'edge/nogo': 425, '3V3': 234, '/modem_rf/SIM_DATA': 173, 'netless': 157, '/io/Q1_G': 141, 'VIN': 128, '/power/VIN_B': 112}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (29.55,61.35)
+       DEBUG unknown wall cell L1 (45.95,61.35)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (44.05,61.35)
+       DEBUG unknown wall cell L0 (60.45,61.35)
+  FAIL /io/CANH                     no path D3.1 -> J1.4
+       DEBUG round 0: 4 clusters (pad counts [1, 1, 1, 1])
+       DEBUG starts 87/90 free, goals 392/392 free
+       DEBUG flood 980 cells, x range 30.9..38.2, y 46.8..51.4
+       DEBUG pocket walls: {'3V3': 81, '/power/U6_ICHG': 71, '/power/VBAT_BT': 59, 'GND': 33, '/mcu/BOOT0': 32, '/mcu/NSL_BASE': 29, '/io/CAN_SPLIT': 19, '/io/CANL': 18}
+  FAIL /modem_rf/SIM_DATA           no path X2.3 -> R66.2
+       DEBUG round 0: 4 clusters (pad counts [2, 1, 1, 1])
+       DEBUG starts 133/133 free, goals 140/140 free
+       DEBUG flood 72964 cells, x range 40.6..76.6, y 35.8..61.3
+       DEBUG pocket walls: {'GND': 594, 'netless': 431, '3V3': 328, 'edge/nogo': 284, '/modem_rf/VDD_EXT_1V8': 246, '/modem_rf/SIM_CLK': 225, '/io/DO2_DRV': 208, '/modem_rf/Q12_B': 193}
+       DEBUG unknown wall cell L1 (55.75,61.35)
+       DEBUG unknown wall cell L0 (76.65,53.05)
+       DEBUG unknown wall cell L1 (45.95,61.35)
+       DEBUG unknown wall cell L1 (48.95,61.35)
+       DEBUG unknown wall cell L1 (67.45,61.35)
+       DEBUG unknown wall cell L1 (70.45,61.35)
+  FAIL /io/CANL                     no path L2.2 -> J1.5
+       DEBUG round 0: 3 clusters (pad counts [2, 1, 1])
+       DEBUG starts 213/218 free, goals 390/392 free
+       DEBUG flood 78802 cells, x range 25.7..76.6, y 35.8..61.3
+       DEBUG pocket walls: {'GND': 563, '/modem_rf/SIM_DATA': 293, '3V3': 275, 'netless': 248, 'edge/nogo': 193, '5V0': 183, '/io/DO2_DRV': 152, '/modem_rf/VDD_EXT_1V8': 149}
+       DEBUG unknown wall cell L1 (45.95,61.35)
+       DEBUG unknown wall cell L1 (70.45,61.35)
+       DEBUG unknown wall cell L1 (47.25,61.35)
+       DEBUG unknown wall cell L1 (64.95,61.35)
+       DEBUG unknown wall cell L1 (52.15,61.35)
+       DEBUG unknown wall cell L1 (41.75,61.35)
+  FAIL /modem_rf/U8_OE              no path R63.2 -> U8.8
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 282/282 free, goals 0/85 free
+       DEBUG pad seal (goal): {'netless': 85}
+       DEBUG flood 71356 cells, x range 40.6..76.6, y 35.8..61.3
+       DEBUG pocket walls: {'GND': 552, '/modem_rf/SIM_DATA': 428, 'netless': 369, '3V3': 296, 'edge/nogo': 275, '/modem_rf/VDD_EXT_1V8': 265, '/io/DO2_DRV': 205, '/modem_rf/Q12_B': 196}
+       DEBUG unknown wall cell L1 (55.75,61.35)
+       DEBUG unknown wall cell L0 (76.65,53.05)
+       DEBUG unknown wall cell L1 (45.95,61.35)
+       DEBUG unknown wall cell L1 (48.95,61.35)
+       DEBUG unknown wall cell L1 (67.45,61.35)
+       DEBUG unknown wall cell L1 (70.45,61.35)
+  FAIL /io/VIN_SENSE                no path R32.2 -> R36.1
+       DEBUG round 0: 3 clusters (pad counts [2, 1, 1])
+       DEBUG starts 129/140 free, goals 140/140 free
+       DEBUG flood 8224 cells, x range 0.1..9.8, y 14.2..40.4
+       DEBUG pocket walls: {'edge/nogo': 503, '/io/DO2_OUT': 214, '/io/VIN_D1': 183, '/io/IGN_D0': 169, 'VIN': 169, '/io/IGN_D1': 141, '/power/VIN_B': 100, '/io/DI1_IN': 54}
+       DEBUG unknown wall cell L0 (0.45,20.25)
+       DEBUG unknown wall cell L1 (0.55,24.15)
+       DEBUG unknown wall cell L1 (0.55,36.25)
+       DEBUG unknown wall cell L1 (0.55,25.45)
+       DEBUG unknown wall cell L0 (0.55,22.35)
+       DEBUG unknown wall cell L1 (0.55,37.55)
+  FAIL MODEM_PWR_EN                 no path R53.1 -> U2.21
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 139/142 free, goals 15/45 free
+       DEBUG flood 120377 cells, x range 40.6..76.6, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 550, '/modem_rf/USIM_RST_M': 436, 'edge/nogo': 387, 'netless': 322, '/modem_rf/VBAT_MODEM': 259, '/modem_rf/SIM_DATA': 207, '3V3': 204, 'MODEM_PWRKEY': 149}
+       DEBUG unknown wall cell L1 (76.65,40.05)
+       DEBUG unknown wall cell L1 (45.95,61.35)
+       DEBUG unknown wall cell L0 (70.65,28.55)
+       DEBUG unknown wall cell L0 (67.15,17.45)
+       DEBUG unknown wall cell L1 (76.65,45.75)
+       DEBUG unknown wall cell L1 (72.25,0.55)
+  FAIL /power/SYS                   no path U9.3 -> L3.2
+       DEBUG round 0: 4 clusters (pad counts [4, 2, 1, 1])
+       DEBUG starts 423/426 free, goals 300/300 free
+       DEBUG flood 109019 cells, x range 0.7..64.6, y 0.1..61.3
+       DEBUG pocket walls: {'GND': 647, 'edge/nogo': 325, '/power/VIN_B': 221, '/modem_rf/USIM_DATA_M': 162, '3V3': 150, 'VIN': 148, '/io/Q1_G': 136, '5V0': 130}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (38.15,0.55)
+       DEBUG unknown wall cell L0 (29.45,0.55)
+       DEBUG unknown wall cell L0 (35.45,0.55)
+       DEBUG unknown wall cell L1 (40.35,10.05)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+  FAIL /modem_rf/USIM_VDD           no path C47.1 -> U1.14
+       DEBUG round 0: 4 clusters (pad counts [3, 1, 1, 1])
+       DEBUG starts 374/374 free, goals 184/184 free
+       DEBUG flood 53360 cells, x range 50.1..76.6, y 0.1..51.2
+       DEBUG pocket walls: {'GND': 557, 'edge/nogo': 547, '/modem_rf/VBAT_MODEM': 537, '/modem_rf/USIM_RST_M': 498, 'netless': 195, '/modem_rf/USB_DM_TP': 135, '/modem_rf/Q14_B': 125, '/modem_rf/USIM_VDD_ESIM': 101}
+       DEBUG unknown wall cell L1 (76.65,26.65)
+       DEBUG unknown wall cell L1 (76.65,40.05)
+       DEBUG unknown wall cell L1 (61.35,0.55)
+       DEBUG unknown wall cell L1 (64.35,0.55)
+       DEBUG unknown wall cell L1 (67.35,0.55)
+       DEBUG unknown wall cell L0 (58.65,0.55)
+  FAIL /io/IGN_SENSE                no path R37.1 -> R35.2
+       DEBUG round 0: 2 clusters (pad counts [3, 1])
+       DEBUG starts 331/351 free, goals 130/140 free
+       DEBUG flood 16214 cells, x range 25.7..42.9, y 25.9..55.9
+       DEBUG pocket walls: {'GND': 1009, '5V0': 326, '3V3': 287, 'DI1': 204, '/io/DO2_DRV': 161, 'DI2': 150, '/power/REGN': 145, '/io/VIN_SENSE': 143}
+  FAIL /mcu/I2C1_SCL                no path R7.2 -> U3.13
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 155/187 free, goals 12/28 free
+       DEBUG flood 5546 cells, x range 21.2..31.2, y 7.4..21.9
+       DEBUG pocket walls: {'GND': 222, '/modem_rf/USIM_DATA_M': 212, '/mcu/I2C1_SDA': 188, '5V0': 164, '/power/U5_FB': 151, '/power/VIN_B': 143, '3V3': 83, '/mcu/OSC_OUT': 61}
+  FAIL DO1_GATE                     no path U2.27 -> R42.1
+       DEBUG round 0: 3 clusters (pad counts [1, 1, 1])
+       DEBUG starts 30/60 free, goals 127/140 free
+       DEBUG flood 121 cells, x range 30.6..31.6, y 17.2..19.8
+       DEBUG pocket walls: {'DO2_GATE': 24, 'DI2': 23, '3V3': 21, 'MODEM_TX': 15, '/mcu/OSC_OUT': 13, '/mcu/OSC_IN': 10, '/mcu/SWDIO': 2}
+  FAIL /mcu/I2C1_SDA                no path R8.2 -> U3.14
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 153/187 free, goals 9/28 free
+       DEBUG flood 73554 cells, x range 0.7..31.2, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 692, 'edge/nogo': 281, '/power/VIN_B': 234, 'VIN': 208, '/io/DO1_OUT': 198, '3V3': 188, '/io/Q1_G': 185, '/modem_rf/USIM_DATA_M': 183}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (16.55,61.35)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (17.85,61.35)
+       DEBUG unknown wall cell L0 (12.15,61.35)
+       DEBUG unknown wall cell L1 (21.05,61.35)
+  FAIL /modem_rf/USIM_CLK_M         no path U1.16 -> R67.1
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 184/184 free, goals 137/140 free
+       DEBUG flood 78445 cells, x range 40.6..76.6, y 18.6..61.3
+       DEBUG pocket walls: {'GND': 432, '/modem_rf/SIM_DATA': 338, '3V3': 323, 'edge/nogo': 317, 'netless': 302, '/modem_rf/VDD_EXT_1V8': 266, '/modem_rf/USIM_RST_M': 215, '/io/DO2_DRV': 165}
+       DEBUG unknown wall cell L1 (55.75,61.35)
+       DEBUG unknown wall cell L0 (76.65,53.05)
+       DEBUG unknown wall cell L1 (45.95,61.35)
+       DEBUG unknown wall cell L1 (51.25,21.35)
+       DEBUG unknown wall cell L1 (48.95,61.35)
+       DEBUG unknown wall cell L1 (51.25,34.75)
+  FAIL /mcu/NET_STATUS_LED          no path U2.22 -> R5.1
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 15/45 free, goals 127/140 free
+       DEBUG flood 17 cells, x range 32.7..34.3, y 20.4..20.4
+       DEBUG pocket walls: {'GND': 18, 'MODEM_PWR_EN': 17, '3V3': 1}
+  FAIL MODEM_RX                     child crashed (rc=1)
+       DEBUG round 0: 4 clusters (pad counts [1, 1, 1, 1])
+       DEBUG starts 209/210 free, goals 4/12 free
+       DEBUG flood 2156 cells, x range 37.6..42.7, y 44.3..50.2
+       DEBUG pocket walls: {'GND': 81, '/power/U6_TS': 75, '/io/IGN_SENSE': 73, '/mcu/BOOT0': 59, '/power/U6_ILIM': 56, '5V0': 30, '/mcu/NSL_A': 30, '/power/REGN': 28}
+  FAIL /io/Q2_G                     no path R24.2 -> Q2.1
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 278/282 free, goals 38/70 free
+       DEBUG flood 12187 cells, x range 20.2..42.7, y 36.1..53.2
+       DEBUG pocket walls: {'GND': 720, '/io/IGN_SENSE': 273, '/power/REGN': 230, '/mcu/BOOT0': 205, '/power/VBAT_BT': 193, '5V0': 175, '3V3': 163, '/io/CANL_T': 138}
+  FAIL DI1                          no path OK1.4 -> U2.25
+       DEBUG round 0: 2 clusters (pad counts [3, 1])
+       DEBUG starts 314/322 free, goals 42/60 free
+       DEBUG flood 79865 cells, x range 0.7..39.1, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 852, '3V3': 231, 'edge/nogo': 216, '/io/Q1_G': 208, 'VIN': 186, '/io/DI2_LED': 167, '/power/VIN_B': 141, '/io/DO1_OUT': 137}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (23.95,0.55)
+       DEBUG unknown wall cell L0 (0.55,53.55)
+       DEBUG unknown wall cell L0 (6.75,0.55)
+       DEBUG unknown wall cell L0 (9.35,61.35)
+  FAIL DI2                          no path OK2.4 -> U2.26
+       DEBUG round 0: 2 clusters (pad counts [3, 1])
+       DEBUG starts 306/322 free, goals 30/60 free
+       DEBUG flood 14776 cells, x range 25.7..44.0, y 25.9..44.4
+       DEBUG pocket walls: {'GND': 990, '3V3': 344, '5V0': 310, '/io/IGN_SENSE': 275, '/mcu/NRST': 223, 'DI1': 188, '/modem_rf/USIM_DATA_M': 134, '/io/CANL_T': 122}
+  FAIL /mcu/IMU_INT1                no path U3.4 -> U2.41
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 8/23 free, goals 15/45 free
+       DEBUG flood 4671 cells, x range 26.2..39.4, y 51.0..59.1
+       DEBUG pocket walls: {'GND': 172, '/power/VBAT_BT': 157, '3V3': 155, '/io/VBAT_SENSE': 118, '/io/CAN_MID': 100, '/power/U6_TS': 98, '/io/CAN_SPLIT': 75, '/mcu/SYS_LED_A': 53}
+  FAIL /modem_rf/MRI_1V8            no path U1.62 -> U8.4
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 161/207 free, goals 51/68 free
+       DEBUG flood 73310 cells, x range 31.4..76.6, y 0.7..51.2
+       DEBUG pocket walls: {'GND': 540, '/modem_rf/VBAT_MODEM': 515, 'edge/nogo': 481, '/modem_rf/USIM_RST_M': 319, 'netless': 281, '/power/SYS': 194, '/modem_rf/USB_VBUS': 119, '/modem_rf/NETLIGHT_MOD': 115}
+       DEBUG unknown wall cell L1 (76.65,26.65)
+       DEBUG unknown wall cell L1 (76.65,40.05)
+       DEBUG unknown wall cell L1 (38.15,0.55)
+       DEBUG unknown wall cell L0 (32.45,0.55)
+       DEBUG unknown wall cell L0 (35.45,0.55)
+       DEBUG unknown wall cell L1 (40.35,10.05)
+  FAIL /io/CANH_T                   no path R11.1 -> L2.4
+       DEBUG round 0: 3 clusters (pad counts [1, 1, 1])
+       DEBUG starts 144/144 free, goals 116/117 free
+       DEBUG flood 6756 cells, x range 20.7..39.4, y 48.0..60.4
+       DEBUG pocket walls: {'GND': 363, '/power/VBAT_BT': 157, '/io/VBAT_SENSE': 147, '/io/CAN_MID': 135, '3V3': 102, '/power/U6_TS': 98, '/io/DO1_B': 92, 'SYS': 86}
+  FAIL /io/DO1_B                    no path Q5.1 -> R42.2
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 89/90 free, goals 130/140 free
+       DEBUG flood 68392 cells, x range 0.7..29.1, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 687, 'edge/nogo': 330, 'VIN': 249, '/io/DO1_OUT': 215, '/io/Q1_G': 212, '/io/DO2_OUT': 182, '/power/VIN_B': 179, '3V3': 166}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (17.85,61.35)
+       DEBUG unknown wall cell L1 (21.05,61.35)
+       DEBUG unknown wall cell L0 (23.95,0.55)
+       DEBUG unknown wall cell L0 (0.55,53.55)
+  PARTIAL /mcu/SWCLK                 kept copper; remainder requeued (cluster count stuck at 2)
+  OK /mcu/SWCLK                   vias=0 len= 16.2 man= 94.3 ratio=0.17 [6/68   9%]
+  FAIL /mcu/VBAT_MCU                no path R3.2 -> U2.1
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 238/242 free, goals 45/64 free
+       DEBUG flood 15301 cells, x range 20.2..42.2, y 27.4..59.1
+       DEBUG pocket walls: {'GND': 730, '3V3': 316, '/io/IGN_SENSE': 216, 'CAN1_RX': 188, '/io/DI2_LED': 161, '5V0': 154, '/power/VBAT_BT': 147, '/io/VIN_SENSE': 138}
+  FAIL /modem_rf/MDTR_1V8           no path U1.66 -> U8.5
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 163/209 free, goals 0/85 free
+       DEBUG pad seal (goal): {'netless': 68, '/modem_rf/MRI_1V8': 17}
+       DEBUG flood 74209 cells, x range 31.4..76.6, y 0.7..51.2
+       DEBUG pocket walls: {'GND': 526, 'edge/nogo': 510, '/modem_rf/VBAT_MODEM': 503, '/modem_rf/USIM_RST_M': 307, 'netless': 272, '/power/SYS': 191, '/modem_rf/NETLIGHT_MOD': 162, '/modem_rf/USB_VBUS': 116}
+       DEBUG unknown wall cell L1 (76.65,26.65)
+       DEBUG unknown wall cell L1 (76.65,40.05)
+       DEBUG unknown wall cell L1 (38.15,0.55)
+       DEBUG unknown wall cell L0 (32.45,0.55)
+       DEBUG unknown wall cell L0 (35.45,0.55)
+       DEBUG unknown wall cell L1 (40.35,10.05)
+  FAIL /modem_rf/MTXD_1V8           no path U1.67 -> U8.3
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 207/209 free, goals 51/85 free
+       DEBUG flood 47678 cells, x range 51.0..76.6, y 0.7..51.2
+       DEBUG pocket walls: {'GND': 610, '/modem_rf/VBAT_MODEM': 583, 'edge/nogo': 582, '/modem_rf/USIM_RST_M': 543, 'netless': 254, '/modem_rf/Q14_B': 143, '/modem_rf/USB_DM_TP': 123, '/modem_rf/USB_DM_M': 118}
+       DEBUG unknown wall cell L1 (76.65,26.65)
+       DEBUG unknown wall cell L1 (76.65,40.05)
+       DEBUG unknown wall cell L1 (76.65,7.95)
+       DEBUG unknown wall cell L0 (70.65,33.85)
+       DEBUG unknown wall cell L0 (76.65,15.65)
+       DEBUG unknown wall cell L1 (76.65,51.05)
+  FAIL /mcu/SYS_LED_A               no path D20.2 -> R4.2
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 82/90 free, goals 140/140 free
+       DEBUG flood 391 cells, x range 33.1..36.8, y 44.4..46.9
+       DEBUG pocket walls: {'/power/U6_ICHG': 45, '/mcu/SYS_LED': 36, '/power/REGN': 23, 'GND': 22, '/power/SYS': 10, '/power/VBAT_BT': 5, '/mcu/NSL_K': 5}
+  FAIL /modem_rf/MRXD_1V8           no path U1.68 -> U8.2
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 209/209 free, goals 51/68 free
+       DEBUG flood 73462 cells, x range 31.4..76.6, y 0.7..51.2
+       DEBUG pocket walls: {'GND': 540, '/modem_rf/VBAT_MODEM': 521, 'edge/nogo': 472, '/modem_rf/USIM_RST_M': 318, 'netless': 270, '/power/SYS': 196, '/modem_rf/USB_VBUS': 119, '/modem_rf/NETLIGHT_MOD': 115}
+       DEBUG unknown wall cell L1 (76.65,26.65)
+       DEBUG unknown wall cell L1 (76.65,40.05)
+       DEBUG unknown wall cell L1 (38.15,0.55)
+       DEBUG unknown wall cell L0 (32.45,0.55)
+       DEBUG unknown wall cell L0 (35.45,0.55)
+       DEBUG unknown wall cell L1 (40.35,10.05)
+  FAIL /io/VBAT_SENSE               no path R39.1 -> C29.1
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 282/282 free, goals 92/100 free
+       DEBUG flood 5408 cells, x range 27.2..39.4, y 52.0..60.4
+       DEBUG pocket walls: {'GND': 243, '/power/VBAT_BT': 220, '3V3': 119, '/io/DO2_DRV': 99, '/power/U6_TS': 98, '/mcu/NET_STATUS_LED': 70, '/io/CAN_SPLIT': 68, '5V0': 64}
+  FAIL /io/CAN_SPLIT                no path C22.1 -> JP2.2
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 80/100 free, goals 140/140 free
+       DEBUG flood 248 cells, x range 35.4..39.4, y 28.8..34.0
+       DEBUG pocket walls: {'/modem_rf/USIM_DATA_M': 86, '/mcu/NRST': 82, 'DI2': 20}
+  FAIL /power/U6_TS                 no path R88.2 -> U6.11
+       DEBUG round 0: 2 clusters (pad counts [3, 1])
+       DEBUG starts 828/858 free, goals 0/36 free
+       DEBUG pad seal (goal): {'/power/U6_ICHG': 18, 'netless': 18}
+       DEBUG flood 78700 cells, x range 27.2..76.6, y 35.8..61.3
+       DEBUG pocket walls: {'GND': 546, '/modem_rf/SIM_DATA': 319, '3V3': 271, 'netless': 262, '/io/DO2_DRV': 211, 'edge/nogo': 208, '5V0': 196, '/modem_rf/VDD_EXT_1V8': 161}
+       DEBUG unknown wall cell L1 (45.95,61.35)
+       DEBUG unknown wall cell L1 (70.45,61.35)
+       DEBUG unknown wall cell L1 (47.25,61.35)
+       DEBUG unknown wall cell L1 (64.95,61.35)
+       DEBUG unknown wall cell L1 (52.15,61.35)
+       DEBUG unknown wall cell L1 (41.75,61.35)
+  FAIL DO2_GATE                     no path R46.1 -> U2.28
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 275/284 free, goals 30/60 free
+       DEBUG flood 74163 cells, x range 0.7..39.1, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 787, 'edge/nogo': 246, '3V3': 213, 'VIN': 191, '/io/DO1_OUT': 180, '/io/Q1_G': 164, '5V0': 149, '/io/DO2_OUT': 137}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (17.85,61.35)
+       DEBUG unknown wall cell L1 (21.05,61.35)
+       DEBUG unknown wall cell L0 (23.95,0.55)
+       DEBUG unknown wall cell L0 (0.55,53.55)
+  FAIL /mcu/SYS_LED                 no path U2.2 -> D20.1
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 32/64 free, goals 87/90 free
+       DEBUG flood 1242 cells, x range 26.9..32.5, y 25.4..39.3
+       DEBUG pocket walls: {'GND': 194, 'CAN1_RX': 122, '3V3': 102, '/mcu/VBAT_MCU': 93, '/io/IGN_SENSE': 56, '/mcu/3V3A': 33, '/io/CANL_T': 32, 'DI1': 30}
+  FAIL CAN1_TX                      no path U4.1 -> U2.46
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 125/126 free, goals 15/45 free
+       DEBUG flood 2670 cells, x range 20.2..29.4, y 42.0..49.0
+       DEBUG pocket walls: {'GND': 120, '/io/DI2_LED': 114, '/io/DI1_LED': 102, '/io/CANL_T': 63, '/io/Q1_G': 58, '/io/Q2_G': 51, 'SYS': 43, '/mcu/3V3A': 39}
+  FAIL FLASH_CS                     no path U7.1 -> U2.14
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 125/126 free, goals 15/45 free
+       DEBUG flood 68326 cells, x range 0.7..29.1, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 684, 'edge/nogo': 333, 'VIN': 250, '/io/DO1_OUT': 217, '/io/Q1_G': 216, '/io/DO2_OUT': 183, '/power/VIN_B': 179, '3V3': 166}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (17.85,61.35)
+       DEBUG unknown wall cell L1 (21.05,61.35)
+       DEBUG unknown wall cell L0 (23.95,0.55)
+       DEBUG unknown wall cell L0 (0.55,53.55)
+  FAIL SPI1_MISO                    no path U7.2 -> U2.16
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 126/147 free, goals 15/45 free
+       DEBUG flood 68352 cells, x range 0.7..29.1, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 673, 'edge/nogo': 331, 'VIN': 244, '/io/DO1_OUT': 214, '/io/Q1_G': 210, '3V3': 197, '/io/DO2_OUT': 181, '/power/VIN_B': 174}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (17.85,61.35)
+       DEBUG unknown wall cell L1 (21.05,61.35)
+       DEBUG unknown wall cell L0 (23.95,0.55)
+       DEBUG unknown wall cell L0 (0.55,53.55)
+  FAIL /power/VBAT_BT               no path J2.1 -> C67.1
+       DEBUG round 0: 2 clusters (pad counts [3, 1])
+       DEBUG starts 608/628 free, goals 138/140 free
+       DEBUG flood 7926 cells, x range 27.2..39.5, y 44.4..59.1
+       DEBUG pocket walls: {'GND': 301, '3V3': 195, '/io/VBAT_SENSE': 118, '/mcu/SYS_LED_A': 110, '/power/U6_TS': 98, '/io/Q2_G': 98, '/power/U6_ICHG': 97, '/io/DO2_DRV': 96}
+  PARTIAL CAN_STB                    kept copper; remainder requeued (cluster count stuck at 2)
+  OK CAN_STB                      vias=6 len= 66.8 man= 71.8 ratio=0.93 [7/68  10%]  VIAS>4
+  FAIL /io/DO1_DRV                  no path Q6.3 -> R23.1
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 242/242 free, goals 139/140 free
+       DEBUG flood 6794 cells, x range 28.6..44.0, y 25.9..37.4
+       DEBUG pocket walls: {'GND': 602, '5V0': 303, '3V3': 298, 'DI1': 200, '/mcu/NRST': 164, 'DI2': 143, '/io/DO1_X': 135, 'MODEM_TX': 115}
+  FAIL /modem_rf/USIM_DET           no path X1.CD -> U1.13
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 63/88 free, goals 138/184 free
+       DEBUG flood 4943 cells, x range 51.0..66.2, y 40.7..47.8
+       DEBUG pocket walls: {'edge/nogo': 255, '/modem_rf/USIM_RST_M': 131, '/modem_rf/VDD_EXT_1V8': 130, 'netless': 110, '/modem_rf/SIM_RST': 70, 'GND': 59, '/modem_rf/PWRKEY_MOD': 58, '/modem_rf/USIM_VDD_SIM': 52}
+       DEBUG unknown wall cell L1 (65.15,40.55)
+       DEBUG unknown wall cell L0 (59.45,40.55)
+       DEBUG unknown wall cell L0 (62.45,40.55)
+       DEBUG unknown wall cell L1 (53.25,40.55)
+       DEBUG unknown wall cell L1 (56.25,40.55)
+       DEBUG unknown wall cell L1 (54.35,40.55)
+  FAIL /mcu/BOOT1                   no path U2.20 -> R2.1
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 0/45 free, goals 140/140 free
+       DEBUG pad seal (start): {'netless': 45}
+       DEBUG flood 0 cells - ALL start cells blocked
+       DEBUG pocket walls: {}
+  FAIL /mcu/NSL_A                   no path D21.2 -> R6.2
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 90/90 free, goals 140/140 free
+       DEBUG flood 1990 cells, x range 37.6..42.7, y 44.3..50.2
+       DEBUG pocket walls: {'GND': 109, '/power/U6_TS': 75, '/mcu/BOOT0': 59, '/power/U6_ILIM': 56, 'MODEM_RX': 51, '/io/IGN_SENSE': 46, '/power/REGN': 40, '/io/CANL': 39}
+  FAIL SPI1_SCK                     no path U7.6 -> U2.15
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 145/147 free, goals 15/45 free
+       DEBUG flood 68584 cells, x range 0.7..29.1, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 673, 'edge/nogo': 328, 'VIN': 244, '/io/DO1_OUT': 213, '/io/Q1_G': 208, '3V3': 182, '/io/DO2_OUT': 181, '/power/VIN_B': 173}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (17.85,61.35)
+       DEBUG unknown wall cell L1 (21.05,61.35)
+       DEBUG unknown wall cell L0 (23.95,0.55)
+       DEBUG unknown wall cell L0 (0.55,53.55)
+  FAIL /io/DO2_X                    no path R48.2 -> Q7.3
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 248/252 free, goals 96/98 free
+       DEBUG flood 6696 cells, x range 28.6..44.0, y 25.9..37.4
+       DEBUG pocket walls: {'GND': 546, '5V0': 321, '3V3': 256, 'DI1': 200, '/mcu/NRST': 164, 'DI2': 159, '/io/IGN_SENSE': 95, '/io/DO1_X': 92}
+  FAIL /mcu/OSC32_IN                no path C3.1 -> U2.3
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 249/260 free, goals 32/64 free
+       DEBUG flood 68937 cells, x range 0.7..29.1, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 704, 'edge/nogo': 334, 'VIN': 259, '/io/DO1_OUT': 248, '/io/Q1_G': 216, '/io/DO2_OUT': 183, '/power/VIN_B': 181, '3V3': 169}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (17.85,61.35)
+       DEBUG unknown wall cell L1 (21.05,61.35)
+       DEBUG unknown wall cell L0 (23.95,0.55)
+       DEBUG unknown wall cell L0 (0.55,53.55)
+  FAIL MODEM_DTR                    no path U2.33 -> U8.10
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 29/60 free, goals 0/85 free
+       DEBUG pad seal (goal): {'netless': 85}
+       DEBUG flood 101 cells, x range 28.1..29.6, y 17.2..19.6
+       DEBUG pocket walls: {'MODEM_RI': 24, '/mcu/SWDIO': 18, '/mcu/SWCLK': 15, 'GND': 9, 'MODEM_TX': 9, 'MODEM_RX': 5}
+  FAIL /power/U6_OTG                no path U6.6 -> R87.1
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 13/24 free, goals 142/143 free
+       DEBUG flood 25 cells, x range 27.9..28.6, y 47.3..47.7
+       DEBUG pocket walls: {'/mcu/VBAT_MCU': 12, '/power/U6_STAT': 7, '/power/U6_PG': 4, 'GND': 1}
+  FAIL MODEM_RI                     no path U2.32 -> U8.11
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 30/60 free, goals 51/68 free
+       DEBUG flood 106 cells, x range 28.2..29.6, y 17.2..19.6
+       DEBUG pocket walls: {'MODEM_RX': 24, 'MODEM_DTR': 23, '/mcu/SWCLK': 15, 'MODEM_TX': 9, 'GND': 5, '/mcu/SWDIO': 2}
+  FAIL /power/U5_VCC                no path C75.1 -> U5.1
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 228/230 free, goals 105/108 free
+       DEBUG flood 8915 cells, x range 26.8..36.8, y 1.6..13.8
+       DEBUG pocket walls: {'5V0': 334, 'GND': 194, '/power/SW_BUCK': 187, '/power/U5_IS': 116, '3V3': 87, '/power/VIN_B': 77, '/power/SYS': 65, 'MODEM_RX': 62}
+  FAIL /io/DO1_X                    no path Q6.1 -> Q5.3
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 225/228 free, goals 98/98 free
+       DEBUG flood 5412 cells, x range 28.6..39.1, y 25.9..37.4
+       DEBUG pocket walls: {'GND': 488, 'DI1': 217, '5V0': 195, '3V3': 174, '/mcu/NRST': 164, '/io/IGN_SENSE': 117, '/io/DO1_DRV': 78, 'MODEM_TX': 61}
+  FAIL /power/SW_CHG                no path C64.2 -> L3.1
+       DEBUG round 0: 3 clusters (pad counts [2, 1, 1])
+       DEBUG starts 81/81 free, goals 320/320 free
+       DEBUG flood 5398 cells, x range 25.7..42.2, y 36.1..44.4
+       DEBUG pocket walls: {'GND': 361, '/io/IGN_SENSE': 227, '/power/REGN': 156, '/io/VIN_SENSE': 124, '5V0': 119, '/io/CANL_T': 98, 'DI2': 95, '3V3': 68}
+  FAIL /mcu/DBG_TX                  no path U2.12 -> TP4.1
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 42/64 free, goals 210/210 free
+       DEBUG flood 4764 cells, x range 28.6..39.1, y 24.2..37.4
+       DEBUG pocket walls: {'GND': 467, 'DI1': 200, '/mcu/NRST': 176, '3V3': 174, '5V0': 159, '/io/IGN_SENSE': 95, '/io/DO1_X': 92, '/modem_rf/USIM_DATA_M': 67}
+  FAIL /power/U5_EN                 no path U5.2 -> R81.2
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 119/126 free, goals 139/140 free
+       DEBUG flood 26610 cells, x range 31.4..64.6, y 0.7..24.1
+       DEBUG pocket walls: {'/power/SYS': 472, 'GND': 414, '/modem_rf/VBAT_MODEM': 404, 'edge/nogo': 310, 'netless': 288, '/modem_rf/NETLIGHT_MOD': 279, '/modem_rf/USB_VBUS': 270, '/modem_rf/USIM_DATA_M': 258}
+       DEBUG unknown wall cell L1 (38.15,0.55)
+       DEBUG unknown wall cell L0 (32.45,0.55)
+       DEBUG unknown wall cell L0 (35.45,0.55)
+       DEBUG unknown wall cell L1 (40.35,10.05)
+       DEBUG unknown wall cell L1 (37.75,10.65)
+       DEBUG unknown wall cell L1 (42.45,0.55)
+  FAIL /power/U6_ILIM               no path U6.8 -> R86.1
+       DEBUG round 0: 3 clusters (pad counts [1, 1, 1])
+       DEBUG starts 8/36 free, goals 129/130 free
+       DEBUG flood 283 cells, x range 27.1..30.4, y 47.8..50.4
+       DEBUG pocket walls: {'/io/CAN_MID': 38, '/mcu/VBAT_MCU': 24, 'SYS': 19, '/power/U6_PG': 18, 'GND': 17, '/io/CAN_SPLIT': 8, '/io/CANH_T': 8, '/power/U6_ICHG': 7}
+  FAIL /mcu/NSL_K                   no path D21.1 -> Q4.3
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 84/90 free, goals 105/105 free
+       DEBUG flood 1945 cells, x range 36.4..42.7, y 44.3..50.2
+       DEBUG pocket walls: {'GND': 81, '/power/U6_TS': 75, '/mcu/BOOT0': 59, '/power/U6_ILIM': 56, 'MODEM_RX': 51, '/power/REGN': 47, '/io/IGN_SENSE': 46, '5V0': 30}
+  FAIL /mcu/OSC32_OUT               no path Y2.2 -> U2.4
+       DEBUG round 0: 2 clusters (pad counts [2, 1])
+       DEBUG starts 259/260 free, goals 32/64 free
+       DEBUG flood 69495 cells, x range 0.7..29.1, y 0.7..61.3
+       DEBUG pocket walls: {'GND': 662, 'edge/nogo': 321, 'VIN': 238, '/io/DO1_OUT': 209, '/io/Q1_G': 206, '3V3': 181, '/io/DO2_OUT': 179, '/power/VIN_B': 170}
+       DEBUG unknown wall cell L1 (13.15,61.35)
+       DEBUG unknown wall cell L1 (9.45,0.55)
+       DEBUG unknown wall cell L0 (17.85,61.35)
+       DEBUG unknown wall cell L1 (21.05,61.35)
+       DEBUG unknown wall cell L0 (23.95,0.55)
+       DEBUG unknown wall cell L0 (0.55,53.55)
+  FAIL /power/U6_BTST               no path U6.21 -> C64.1
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 7/36 free, goals 80/81 free
+       DEBUG flood 7 cells, x range 30.6..30.6, y 43.7..44.3
+       DEBUG pocket walls: {'/power/REGN': 8, '/power/SW_CHG': 7, 'GND': 1}
+  FAIL /power/PMID                  no path U6.23 -> C62.1
+       DEBUG round 0: 2 clusters (pad counts [1, 1])
+       DEBUG starts 8/36 free, goals 139/140 free
+       DEBUG flood 5190 cells, x range 25.7..42.2, y 36.1..44.4
+       DEBUG pocket walls: {'GND': 362, '/io/IGN_SENSE': 227, '/power/REGN': 166, '5V0': 133, '/io/VIN_SENSE': 123, '/io/CANL_T': 98, 'DI2': 95, '3V3': 68}
+
+ROUTED 7/68 nets  vias 8  via-flags 1  ratio-flags 0
+UNROUTED (with cause):
+  3V3: no path C10.1 -> C11.1
+  /modem_rf/VDD_EXT_1V8: no path R63.1 -> C44.1
+  5V0: child crashed (rc=1)
+  /mcu/3V3A: no path FB1.2 -> U2.9
+  GND: no path U6.18 -> U6.9
+  MODEM_STATUS: no path R61.2 -> U2.40
+  MODEM_PWRKEY: no path U2.29 -> R55.1
+  MODEM_RESET: no path U2.39 -> R57.1
+  /modem_rf/Q12_B: no path R64.2 -> Q12.1
+  /io/CANH: no path D3.1 -> J1.4
+  /modem_rf/SIM_DATA: no path X2.3 -> R66.2
+  /io/CANL: no path L2.2 -> J1.5
+  /modem_rf/U8_OE: no path R63.2 -> U8.8
+  /io/VIN_SENSE: no path R32.2 -> R36.1
+  MODEM_PWR_EN: no path R53.1 -> U2.21
+  /power/SYS: no path U9.3 -> L3.2
+  /modem_rf/USIM_VDD: no path C47.1 -> U1.14
+  /io/IGN_SENSE: no path R37.1 -> R35.2
+  /mcu/I2C1_SCL: no path R7.2 -> U3.13
+  DO1_GATE: no path U2.27 -> R42.1
+  /mcu/I2C1_SDA: no path R8.2 -> U3.14
+  /modem_rf/USIM_CLK_M: no path U1.16 -> R67.1
+  /mcu/NET_STATUS_LED: no path U2.22 -> R5.1
+  MODEM_RX: child crashed (rc=1)
+  /io/Q2_G: no path R24.2 -> Q2.1
+  DI1: no path OK1.4 -> U2.25
+  DI2: no path OK2.4 -> U2.26
+  /mcu/IMU_INT1: no path U3.4 -> U2.41
+  /modem_rf/MRI_1V8: no path U1.62 -> U8.4
+  /io/CANH_T: no path R11.1 -> L2.4
+  /io/DO1_B: no path Q5.1 -> R42.2
+  /mcu/VBAT_MCU: no path R3.2 -> U2.1
+  /modem_rf/MDTR_1V8: no path U1.66 -> U8.5
+  /modem_rf/MTXD_1V8: no path U1.67 -> U8.3
+  /mcu/SYS_LED_A: no path D20.2 -> R4.2
+  /modem_rf/MRXD_1V8: no path U1.68 -> U8.2
+  /io/VBAT_SENSE: no path R39.1 -> C29.1
+  /io/CAN_SPLIT: no path C22.1 -> JP2.2
+  /power/U6_TS: no path R88.2 -> U6.11
+  DO2_GATE: no path R46.1 -> U2.28
+  /mcu/SYS_LED: no path U2.2 -> D20.1
+  CAN1_TX: no path U4.1 -> U2.46
+  FLASH_CS: no path U7.1 -> U2.14
+  SPI1_MISO: no path U7.2 -> U2.16
+  /power/VBAT_BT: no path J2.1 -> C67.1
+  /io/DO1_DRV: no path Q6.3 -> R23.1
+  /modem_rf/USIM_DET: no path X1.CD -> U1.13
+  /mcu/BOOT1: no path U2.20 -> R2.1
+  /mcu/NSL_A: no path D21.2 -> R6.2
+  SPI1_SCK: no path U7.6 -> U2.15
+  /io/DO2_X: no path R48.2 -> Q7.3
+  /mcu/OSC32_IN: no path C3.1 -> U2.3
+  MODEM_DTR: no path U2.33 -> U8.10
+  /power/U6_OTG: no path U6.6 -> R87.1
+  MODEM_RI: no path U2.32 -> U8.11
+  /power/U5_VCC: no path C75.1 -> U5.1
+  /io/DO1_X: no path Q6.1 -> Q5.3
+  /power/SW_CHG: no path C64.2 -> L3.1
+  /mcu/DBG_TX: no path U2.12 -> TP4.1
+  /power/U5_EN: no path U5.2 -> R81.2
+  /power/U6_ILIM: no path U6.8 -> R86.1
+  /mcu/NSL_K: no path D21.1 -> Q4.3
+  /mcu/OSC32_OUT: no path Y2.2 -> U2.4
+  /power/U6_BTST: no path U6.21 -> C64.1
+  /power/PMID: no path U6.23 -> C62.1
+  SYS: rip-retry stalled on SYS: no path Q13.2 -> R38.1
+metrics written to docs/lv-route-metrics.txt
+LV_ROUTE_DONE
