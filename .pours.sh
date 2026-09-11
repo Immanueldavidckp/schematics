@@ -16,9 +16,18 @@ for N in 3V3 5V0 /power/SYS GND; do
   U=$(grep -cE '^\[unconnected' .pours.rpt)
   echo "POUR $N: unconnected=$U errors=$E"
   if [ "$E" -gt 0 ]; then
-    echo "POUR $N introduced error(s) - reverting; violations:"
-    grep -A4 -E '^\[' .pours.rpt | grep -v unconnected_items | head -24
-    cp .pours.base telematics-tracker.kicad_pcb
+    echo "POUR $N fouled - scrubbing the violating fragments"
+    PYTHONPATH=tools python3 tools/scrub_fouls.py 2>/dev/null | grep SCRUB
+    kicad-cli pcb drc --severity-error -o .pours.rpt telematics-tracker.kicad_pcb >/dev/null 2>&1
+    E2=$(grep -E '^\[' .pours.rpt | grep -vc unconnected)
+    U2=$(grep -cE '^\[unconnected' .pours.rpt)
+    echo "POUR $N after scrub: unconnected=$U2 errors=$E2"
+    if [ "$E2" -gt 0 ]; then
+      echo "POUR $N still fouled - reverting"
+      cp .pours.base telematics-tracker.kicad_pcb
+    else
+      cp telematics-tracker.kicad_pcb .pours.base
+    fi
   else
     cp telematics-tracker.kicad_pcb .pours.base
   fi

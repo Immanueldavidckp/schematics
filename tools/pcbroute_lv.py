@@ -307,6 +307,11 @@ def main(single_net=None, rip=None):
         for (onet, lays, cx, cy, hw, hh, ref), _r in mypads:
             vert = hh >= hw
             both = abs(hh - hw) < 0.2      # round/square (THT) pads: 2 lanes
+            # the ENTRY hop is emitted at w_hop = min(class w, pad_cap), so
+            # cells near this pad are judged with the effective half-width,
+            # not the class one - that mismatch is the whole reason lanes
+            # near siblings are legal at all
+            half_eff = min(half, max(0.20, min(2 * hw, 2 * hh)) / 2)
             # Sibling pads are excluded from lane blocking ONLY when they are
             # LATERAL neighbours - offset perpendicular to the lane axis, the
             # single-row case where the axial geometry is legal at class
@@ -348,8 +353,6 @@ def main(single_net=None, rip=None):
                     on2, l2, ox, oy, ohw, ohh, _r = o
                     if lay not in l2:
                         continue
-                    if sib_skip(o, axis):
-                        continue
                     oc = net_class(on2) if on2 else "HV"
                     clr = max(CLS_CLR.get(net_class(netname), 0.2),
                               CLS_CLR.get(oc, 0.15))
@@ -357,8 +360,20 @@ def main(single_net=None, rip=None):
                         clr = 1.50
                     ddx = max(abs(px - ox) - ohw, 0.0)
                     ddy = max(abs(py - oy) - ohh, 0.0)
-                    if ddx * ddx + ddy * ddy < (clr + half) ** 2 - 1e-12:
-                        return False
+                    d2 = ddx * ddx + ddy * ddy
+                    if d2 >= (clr + half) ** 2 - 1e-12:
+                        continue          # clear at class width
+                    # sibling exemption, EXACT and per cell: the pad-level
+                    # arithmetic approved lanes whose actual row sits off the
+                    # pad axis (measured 0.190 mm to U2.23 vs the 0.20 rule,
+                    # twice). An opened cell must clear the sibling FOR REAL
+                    # at the emitted entry width (w_hop), plus diagonal sag -
+                    # opened cells bypass the A* corner-cut wall test.
+                    if sib_skip(o, axis) and \
+                            d2 >= (clr + half_eff +
+                                   RES / (2.0 * math.sqrt(2.0))) ** 2:
+                        continue
+                    return False
                 for gx0, gy0, gx1, gy1, _n in nogo:
                     if gx0 - half <= px <= gx1 + half and \
                             gy0 - half <= py <= gy1 + half:

@@ -103,3 +103,40 @@ CHILD_FAIL no path U6.18 -> U6.9
 POUR GND: unconnected=139 errors=0
 POURS_DONE
 ROUND 1 END unconnected=139
+=== pour ROUND 2 05:45:17
+=== pours start 05:45:17
+--- 3V3 05:45:17
+    DEBUG island taps: 1 vias (3 orphan islands)
+CHILD_PARTIAL vias=6 len=0.00 man=0.00 cause=no path C10.1 -> C11.1
+POUR 3V3: unconnected=135 errors=1
+POUR 3V3 introduced error(s) - reverting; violations:
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1900 mm)
+    Rule: netclass 'Default'; error
+    @(33.4700 mm, 19.8300 mm): Pad 23 [GND] of U2 on F.Cu
+    @(32.7500 mm, 19.2500 mm): Track [3V3] on F.Cu, length 0.1000 mm
+
+--
+    Local override; error
+    @(22.3200 mm, 46.1800 mm): Pad 1 [CAN1_TX] of U4 on F.Cu
+    @(25.2500 mm, 23.8300 mm): Pad 46 [CAN1_TX] of U2 on F.Cu
+    Local override; error
+    @(25.2500 mm, 24.3300 mm): Pad 47 [GND] of U2 on F.Cu
+    @(25.8000 mm, 24.7050 mm): Pad 2 [GND] of C4 on B.Cu
+    Local override; error
+    @(27.1100 mm, 17.9700 mm): Pad 35 [GND] of U2 on F.Cu
+    @(24.7400 mm, 17.0550 mm): Pad 2 [GND] of C1 on B.Cu
+    Local override; error
+    @(27.1100 mm, 17.9700 mm): Pad 35 [GND] of U2 on F.Cu
+    @(29.8600 mm, 17.6500 mm): Pad 4 [GND] of Y1 on B.Cu
+    Local override; error
+    @(27.6600 mm, 19.3500 mm): Pad 2 [GND] of Y1 on B.Cu
+    @(27.1100 mm, 17.9700 mm): Pad 35 [GND] of U2 on F.Cu
+    Local override; error
+    @(30.0200 mm, 48.0500 mm): Pad 9 [GND] of U6 on F.Cu
+    @(0.6500 mm, 0.6500 mm): Zone 'F_GND' [GND] on F.Cu, priority 0
+--- 5V0 05:49:09
+POUR 5V0: unconnected=139 errors=0
+--- /power/SYS 05:51:51
+CHILD_FAIL no path U9.3 -> L3.2
+POUR /power/SYS: unconnected=139 errors=0
+--- GND 05:52:33
