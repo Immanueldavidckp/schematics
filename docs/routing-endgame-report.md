@@ -117,15 +117,49 @@ R21/R25/R43/R46. Meanwhile U2's SPI pins are on its EAST side (x 33.47), so
 SPI1_MISO/MOSI must cross the whole pocket to reach U7 - two of the 67
 failures are exactly those nets.
 
-## Recommendation: placement relief round 3 = move U7 east of U2
+## Relief round 3 — what was actually done (2026-09-16)
 
-Front-side x 43-52, y 12-24 is **empty** (only back-side test points TP3,
-TP6, TP27 under it). Place U7 at about (46, 18) front, its four passives with
-it. Effects: SPI1_* shrink from ~17 mm cross-pocket to ~10 mm direct; the
-U2 west corridor gains ~5 mm of width for the 12 south-bound nets; nothing
-in the RF corridor (x >= 76.8) or the HV strip is touched. Then regenerate
-and run the repaired pipeline (FR -> adopt -> LV, ~1.5 h per cycle now).
-Secondary candidates if U7 alone is not enough: C6/C28/C25 decoupling column
-at x 28.3 (rotate to the east side of U2), and TP4 at (22, 20.6).
+The first idea here ("U7 to about (46, 18) front") was wrong: that area is
+inside U1's keepout (x >= 44.2), which is why the dig zone stops at x = 43.
+A free-space search with the generator's own keepout model found **no legal
+spot for U7 anywhere in the pocket** - relief round 2 used every gap - so a
+single-part move cannot work. The swap that does:
 
-This is a placement change and is held for the same approval as round 2.
+- **U8 (TXB0104 SIM level shifter) was in the wrong zone entirely**: every
+  signal net goes to U1 or X1 in the RF area. It has a legal home on the back
+  side at (49.9, 47.0) beside them. Moving it frees the pocket's east edge.
+- U7 then goes to the back side at (46.9, 15.6) (variant A) - no closer to
+  U2's SPI pins than before, but out of U2's west escape corridor.
+
+Four variants ran in parallel through the repaired pipeline (regenerate ->
+RF -> HV -> FreeRouting -> adopt -> finisher), from ~262 open after the
+regeneration:
+
+| variant | moves | after cycle 1 |
+|---|---|---|
+| A | U8 out, U7 NE (B side) | **92** |
+| B | U8 out, U7 SE (B side) | 97 |
+| C | U8 out only | 105 |
+| D | A + TP4 re-parked | 106 |
+
+The finisher went from routing 1 of 68 nets (old placement) to 27 of 58.
+
+## Two structural faults found while diagnosing A's residue
+
+1. **SYS was two nets.** The power sheet had only local "SYS" labels, so the
+   charger output (U6, L3, C65/C66/C68, U9 input) was `/power/SYS` and never
+   left the sheet; the modem power switch Q3/Q13/R52, the sense divider R38
+   and TP13 sat on a global `SYS` with no source. ERC showed it only as
+   `same_local_global_label`. Fixed in `tools/sheets.py` (hierarchical label
+   on U6.15, same pattern as 3V3); SYS is one net of 11 members; ERC 0
+   errors; checkpins passes.
+2. **The L3 islands did not match the pads.** Measured on the routed board:
+   the "5V0" band y 27.5-39 held 14 3V3 pads and 4 5V0 pads; the "SYS" band
+   held 5 of the 5V0 pads and 7 3V3 pads; the north "3V3 finger" held no 3V3
+   pad. Pour-taps were therefore impossible for most power pads, and 40 of
+   A's 92 residual edges were 3V3/5V0/SYS. POWER_POURS is redrawn: 3V3 is
+   the background pour of the LV area, 5V0 and SYS get tight priority-1
+   islands from a greedy no-foreign-pad search (13/16 and 9/13 pads covered).
+
+Variants E (all of the above) and F (same, old pour plan) are running to
+measure each change. Results are appended when they land.
