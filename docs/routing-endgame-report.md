@@ -68,3 +68,63 @@ not cosmetic exceptions.
 - `docs/renders/endgame-top.png` — current top view.
 - `docs/lv-route-metrics.txt` — per-net metrics + unrouted causes.
 - Memory/process learnings in the design log; all tooling committed.
+
+
+---
+
+# Addendum 2026-09-15 — pipeline repaired; the floor is now measured honestly
+
+**State: 111 unconnected edges, 0 DRC rule errors** (from 174 at the start of
+the day). No rule loosened.
+
+## What was actually broken (and is fixed)
+
+1. `zones_intersect` on the 3V3 L3 fingers (priority never set) named net 3V3
+   and aborted every adopt with `ADOPT_BASELINE_NOT_CLEAN`.
+2. The autoroute scratch had **no `.kicad_dru`** and a stale `.kicad_pro`.
+   Adopt's DRC of it saw a phantom X1 pad-to-pad clearance naming GND, and
+   ripped the whole GND net **every cycle** (v12 logs: identical rip set);
+   its zone refill also ran without the rules (468 hidden violations).
+
+With both fixed, FreeRouting adopts with an **empty rip set** and every gain
+sticks. The earlier "FR converged at 24 passes = 8 passes" finding was
+measured through the broken adopt and should be disregarded.
+
+## Convergence today
+
+| step | unconnected |
+|---|---|
+| start (v13 board) | 174 |
+| LV finisher: GND pour taps, 47 vias | 131 |
+| FR 8 passes -> adopt (clean) | 120 |
+| LV finisher: GND +13 vias | 114 |
+| FR 20 passes -> adopt (clean) | 111 |
+
+Both engines are at their floor on this placement: FR 20 passes bought 3
+edges; the LV finisher fails 67/68 remaining nets with `no path` and the
+A/B on the pre-fix board fails identically, so this is geometry, not tooling.
+
+## Where the 111 are
+
+72 % of pad edges are in the pocket x 19-42. **U2 alone accounts for 26
+edge-halves**, and they are its WEST column (x 25.25: BOOT0, I2C1_SCL/SDA,
+SWCLK, CAN_STB, CAN1_RX/TX, GND) and NORTH row (y 17.97: DI1, DI2, DO1/DO2
+gates, MODEM_TX/RX/RI/DTR). Every west-column net must escape SOUTH to
+U4 (24, 44), JP1 (22, 49) or U3 (29, 55) - and **U7 (SPI flash) sits at
+(23.4, 34.2), squarely in that corridor**, ringed by C10/C11/C24/C28 and
+R21/R25/R43/R46. Meanwhile U2's SPI pins are on its EAST side (x 33.47), so
+SPI1_MISO/MOSI must cross the whole pocket to reach U7 - two of the 67
+failures are exactly those nets.
+
+## Recommendation: placement relief round 3 = move U7 east of U2
+
+Front-side x 43-52, y 12-24 is **empty** (only back-side test points TP3,
+TP6, TP27 under it). Place U7 at about (46, 18) front, its four passives with
+it. Effects: SPI1_* shrink from ~17 mm cross-pocket to ~10 mm direct; the
+U2 west corridor gains ~5 mm of width for the 12 south-bound nets; nothing
+in the RF corridor (x >= 76.8) or the HV strip is touched. Then regenerate
+and run the repaired pipeline (FR -> adopt -> LV, ~1.5 h per cycle now).
+Secondary candidates if U7 alone is not enough: C6/C28/C25 decoupling column
+at x 28.3 (rotate to the east side of U2), and TP4 at (22, 20.6).
+
+This is a placement change and is held for the same approval as round 2.
