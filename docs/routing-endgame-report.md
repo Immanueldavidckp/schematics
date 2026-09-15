@@ -74,7 +74,7 @@ not cosmetic exceptions.
 
 # Addendum 2026-09-15 — pipeline repaired; the floor is now measured honestly
 
-**State: 111 unconnected edges, 0 DRC rule errors** (from 174 at the start of
+**State: 109 unconnected edges, 0 DRC rule errors** (from 174 at the start of
 the day). No rule loosened.
 
 ## What was actually broken (and is fixed)
@@ -99,12 +99,13 @@ measured through the broken adopt and should be disregarded.
 | FR 8 passes -> adopt (clean) | 120 |
 | LV finisher: GND +13 vias | 114 |
 | FR 20 passes -> adopt (clean) | 111 |
+| LV finisher (40 min): GND +2 vias, CANL fragment | **109** |
 
 Both engines are at their floor on this placement: FR 20 passes bought 3
 edges; the LV finisher fails 67/68 remaining nets with `no path` and the
 A/B on the pre-fix board fails identically, so this is geometry, not tooling.
 
-## Where the 111 are
+## Where the remaining edges are
 
 72 % of pad edges are in the pocket x 19-42. **U2 alone accounts for 26
 edge-halves**, and they are its WEST column (x 25.25: BOOT0, I2C1_SCL/SDA,

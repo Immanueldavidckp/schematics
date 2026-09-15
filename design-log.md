@@ -3000,3 +3000,20 @@ commit (4e21bae). Details in `docs/housing-notes.md`.
   local main and `cmp` against the main checkout before any edit.
 - A single `pkill -f <pattern>` matched its own shell (exit 144). Match on
   the child's argv, not on a string the invoking command also contains.
+
+## Hybrid cycles under the repaired pipeline (same day, later)
+
+| step | unconnected | errors |
+|---|---|---|
+| LV finisher (GND taps, 47 vias, SYS) | 131 | 0 |
+| cycle 1: FR 8 passes, 20 min -> adopt, rip set EMPTY | 120 | 0 |
+| LV finisher: GND +13 vias; 67/68 signal nets `no path` | 114 | 0 |
+| cycle 2: FR 20 passes, 37 min -> adopt, rip set EMPTY | 111 | 0 |
+| LV finisher (40 min deadline): GND +2, CANL fragment | **109** | **0** |
+
+Floor reached with both engines honest for the first time. 72 % of the
+remaining pad edges are in the pocket x 19-42 and U2 carries 26 edge-halves
+(west column + north row). U7 sits in U2's only south escape corridor while
+U2's SPI pins face east; front-side x 43-52 / y 12-24 is empty. Recommendation
+and evidence: `docs/routing-endgame-report.md`, addendum 2026-09-15. Held for
+approval as a placement change (same gate as relief round 2).
