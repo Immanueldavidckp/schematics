@@ -161,5 +161,18 @@ The finisher went from routing 1 of 68 nets (old placement) to 27 of 58.
    the background pour of the LV area, 5V0 and SYS get tight priority-1
    islands from a greedy no-foreign-pad search (13/16 and 9/13 pads covered).
 
-Variants E (all of the above) and F (same, old pour plan) are running to
-measure each change. Results are appended when they land.
+Final results of all six variants (two cycles each):
+
+| variant | SYS fixed | pours | cycle 1 | final |
+|---|---|---|---|---|
+| A | no | old | 92 | 91 |
+| B | no | old | 97 | 96 |
+| C | no | old | 105 | 104 |
+| D | no | old | 106 | 105 |
+| E | yes | redrawn | 108 | 108 |
+| **F** | **yes** | old | 149 | **98** |
+
+**F (SYS fixed, old pour plan) is the integration board at 98 / 0**; A-D
+have the split SYS and are not shippable. Cycle-2 FreeRouting hung in all
+six pipelines (headless-JVM fix in the follow-up script), so a working
+second FreeRouting pass on this placement is still untested.

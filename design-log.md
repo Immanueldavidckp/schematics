@@ -3017,3 +3017,46 @@ remaining pad edges are in the pocket x 19-42 and U2 carries 26 edge-halves
 U2's SPI pins face east; front-side x 43-52 / y 12-24 is empty. Recommendation
 and evidence: `docs/routing-endgame-report.md`, addendum 2026-09-15. Held for
 approval as a placement change (same gate as relief round 2).
+
+
+## Relief round 3 results — six parallel pipelines (2026-09-16, 23:45-03:35)
+
+Each variant: fresh regeneration (~262 open) -> RF -> HV -> FreeRouting ->
+adopt -> finisher, twice, in its own worktree, four to six pipelines at once
+on 16 cores.
+
+| variant | SYS fixed | pours | cycle 1 | final |
+|---|---|---|---|---|
+| A | no | old | 92 | 91 |
+| B | no | old | 97 | 96 |
+| C | no | old | 105 | 104 |
+| D | no | old | 106 | 105 |
+| E | yes | redrawn | 108 | 108 |
+| **F** | **yes** | old | 149 | **98** |
+
+Reading: moving U8 out of the pocket is worth ~10 (C vs the 109 floor);
+U7 out of U2's west corridor another ~13 (A vs C); TP4 did nothing (D).
+A-D are electrically wrong (split SYS), so **F is the board**: 98 / 0. E's
+redrawn pours did not pay off by cycle 2 (E gained 0 in its second finisher
+pass, F gained 51), so the old pour plan stays; the pad-vs-island mismatch
+is real and remains a documented option.
+
+Two process findings:
+
+1. **Cycle-2 FreeRouting hangs in every pipeline** (6/6): 0-3 % CPU, log
+   frozen after "New version available", never "Starting auto-routing";
+   cycle 1 always ran. The interactive-session run on 09-15 did complete a
+   second cycle, so this is environmental (likely a GUI/update-check dialog
+   on a non-interactive JVM). Killing java lets adopt fall through with the
+   unchanged scratch (no regression). The follow-up cycle script forces
+   `-Djava.awt.headless=true` and kills java if auto-routing has not
+   started within 300 s. Net effect so far: no variant has had a working
+   second FreeRouting pass on the new placement - headroom remains.
+2. **Fixing SYS made the board harder, correctly.** The merged SYS is a
+   real cross-board 0.5 mm PWR net (charger at y 46 to the LDO and the
+   modem switch at the top-right) that did not exist before; E/F's first
+   FreeRouting sessions were 79-83 KB vs ~220 KB for A-D.
+
+Follow-ups running on F: G = headless FreeRouting cycle (12 passes) + 60 min
+finisher; H = finisher pocket restart (rip window x 19-43, y 15-61, hard-
+first, 90 min) after a headless FreeRouting pass.
