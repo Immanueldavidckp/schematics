@@ -1,0 +1,6 @@
+=== [F] build.py (regenerate) 01:30:41
+     relaxation did NOT converge for 1 pair(s): L1+U2 (x +10.11, y +1.04)
+=== [F] pcbroute.py (RF) 01:31:17
+=== [F] pcbroute_hv.py (HV) 01:31:18
+HV routed: 42/42 connections (0 net(s) incomplete)
+PRE_AUTO unconnected=263 errors=0
