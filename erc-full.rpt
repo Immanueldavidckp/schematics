@@ -1,39 +1,7 @@
-ERC report (normalised)
+ERC report (2026-09-16T01:28:56, Encoding UTF8)
 Report includes: Errors, Warnings
 
 ***** Sheet /
-** report normalised: timestamp removed and violations sorted, so an unchanged design produces an unchanged file **
-
-[isolated_pin_label]: Label connected to only one pin
-    ; warning
-    @(158.75 mm, 143.51 mm): Hierarchical Label 'IGN_SENSE'
-[isolated_pin_label]: Label connected to only one pin
-    ; warning
-    @(158.75 mm, 146.05 mm): Hierarchical Label 'VIN_SENSE'
-[isolated_pin_label]: Label connected to only one pin
-    ; warning
-    @(158.75 mm, 163.83 mm): Hierarchical Label 'VBAT_SENSE'
-[isolated_pin_label]: Label connected to only one pin
-    ; warning
-    @(17.78 mm, 50.80 mm): Global Label 'IGN_SENSE'
-[isolated_pin_label]: Label connected to only one pin
-    ; warning
-    @(17.78 mm, 81.28 mm): Global Label 'VBAT_SENSE'
-[isolated_pin_label]: Label connected to only one pin
-    ; warning
-    @(17.78 mm, 83.82 mm): Global Label 'VIN_SENSE'
-[isolated_pin_label]: Label connected to only one pin
-    ; warning
-    @(45.72 mm, 114.30 mm): Label 'J1_SPARE1'
-[isolated_pin_label]: Label connected to only one pin
-    ; warning
-    @(45.72 mm, 116.84 mm): Label 'J1_SPARE2'
-[isolated_pin_label]: Label connected to only one pin
-    ; warning
-    @(97.79 mm, 187.96 mm): Label 'U6_STAT'
-[isolated_pin_label]: Label connected to only one pin
-    ; warning
-    @(97.79 mm, 193.04 mm): Label 'U6_PG'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 27.94 mm): Global Label '3V3'
@@ -54,18 +22,27 @@ Report includes: Errors, Warnings
     ; warning
     @(17.78 mm, 45.72 mm): Global Label 'DO2_GATE'
     @(58.42 mm, 312.42 mm): Label 'DO2_GATE'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(17.78 mm, 50.80 mm): Global Label 'IGN_SENSE'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 50.80 mm): Global Label 'IGN_SENSE'
-    @(370.84 mm, 116.84 mm): Label 'IGN_SENSE'
+    @(353.06 mm, 86.36 mm): Label 'IGN_SENSE'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 68.58 mm): Global Label 'MODEM_STATUS'
     @(149.86 mm, 149.86 mm): Label 'MODEM_STATUS'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(17.78 mm, 81.28 mm): Global Label 'VBAT_SENSE'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 81.28 mm): Global Label 'VBAT_SENSE'
-    @(322.58 mm, 129.54 mm): Label 'VBAT_SENSE'
+    @(307.34 mm, 129.54 mm): Label 'VBAT_SENSE'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(17.78 mm, 83.82 mm): Global Label 'VIN_SENSE'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 83.82 mm): Global Label 'VIN_SENSE'
@@ -73,22 +50,49 @@ Report includes: Errors, Warnings
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(220.98 mm, 30.48 mm): Global Label '5V0'
-    @(96.52 mm, 251.46 mm): Label '5V0'
+    @(121.92 mm, 251.46 mm): Label '5V0'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(220.98 mm, 50.80 mm): Global Label 'SYS'
-    @(180.34 mm, 177.80 mm): Label 'SYS'
+    @(292.10 mm, 129.54 mm): Label 'SYS'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(220.98 mm, 53.34 mm): Global Label 'VIN'
-    @(199.39 mm, 256.54 mm): Label 'VIN'
+    @(292.10 mm, 43.18 mm): Label 'VIN'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(158.75 mm, 143.51 mm): Hierarchical Label 'IGN_SENSE'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(158.75 mm, 146.05 mm): Hierarchical Label 'VIN_SENSE'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(158.75 mm, 163.83 mm): Hierarchical Label 'VBAT_SENSE'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(97.79 mm, 187.96 mm): Label 'U6_STAT'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(97.79 mm, 193.04 mm): Label 'U6_PG'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(45.72 mm, 114.30 mm): Label 'J1_SPARE1'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(45.72 mm, 116.84 mm): Label 'J1_SPARE2'
 
 ***** Sheet /mcu/
+
 ***** Sheet /storage/
+
 ***** Sheet /io/
+
 ***** Sheet /modem_rf/
+
 ***** Sheet /power/
+
  ** ERC messages: 22  Errors 0  Warnings 22
+
  ** Ignored checks:
     - Global label only appears once in the schematic
     - Four connection points are joined together

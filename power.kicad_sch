@@ -3413,15 +3413,16 @@
 		)
 		(uuid "23d2699c-ed19-5eb5-a2b4-216f98e77f8a")
 	)
-	(label "SYS"
+	(hierarchical_label "SYS"
+		(shape output)
 		(at 130.81 200.66 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify left)
 		)
-		(uuid "52aa723f-0c29-5896-bcb2-eeaf3b3e49c1")
+		(uuid "a165e502-2a3a-5379-a6b8-7a6697bc87a3")
 	)
 	(wire
 		(pts

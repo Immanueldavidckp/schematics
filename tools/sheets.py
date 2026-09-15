@@ -1111,7 +1111,11 @@ def build_power():
                   (g(134), g(140)), "jlc:L1008", LCSC_L2R2)
     sh.net(l3, "1", "SW_CHG", length=g(4))
     sh.net(l3, "2", "SYS", length=g(4))
-    sh.net(u6, "15", "SYS", length=g(4))
+    # hier, not net: the power sheet had only LOCAL "SYS" labels, so the
+    # charger output (U6/L3/C65-C68/U9) was net /power/SYS and the modem
+    # switch Q3/Q13, R38 sense and TP13 sat on an unpowered global SYS.
+    # ERC flagged it only as same_local_global_label. Same pattern as 3V3.
+    sh.hier(u6, "15", "SYS", "output", length=g(4))
     sh.net(u6, "16", "SYS", length=g(4))
     for i, x in enumerate((148, 158)):
         sh.series("Device:C", f"C{65 + i}", "10uF", (g(x), g(148)), "SYS",

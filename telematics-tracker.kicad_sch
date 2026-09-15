@@ -1646,11 +1646,43 @@
 			(width 0)
 			(type default)
 		)
+		(uuid "b1d8bee9-63e9-5ddc-aabf-283bc105399a")
+	)
+	(global_label "SYS"
+		(shape output)
+		(at 17.78 160.02 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "72e77f02-e0c3-50a6-9af3-f90303417239")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 17.78 160.02 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 25.4 162.56) (xy 17.78 162.56)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
 		(uuid "dcdf4659-706d-5063-968b-f42f16b9e3c4")
 	)
 	(global_label "VIN"
 		(shape input)
-		(at 17.78 160.02 180)
+		(at 17.78 162.56 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1660,7 +1692,7 @@
 		)
 		(uuid "39f10177-3726-5bee-a616-f65836fa0a41")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 17.78 160.02 0)
+			(at 17.78 162.56 0)
 			(hide yes)
 			(effects
 				(font
@@ -2362,8 +2394,18 @@
 			)
 			(uuid "d894b678-c311-57b8-9de9-c3f00643b2ba")
 		)
-		(pin "VIN" input
+		(pin "SYS" output
 			(at 25.4 160.02 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "fb2a9fce-5445-5f74-a59c-ee513ec56c0a")
+		)
+		(pin "VIN" input
+			(at 25.4 162.56 180)
 			(effects
 				(font
 					(size 1.27 1.27)

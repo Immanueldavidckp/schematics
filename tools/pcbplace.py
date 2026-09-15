@@ -232,9 +232,9 @@ ANCHORS = {
     "U2":  (29.0, 25.0, 0, 0),
     # Amendment (c) / F-18: U3 hard against the provisional 5th M3 at (27,52).
     "U3":  (29.0, 55.0, 0, 0),
-    "U7":  (24.0, 33.0, 0, 0),
+    "U7":  (46.9, 15.6, 0, 1),   # relief round 3: SPI flash out of U2's west corridor (B side)
     "U4":  (24.5, 43.5, 0, 0),
-    "U8":  (42.0, 31.5, 0, 0),
+    "U8":  (49.9, 47.0, 90, 1),  # relief round 3: SIM level shifter beside X1/U1, its only partners (B side)
 
     # --- scattered-cluster repair (hybrid residue, 2026-09-08, v2) -------
     # The packer had put U6's ENTIRE ring 30-44 mm from the chip, Y2 on the
@@ -459,30 +459,40 @@ def hv_nets():
     return set(netclasses.HV)
 
 POWER_POURS = [
-    # (net, layer, x0, y0, x1, y1) on L3. The 5V0 pour starts below the U5
-    # island and keeps the HV netclass clearance from it.
-    ("5V0", "In2.Cu", HV_X + 0.75, 27.5, 43.0, 39.0, 0),
-    ("SYS", "In2.Cu", HV_X + 0.75, 39.5, 43.0, 48.0, 0),
-    # 3V3 extended across the modem half: 41 of the 162 leftover edges were
-    # 3V3 pads with no pour to tap - the island only covered the dig column.
-    # Island A spans the bottom band to x 76 (clear of the RF corridor at
-    # 76.8); island B covers the modem mid-region, clear of the VBAT_MODEM
-    # island (62..76, 7..21) by 1.5 mm.
-    ("3V3", "In2.Cu", HV_X + 0.75, 48.5, 76.0, BH - EDGE, 0),
-    ("3V3", "In2.Cu", 44.0, 22.5, 76.0, 40.0, 0),
-    # 3V3 pocket fingers (endgame): the starved 3V3 pads at x21-41 sit over
-    # the 5V0/SYS islands with no 3V3 copper underneath - reach, not order.
-    # Two free L3 corridors host a comb connected to island B at x44:
-    # band y15.0..26.9 (0.6 to the 5V0 island at 27.5), north lobe
-    # x21..33.5 y5..15.2 (0.7 to VIN_B thermal at x34.2).
-    ("3V3", "In2.Cu", 20.8, 15.0, 44.5, 26.9, 1),   # overlaps island B
-    ("3V3", "In2.Cu", 21.0, 5.0, 33.5, 15.2, 2),    # overlaps the band
-    # CHECK 4 as approved: "VBAT_MODEM pour on L3 ties them" - the four F-13
-    # bulk caps (C40/C41 top, C81/C82 bottom) and U1 pads 57-60. This island
-    # was in the approved design but never emitted; found when the LV router
-    # enumerated the board's pours and VBAT_MODEM was not among them. Spans
-    # the cap cluster and Q3, stops at x 76 clear of the RF corridor (77.8+).
-    ("/modem_rf/VBAT_MODEM", "In2.Cu", 62.0, 7.0, 76.0, 21.0, 0),
+    # (net, layer, x0, y0, x1, y1, priority) on L3.
+    # Relief round 3 (2026-09-16): the islands are drawn where the PADS are.
+    # Measured on the routed board: the old "5V0" band y 27.5-39 held 14 3V3
+    # pads (U2's decoupling column) and 4 5V0 pads; the old "SYS" band held
+    # 5 of the 5V0 pads (U6's input side) and 7 3V3 pads; the north "3V3
+    # finger" held three 5V0 pads and no 3V3 pad. So the finisher's pour-tap
+    # was impossible for most power pads and it maze-routed them instead -
+    # 40 of the 92 residual edges were 3V3/5V0/SYS.
+    #
+    # New plan: 3V3 is the BACKGROUND pour of the whole LV area at priority
+    # 0; 5V0 and SYS get tight priority-1 islands (carved out of the 3V3
+    # fill) computed by a greedy search that admits only rectangles with no
+    # foreign power pad inside +-0.8 mm. VBAT_MODEM keeps its island at
+    # priority 1 for the same reason. Background starts at y 15.0: 0.7 mm
+    # below the VIN_B thermal island (HV inside BUCK_HV: 0.60 mm rule).
+    ("3V3", "In2.Cu", 20.8, 15.0, 76.0, 61.0, 0),
+    ("/modem_rf/VBAT_MODEM", "In2.Cu", 62.0, 7.0, 76.0, 21.0, 1),
+    # 5V0: buck output + bulk caps (north), then the pocket clusters
+    ("5V0", "In2.Cu", 20.8, 1.3, 23.2, 13.0, 1),
+    ("5V0", "In2.Cu", 25.8, 6.0, 27.8, 8.0, 1),
+    ("5V0", "In2.Cu", 31.0, 1.3, 33.0, 3.3, 1),
+    ("5V0", "In2.Cu", 34.5, 23.5, 36.5, 25.5, 1),
+    ("5V0", "In2.Cu", 30.7, 30.0, 33.7, 36.8, 1),
+    ("5V0", "In2.Cu", 41.2, 33.9, 43.2, 35.9, 1),
+    ("5V0", "In2.Cu", 38.9, 42.0, 40.9, 44.0, 1),
+    ("5V0", "In2.Cu", 23.9, 43.8, 29.2, 47.2, 1),
+    # SYS (one net again once the power sheet exports it): charger output,
+    # LDO input, modem switch feed
+    ("SYS", "In2.Cu", 24.0, 1.0, 26.0, 3.0, 1),
+    ("SYS", "In2.Cu", 29.3, 5.9, 33.2, 7.9, 1),
+    ("SYS", "In2.Cu", 29.4, 45.2, 33.3, 50.8, 1),
+    ("SYS", "In2.Cu", 49.0, 7.7, 51.0, 9.7, 1),
+    ("SYS", "In2.Cu", 52.3, 10.0, 54.3, 12.0, 1),
+    ("SYS", "In2.Cu", 59.5, 2.5, 61.5, 4.5, 1),
 ]
 
 # The EG11752 exposed pad is VIN_B (F-20), and the skill file requires the
