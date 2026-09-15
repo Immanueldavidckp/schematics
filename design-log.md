@@ -3060,3 +3060,9 @@ Two process findings:
 Follow-ups running on F: G = headless FreeRouting cycle (12 passes) + 60 min
 finisher; H = finisher pocket restart (rip window x 19-43, y 15-61, hard-
 first, 90 min) after a headless FreeRouting pass.
+
+Follow-up note: `-Djava.awt.headless=true` is NOT a fix - FreeRouting 1.9.0
+throws HeadlessException from the main thread and exits in seconds; it is a
+GUI application that needs a display even for -de/-do batch runs. The
+cycle-2 hang is therefore a modal window on the desktop waiting for a click.
+G/H fell through to their finishers with the board unchanged (98).
