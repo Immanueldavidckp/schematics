@@ -461,28 +461,28 @@ def hv_nets():
 POWER_POURS = [
     # (net, layer, x0, y0, x1, y1) on L3. The 5V0 pour starts below the U5
     # island and keeps the HV netclass clearance from it.
-    ("5V0", "In2.Cu", HV_X + 0.75, 27.5, 43.0, 39.0),
-    ("SYS", "In2.Cu", HV_X + 0.75, 39.5, 43.0, 48.0),
+    ("5V0", "In2.Cu", HV_X + 0.75, 27.5, 43.0, 39.0, 0),
+    ("SYS", "In2.Cu", HV_X + 0.75, 39.5, 43.0, 48.0, 0),
     # 3V3 extended across the modem half: 41 of the 162 leftover edges were
     # 3V3 pads with no pour to tap - the island only covered the dig column.
     # Island A spans the bottom band to x 76 (clear of the RF corridor at
     # 76.8); island B covers the modem mid-region, clear of the VBAT_MODEM
     # island (62..76, 7..21) by 1.5 mm.
-    ("3V3", "In2.Cu", HV_X + 0.75, 48.5, 76.0, BH - EDGE),
-    ("3V3", "In2.Cu", 44.0, 22.5, 76.0, 40.0),
+    ("3V3", "In2.Cu", HV_X + 0.75, 48.5, 76.0, BH - EDGE, 0),
+    ("3V3", "In2.Cu", 44.0, 22.5, 76.0, 40.0, 0),
     # 3V3 pocket fingers (endgame): the starved 3V3 pads at x21-41 sit over
     # the 5V0/SYS islands with no 3V3 copper underneath - reach, not order.
     # Two free L3 corridors host a comb connected to island B at x44:
     # band y15.0..26.9 (0.6 to the 5V0 island at 27.5), north lobe
     # x21..33.5 y5..15.2 (0.7 to VIN_B thermal at x34.2).
-    ("3V3", "In2.Cu", 20.8, 15.0, 44.5, 26.9),   # priority 1 (overlaps island B)
-    ("3V3", "In2.Cu", 21.0, 5.0, 33.5, 15.2),    # priority 2 (overlaps the band)
+    ("3V3", "In2.Cu", 20.8, 15.0, 44.5, 26.9, 1),   # overlaps island B
+    ("3V3", "In2.Cu", 21.0, 5.0, 33.5, 15.2, 2),    # overlaps the band
     # CHECK 4 as approved: "VBAT_MODEM pour on L3 ties them" - the four F-13
     # bulk caps (C40/C41 top, C81/C82 bottom) and U1 pads 57-60. This island
     # was in the approved design but never emitted; found when the LV router
     # enumerated the board's pours and VBAT_MODEM was not among them. Spans
     # the cap cluster and Q3, stops at x 76 clear of the RF corridor (77.8+).
-    ("/modem_rf/VBAT_MODEM", "In2.Cu", 62.0, 7.0, 76.0, 21.0),
+    ("/modem_rf/VBAT_MODEM", "In2.Cu", 62.0, 7.0, 76.0, 21.0, 0),
 ]
 
 # The EG11752 exposed pad is VIN_B (F-20), and the skill file requires the
@@ -663,7 +663,7 @@ class Shelf:
         return None
 
 
-def add_zone(board, layer, net, rect, name=""):
+def add_zone(board, layer, net, rect, name="", priority=0):
     z = pcbnew.ZONE(board)
     z.SetLayer(layer)
     z.SetNet(net)
@@ -673,6 +673,12 @@ def add_zone(board, layer, net, rect, name=""):
         pts.append(pcbnew.VECTOR2I(mm(x), mm(y)))
     z.AddPolygon(pts)
     z.SetZoneName(name)
+    # Same-net zones that overlap must still carry DISTINCT priorities or
+    # KiCad raises zones_intersect as an ERROR. That error names the zone's
+    # NET, so pcbroute_adopt.py rips that net's segments trying to clear it,
+    # rips nothing (the overlap is zone-on-zone), and aborts the whole
+    # FreeRouting adopt stage with ADOPT_BASELINE_NOT_CLEAN.
+    z.SetAssignedPriority(priority)
     z.SetPadConnection(pcbnew.ZONE_CONNECTION_FULL)   # no thermal spokes
     # Remove pad-less fill fragments: without this, every isolated pour
     # island the routing carves off counts as an unconnected ratsnest item -
@@ -840,13 +846,13 @@ def planes(board):
         print("  L3: power islands SKIPPED (routing pass - L3 is a signal "
               "layer; islands are re-added after SES import)")
         return
-    for netname, layer, x0, y0, x1, y1 in POWER_POURS:
+    for netname, layer, x0, y0, x1, y1, prio in POWER_POURS:
         n = board.FindNet(netname)
         if n is None:
             print(f"  L3 skip {netname}: net not on board")
             continue
         add_zone(board, board.GetLayerID(layer), n, (x0, y0, x1, y1),
-                 f"L3_{netname}")
+                 f"L3_{netname}", priority=prio)
         print(f"  L3: {netname} pour {x1-x0:.0f} x {y1-y0:.0f} mm")
 
 
