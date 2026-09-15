@@ -1,0 +1,172 @@
+# MEWP telematics tracker — custom design rules
+# Milestone 4. Written 2026-09-04.
+#
+# Netclass clearances live in telematics-tracker.kicad_pro. These rules cover
+# the things a netclass clearance cannot express, chiefly the HV-to-signal
+# separation, which is directional: HV must stand off low-voltage signals, but
+# an HV part's own ground return (TVS, bulk caps) is necessarily close to its
+# HV pad and must not be flagged.
+
+(version 1)
+
+# --- HV zone -------------------------------------------------------------
+# handoff section 7: "HV zone (VIN up to 100 V) physically separated;
+# >= 1.5 mm clearance HV-to-LV, marked keepout."
+# GND is excepted by design: D2 SMDJ100A, C70/C71/C72/C73/C74 and R80 all
+# return to GND right beside their HV pads. The electrical minimum still
+# applies there via the HV netclass clearance (0.6 mm, IPC-2221 Table 6-1
+# external uncoated at 100 V).
+# Scoped to the HV_ZONE rule area on purpose. This is a board-level zone
+# separation requirement, not an intra-package one: U5's exposed pad is VIN_B
+# at up to 100 V and the EG11752 package puts its own signal pins 0.55 mm from
+# it, so an unscoped rule is unsatisfiable and would mask real violations
+# everywhere else. The universal electrical minimum is the HV netclass
+# clearance (0.60 mm, IPC-2221 table 6-1 external uncoated at 100 V), which
+# does apply everywhere. See design-log F-20.
+# Two approved rescopes (see design-log):
+#   BUCK_HV - inside the buck cluster area the minimum is the electrical
+#     0.60 mm (IPC-2221 B4 coated; coating mandatory per F-20). The 1.5 mm is
+#     defence-in-depth for externally-wired nets exposed to harness transients
+#     and contamination; the buck cluster is internal, post-TVS/R80, coated,
+#     and compact by construction - SW_BUCK cannot sit 1.5 mm from U5's own
+#     FB/VCC pins in any package.
+#   MV - interior chain/divider nodes at <= 70 V (voltages logged in
+#     tools/netclasses.py). They are on the same current path as their HV
+#     parents: the potential between an HV net and its own MV node is one
+#     resistor drop (~33 V), and requiring 1.5 mm between them just walls off
+#     the divider it feeds. MV-to-anything keeps the MV netclass 0.60 mm.
+(rule "HV to signal 1.5mm"
+	(constraint clearance (min 1.5mm))
+	(condition "A.insideArea('HV_ZONE') && !A.insideArea('BUCK_HV') && A.NetClass == 'HV' && B.NetClass != 'HV' && B.NetClass != 'MV' && B.NetClass != 'GND'"))
+
+# Board-edge standoff for HV nets: creepage to a cut edge, and to whatever the
+# housing presents beyond it.
+(rule "HV to board edge"
+	(constraint edge_clearance (min 1.0mm))
+	(condition "A.NetClass == 'HV'"))
+
+# --- RF ------------------------------------------------------------------
+# 50 ohm CPWG on L1 over the L2 GND plane, JLC7628 h = 0.2104 mm:
+# W = 0.40 mm, G = 0.30 mm (48.9-50.4 ohm across Dk 4.3-4.6).
+# The gap is held by the RF netclass clearance; this pins the width so a
+# stray narrower segment cannot pass DRC unnoticed.
+(rule "RF trace width"
+	(constraint track_width (min 0.4mm) (opt 0.4mm) (max 0.4mm))
+	(condition "A.NetClass == 'RF'"))
+
+# --- JLCPCB process floor ------------------------------------------------
+# Skill file section PCB: 0.15 mm track/space is the safe figure for the
+# standard 4-layer process.
+(rule "JLCPCB min track"
+	(constraint track_width (min 0.15mm))
+	(condition "A.Type == 'track'"))
+
+(rule "JLCPCB min via"
+	(constraint hole_size (min 0.3mm))
+	(constraint via_diameter (min 0.45mm))
+	(condition "A.Type == 'via'"))
+
+(rule "JLCPCB hole to hole"
+	(constraint hole_to_hole (min 0.5mm)))
+
+# --- thermal / current ---------------------------------------------------
+# handoff section 4: VBAT_MODEM carries the modem's 2 A transmit burst and is
+# specified >= 2 mm wide. Enforced so a narrow neck cannot slip through.
+# The 2.0 mm trunk requirement lives in the MODEM_BULK netclass track width,
+# which is what the router uses. This floor is deliberately lower: the trace
+# has to neck down to enter U1's pad row, which is on a 1.30 mm pitch - a 2 mm
+# trace landing there bridges the neighbouring pads. A hard 2 mm minimum makes
+# the only physically possible entry illegal.
+(rule "VBAT_MODEM minimum width"
+	(constraint track_width (min 0.5mm))
+	(condition "A.NetClass == 'MODEM_BULK' && A.Type == 'track'"))
+
+# --- F-20: the buck's exposed pad is at line voltage ---------------------
+# EG11752 pin 9 (the SOIC-8 exposed pad) is VIN_B, i.e. up to 100 V, and the
+# package places its own signal pins 0.55 mm from it (EP 3.30 x 2.40 centred,
+# signal pads at y = +/-2.72 with 1.94 mm height -> inner edge +/-1.75 against
+# an EP edge at +/-1.20). No layout can widen that: it is the package.
+#
+# 0.60 mm is the IPC-2221 table 6-1 figure for EXTERNAL UNCOATED conductors at
+# 100 V; coated (B4) at 100 V is about 0.25 mm, so 0.55 mm passes with better
+# than 2:1 margin ONCE COATED.
+#
+# CONFIRMED 2026-09-05: conformal coating is MANDATORY on every board including
+# prototypes, and is logged as a safety-critical process requirement (handoff
+# section 6.1, SKILL.md P1). Prototypes are coated before the 100 V / 85 C
+# burn-in, and the U5 area carries a coating inspection marking on F.Fab.
+#
+# THIS EXCEPTION IS VALID ONLY WHILE THAT REQUIREMENT HOLDS. If coating is ever
+# dropped, this rule must be deleted and U5 reconsidered - an uncoated board
+# relies on the package's own certified spacing alone and must not be
+# energised at line voltage.
+(rule "U5 package internal HV spacing"
+	(constraint clearance (min 0.3mm))
+	(condition "A.insideCourtyard('U5') && B.insideCourtyard('U5') && (A.NetClass == 'HV' || B.NetClass == 'HV' || A.NetClass == 'MV' || B.NetClass == 'MV')"))
+
+# NOTE on the courtyard-scoped rules below: insideCourtyard() is 2-D - it
+# matches items on BOTH sides of the board under the footprint. Unguarded,
+# a rule like (min 0.3mm) inside L1's 14 x 12 mm courtyard RAISED the
+# clearance for unrelated bottom-side LV parts packed beneath the inductor
+# (measured: 22 'L1 winding internal HV spacing' violations between L3, R86
+# and 5V0 tracks on B.Cu). Every courtyard rule is therefore guarded with a
+# net-class condition so it binds only the HV/MV transition pairs it was
+# written for; LV-to-LV pairs fall back to their netclass values.
+# SW_BUCK is now in the HV netclass - it swings from GND to VIN on every cycle,
+# which the earlier Default classification missed. That makes the 1.5 mm rule
+# apply between L1's two pads, SW_BUCK and 5V0, which is the inductor's own
+# body: the winding IS the transition from the switching node to the output
+# rail. Both terminals are inside one certified part, so this is intra-package
+# spacing, not a layout-controlled separation. The electrical minimum still
+# applies via the HV netclass clearance (0.60 mm). D16 needs no equivalent
+# rule: its other terminal is GND, already excepted above.
+(rule "L1 winding internal HV spacing"
+	(constraint clearance (min 0.3mm))
+	(condition "A.insideCourtyard('L1') && B.insideCourtyard('L1') && (A.NetClass == 'HV' || B.NetClass == 'HV' || A.NetClass == 'MV' || B.NetClass == 'MV')"))
+
+# --- CHECK 3: intra-component HV->LV exemption at <= 40 V -----------------
+# Agreed policy: a pad pair INSIDE one component is exempt from the 1.5 mm
+# zone-separation rule where the voltage across that part is <= 40 V, because
+# the part IS the HV->LV transition and its pad spacing is the package.
+# The sense dividers are 3 x 100k then 9.1k = 309.1 kohm, so at VIN = 100 V the
+# current is 323.5 uA and each 100k drops 32.35 V - inside the exemption.
+(rule "divider internal spacing <=40V"
+	(constraint clearance (min 0.5mm))
+	(condition "A.insideCourtyard('R30') && B.insideCourtyard('R30') && (A.NetClass == 'HV' || B.NetClass == 'HV' || A.NetClass == 'MV' || B.NetClass == 'MV')"))
+(rule "divider internal spacing <=40V R31"
+	(constraint clearance (min 0.5mm))
+	(condition "A.insideCourtyard('R31') && B.insideCourtyard('R31') && (A.NetClass == 'HV' || B.NetClass == 'HV' || A.NetClass == 'MV' || B.NetClass == 'MV')"))
+(rule "divider internal spacing <=40V R32"
+	(constraint clearance (min 0.5mm))
+	(condition "A.insideCourtyard('R32') && B.insideCourtyard('R32') && (A.NetClass == 'HV' || B.NetClass == 'HV' || A.NetClass == 'MV' || B.NetClass == 'MV')"))
+(rule "divider internal spacing <=40V R33"
+	(constraint clearance (min 0.5mm))
+	(condition "A.insideCourtyard('R33') && B.insideCourtyard('R33') && (A.NetClass == 'HV' || B.NetClass == 'HV' || A.NetClass == 'MV' || B.NetClass == 'MV')"))
+(rule "divider internal spacing <=40V R34"
+	(constraint clearance (min 0.5mm))
+	(condition "A.insideCourtyard('R34') && B.insideCourtyard('R34') && (A.NetClass == 'HV' || B.NetClass == 'HV' || A.NetClass == 'MV' || B.NetClass == 'MV')"))
+(rule "divider internal spacing <=40V R35"
+	(constraint clearance (min 0.5mm))
+	(condition "A.insideCourtyard('R35') && B.insideCourtyard('R35') && (A.NetClass == 'HV' || B.NetClass == 'HV' || A.NetClass == 'MV' || B.NetClass == 'MV')"))
+
+# Above 40 V and therefore NOT covered by that exemption. These rest on the
+# IPC-2221 figure for their actual voltage (0.60 mm uncoated at <= 100 V) plus
+# the mandatory conformal coating - the same basis as F-20 at U5. Q1/Q2 are the
+# DO FETs (LV gate, HV drain, SOT-23 pitch); R40 is the DNP spare divider and
+# is a SINGLE 100k, so it sees 91.7 V where the fitted dividers see 32.35 V.
+(rule "DO FET package spacing Q1"
+	(constraint clearance (min 0.6mm))
+	(condition "A.insideCourtyard('Q1') && B.insideCourtyard('Q1') && (A.NetClass == 'HV' || B.NetClass == 'HV' || A.NetClass == 'MV' || B.NetClass == 'MV')"))
+(rule "DO FET package spacing Q2"
+	(constraint clearance (min 0.6mm))
+	(condition "A.insideCourtyard('Q2') && B.insideCourtyard('Q2') && (A.NetClass == 'HV' || B.NetClass == 'HV' || A.NetClass == 'MV' || B.NetClass == 'MV')"))
+(rule "spare divider R40 package spacing"
+	(constraint clearance (min 0.6mm))
+	(condition "A.insideCourtyard('R40') && B.insideCourtyard('R40') && (A.NetClass == 'HV' || B.NetClass == 'HV' || A.NetClass == 'MV' || B.NetClass == 'MV')"))
+
+# X1 vendor footprint: 0.19 mm between its own GND and card-detect pads. Fixed
+# by the part, documented waiver.
+(rule "X1 vendor footprint internal spacing"
+	(constraint clearance (min 0.15mm))
+	(condition "A.memberOfFootprint('X1') && B.memberOfFootprint('X1')"))
+

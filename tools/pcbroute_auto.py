@@ -149,6 +149,14 @@ def main():
     inject_keepouts(DSN, board)
 
     shutil.copyfile(PCB, SCRATCH)
+    # The scratch is DRC'd by pcbroute_adopt.py, and a board DRC'd without
+    # its project's .kicad_dru / .kicad_pro reports PHANTOM violations
+    # (measured: X1's own pads C5 [GND] vs CD [USIM_DET] at 0.19 mm, which
+    # the DRU exempts). A phantom that names GND makes adopt rip the whole
+    # GND net - every cycle. Keep the scratch project in lockstep.
+    stem = SCRATCH[:-len(".kicad_pcb")]
+    for ext in (".kicad_dru", ".kicad_pro"):
+        shutil.copyfile(PCB[:-len(".kicad_pcb")] + ext, stem + ext)
 
     # -mp 8: v2.4.1 has no wall-clock option and only writes the .ses when
     # it finishes, so a kill at the time budget yields NOTHING - measured:
