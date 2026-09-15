@@ -2930,3 +2930,73 @@ c. 6-layer respin (cost delta pending the manual quote).
 
 Recommendation: (b), with (c) only if (b) plateaus - the same gate the
 user set for FreeRouting.
+
+
+---
+
+# Zone-priority bug, routing A/B, FreeRouting bisect, housing variants — 2026-09-15
+
+## The adopt stage was dead, and the cause was two missing integers
+
+DRC on the 09-11 board reported 2 `zones_intersect` errors: the two 3V3 L3
+pocket fingers (POWER_POURS, added 09-11) overlapped island B and each other
+at priority 0. `POWER_POURS` *documented* them as "priority 1" and "priority
+2" but `add_zone()` never set a priority at all — the intent was written down
+and never implemented.
+
+Consequence chain, verified in the chain-v13 log: `zones_intersect` names the
+zone's NET (`3V3`), so `pcbroute_adopt.py` added 3V3 to its rip set, ripped
+3V3 *segments* to clear a *zone* overlap, ripped 0 forms, concluded
+"violations remain on LOCKED copper - placement problem" and exited
+`ADOPT_BASELINE_NOT_CLEAN`. Every FreeRouting result was therefore discarded
+before the LV finisher ever ran. Fix: `add_zone(..., priority=)`, every
+POWER_POURS row carries its priority explicitly, live board patched in place
+(a regeneration would have ripped the routing), netclasses re-applied and
+round-trip verified (G2). DRC 2 -> 0, unconnected unchanged.
+
+## Controlled A/B: the LV plateau is not the zone patch
+
+After the fix, a full LV run routed 2 nets and failed 50 in pass 1, with GND
+as the dominant wall in every flood diagnostic. To rule the patch in or out,
+the same nets were routed as single children against the pre-patch board
+(58dbe4b) and the post-patch board (5bdaad6) in isolated temp projects:
+`/mcu/IMU_INT1` and `/mcu/BOOT0` fail identically (`no path`) on both. The
+router's obstacle model is pads + vias + track segments only (zone fills are
+not obstacles), so the GND walls are real copper: GND pads and the 47 GND
+stitching vias. This is the placement-density plateau of
+`docs/routing-endgame-report.md`, unchanged by relief round 2.
+
+What the LV pass did achieve: GND pour taps (47 vias) and SYS, 174 -> 131
+unconnected at 0 errors (commit eecfe23).
+
+## FreeRouting collapse (v13: 1156 -> 55 wires in 10 s) does not reproduce
+
+Bisect on the current board, two isolated 10-minute runs: with the injected
+keepouts and without them, FreeRouting 1.9.0 ran the full budget in both
+cases (it writes the .ses only on completion, so 10 min with -mp 2 produced
+none). The v13 collapse was specific to the freshly regenerated board that
+carried only the locked HV/RF copper; on a board with LV copper present FR
+behaves normally. The DSN it saw in v13 was healthy (146 nets, 139 routable).
+The hybrid cycle (FR 8 passes / 120 min -> adopt -> LV finisher) is now
+running on the 131-unconnected board without build.py; result appended below.
+
+## Housing: two Blender variants, IP67 intent
+
+`tools/housing.py` builds `internal` (LTE FPC bay + GNSS patch pocket in an
+8 mm lid; walls solid, SMA seats as sealed pilot dimples) and `external`
+(two O-ring-sealed SMA bulkheads, plain 3.5 mm lid) from one model. Shared
+sealing: d2.0 O-ring cord in a 2.4 x 1.6 lid groove compressed by a 1.0 x 0.8
+tongue on the base wall; six lid screws outside the seal line; M16 IP68
+gland; M12 ePTFE vent (closes the old open item 5). Antenna rules from
+installation-sheet 5a are asserted in the script (patch exactly 3.0 mm from
+the +X wall; no metal fixings over either antenna). Render review caught a
+strap rib and the pigtail clip intersecting the lid skirt — fixed before
+commit (4e21bae). Details in `docs/housing-notes.md`.
+
+## Process notes
+
+- EnterWorktree branched from `origin/main`, 67 commits behind local main;
+  the worktree carried a 2.1 MB board with none of the routing. Reset to
+  local main and `cmp` against the main checkout before any edit.
+- A single `pkill -f <pattern>` matched its own shell (exit 144). Match on
+  the child's argv, not on a string the invoking command also contains.
