@@ -459,40 +459,14 @@ def hv_nets():
     return set(netclasses.HV)
 
 POWER_POURS = [
-    # (net, layer, x0, y0, x1, y1, priority) on L3.
-    # Relief round 3 (2026-09-16): the islands are drawn where the PADS are.
-    # Measured on the routed board: the old "5V0" band y 27.5-39 held 14 3V3
-    # pads (U2's decoupling column) and 4 5V0 pads; the old "SYS" band held
-    # 5 of the 5V0 pads (U6's input side) and 7 3V3 pads; the north "3V3
-    # finger" held three 5V0 pads and no 3V3 pad. So the finisher's pour-tap
-    # was impossible for most power pads and it maze-routed them instead -
-    # 40 of the 92 residual edges were 3V3/5V0/SYS.
-    #
-    # New plan: 3V3 is the BACKGROUND pour of the whole LV area at priority
-    # 0; 5V0 and SYS get tight priority-1 islands (carved out of the 3V3
-    # fill) computed by a greedy search that admits only rectangles with no
-    # foreign power pad inside +-0.8 mm. VBAT_MODEM keeps its island at
-    # priority 1 for the same reason. Background starts at y 15.0: 0.7 mm
-    # below the VIN_B thermal island (HV inside BUCK_HV: 0.60 mm rule).
-    ("3V3", "In2.Cu", 20.8, 15.0, 76.0, 61.0, 0),
-    ("/modem_rf/VBAT_MODEM", "In2.Cu", 62.0, 7.0, 76.0, 21.0, 1),
-    # 5V0: buck output + bulk caps (north), then the pocket clusters
-    ("5V0", "In2.Cu", 20.8, 1.3, 23.2, 13.0, 1),
-    ("5V0", "In2.Cu", 25.8, 6.0, 27.8, 8.0, 1),
-    ("5V0", "In2.Cu", 31.0, 1.3, 33.0, 3.3, 1),
-    ("5V0", "In2.Cu", 34.5, 23.5, 36.5, 25.5, 1),
-    ("5V0", "In2.Cu", 30.7, 30.0, 33.7, 36.8, 1),
-    ("5V0", "In2.Cu", 41.2, 33.9, 43.2, 35.9, 1),
-    ("5V0", "In2.Cu", 38.9, 42.0, 40.9, 44.0, 1),
-    ("5V0", "In2.Cu", 23.9, 43.8, 29.2, 47.2, 1),
-    # SYS (one net again once the power sheet exports it): charger output,
-    # LDO input, modem switch feed
-    ("SYS", "In2.Cu", 24.0, 1.0, 26.0, 3.0, 1),
-    ("SYS", "In2.Cu", 29.3, 5.9, 33.2, 7.9, 1),
-    ("SYS", "In2.Cu", 29.4, 45.2, 33.3, 50.8, 1),
-    ("SYS", "In2.Cu", 49.0, 7.7, 51.0, 9.7, 1),
-    ("SYS", "In2.Cu", 52.3, 10.0, 54.3, 12.0, 1),
-    ("SYS", "In2.Cu", 59.5, 2.5, 61.5, 4.5, 1),
+    # variant F: the pre-round-3 pour plan, kept to isolate the pour redesign
+    ("5V0", "In2.Cu", HV_X + 0.75, 27.5, 43.0, 39.0, 0),
+    ("SYS", "In2.Cu", HV_X + 0.75, 39.5, 43.0, 48.0, 0),
+    ("3V3", "In2.Cu", HV_X + 0.75, 48.5, 76.0, BH - EDGE, 0),
+    ("3V3", "In2.Cu", 44.0, 22.5, 76.0, 40.0, 0),
+    ("3V3", "In2.Cu", 20.8, 15.0, 44.5, 26.9, 1),
+    ("3V3", "In2.Cu", 21.0, 5.0, 33.5, 15.2, 2),
+    ("/modem_rf/VBAT_MODEM", "In2.Cu", 62.0, 7.0, 76.0, 21.0, 0),
 ]
 
 # The EG11752 exposed pad is VIN_B (F-20), and the skill file requires the
