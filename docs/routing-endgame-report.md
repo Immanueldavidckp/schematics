@@ -176,3 +176,6 @@ Final results of all six variants (two cycles each):
 have the split SYS and are not shippable. Cycle-2 FreeRouting hung in all
 six pipelines (headless-JVM fix in the follow-up script), so a working
 second FreeRouting pass on this placement is still untested.
+
+Follow-ups on F: a further finisher pass gave 101 (noise floor), the pocket
+restart gave 131 (destructive on this placement). **Board of record: 98 / 0.**

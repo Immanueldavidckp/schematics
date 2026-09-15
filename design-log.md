@@ -3066,3 +3066,13 @@ throws HeadlessException from the main thread and exits in seconds; it is a
 GUI application that needs a display even for -de/-do batch runs. The
 cycle-2 hang is therefore a modal window on the desktop waiting for a click.
 G/H fell through to their finishers with the board unchanged (98).
+
+Follow-ups on F (98): G = 60 min finisher after a no-op FreeRouting stage ->
+101 (one batch rolled back; the finisher is at its noise floor, +-3).
+H = pocket restart (ripped 1159 unlocked items in x 19-43, y 15-61, hard-
+first, 90 min) -> 131: it re-routed 34 of 87 nets and left 78. On this
+placement the restart destroys more than it recovers. Both discarded.
+
+**Board of record: F — 98 unconnected, 0 DRC errors, SYS one net, ERC 0
+errors, checkpins 48/48.** Remaining work is ~48 nets in the U2 pocket; the
+automated toolkit is exhausted on this placement.
