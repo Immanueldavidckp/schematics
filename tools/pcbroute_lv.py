@@ -53,7 +53,7 @@ GEO = {
     # netclass carries, and the first run used 0.15 here - DRC (correctly)
     # rejected 12 nets against the class rule. Gate 1 works; the constant
     # was wrong.
-    "Default":    (0.20, 0.20, 0.50, 0.30),
+    "Default":    (0.20, 0.15, 0.50, 0.30),   # clearance 0.15 approved 2026-09-16 (JLCPCB floor)
     "PWR":        (0.50, 0.20, 0.80, 0.40),
     "MODEM_BULK": (2.00, 0.20, 0.80, 0.40),
     "GND":        (0.50, 0.15, 0.50, 0.30),

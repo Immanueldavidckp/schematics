@@ -171,6 +171,7 @@ def main():
     if os.path.exists(SES):
         os.replace(SES, SES + ".prev")
     cmd = ["java", "-jar", jar, "-de", DSN, "-do", SES, "-mp", passes]
+    cmd += os.environ.get("FR_EXTRA", "").split()   # e.g. 2.x: -mt 8 --gui.enabled=false
     print("running:", " ".join(cmd))
     print(f"budget: {minutes} minutes")
     log = open(os.path.join(PROJ, "autoroute.log"), "w")
