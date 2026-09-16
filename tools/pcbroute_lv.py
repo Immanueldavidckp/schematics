@@ -42,7 +42,7 @@ from netclasses import HV, MV, RF, PWR, BULK                 # noqa: E402
 
 to_mm = pcbnew.ToMM
 
-RES = 0.10
+RES = float(os.environ.get("LV_RES", "0.10"))   # grid pitch; LV_RES=0.05 halves halo quantisation loss
 CLR_EDGE = 0.50                 # copper-to-edge board rule for LV
 LAST_GOOD = PCB + ".lastgood"
 PROTECTED = set(HV) | set(MV) | set(RF)
@@ -1087,7 +1087,7 @@ def orchestrate():
     because none is needed."""
     me = os.path.abspath(__file__)
 
-    def child(args, timeout=900):
+    def child(args, timeout=int(os.environ.get("LV_CHILD_T", "900"))):
         return subprocess.run([sys.executable, "-u", me] + args,
                               capture_output=True, text=True, timeout=timeout)
 
@@ -1226,7 +1226,7 @@ def orchestrate():
                 args += ["--rip", ";".join(ripping)]
                 print(f"  RIP-RETRY {netname}: ripping {ripping}")
             try:
-                r = child(args, timeout=2400 if ripping else 900)
+                r = child(args, timeout=(2400 if ripping else 900) * (2 if RES < 0.08 else 1))
             except subprocess.TimeoutExpired:
                 gate()
                 shutil.copyfile(LAST_GOOD, PCB)
@@ -1272,7 +1272,7 @@ def orchestrate():
                                     n not in PROTECTED and n != netname and \
                                     n not in cands:
                                 cands.append(n)
-                    cands = cands[:3]
+                    cands = cands[:int(os.environ.get("LV_RIP_N", "3"))]
                     if cands:
                         rip_plan[netname] = cands
                 continue
