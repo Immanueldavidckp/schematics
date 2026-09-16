@@ -3076,3 +3076,28 @@ placement the restart destroys more than it recovers. Both discarded.
 **Board of record: F — 98 unconnected, 0 DRC errors, SYS one net, ERC 0
 errors, checkpins 48/48.** Remaining work is ~48 nets in the U2 pocket; the
 automated toolkit is exhausted on this placement.
+
+
+# Finisher experiments on the board of record (98/0) — 2026-09-16
+
+Four parallel runs, each on a copy of F, 7200 s finisher deadline, all
+ending at **98 / 0** - no gain:
+
+| run | knobs | routed | note |
+|---|---|---|---|
+| X1 | grid 0.05 mm | 1/48 | fine grid is ~4x slower: 4 nets attempted in 2 h |
+| X2 | rip-negotiation 6 nets / 6 mm (grid 0.10) | 2/48 | all five rip-retries "stalled ... no path" |
+| X3 | X1 + X2 | 1/48 | as X1 |
+| X4 | X3 + Default clearance 0.15 (MEASUREMENT ONLY, own worktree, not merged) | 1/48 | too slow to be informative; 3 nets tried at 0.15 all "no path" |
+
+The in-house maze router (`tools/pcbroute_lv.py`) is exhausted on this
+placement under every setting tried; the failures are `no path` even for
+8 mm nets such as OSC_IN (U2.5 -> C1.1). A fifth run (0.15 clearance at the
+normal grid) was blocked by the tool-permission classifier and not retried;
+the clearance question is therefore still open and is a decision for the
+owner (standing policy: never loosen a netclass for completion).
+
+FreeRouting 2.4.1 (true headless CLI - no GUI, so no hang) was then run on
+the same board: fanout escaped 436/617 SMD pins; auto-routing started at 182
+unrouted items and reported 169 after each of passes 1-3 (flat). Result
+appended below.
