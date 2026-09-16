@@ -3101,3 +3101,14 @@ FreeRouting 2.4.1 (true headless CLI - no GUI, so no hang) was then run on
 the same board: fanout escaped 436/617 SMD pins; auto-routing started at 182
 unrouted items and reported 169 after each of passes 1-3 (flat). Result
 appended below.
+
+FreeRouting 2.4.1 result: 8 passes + 2 optimizer passes in 82 min, 1836
+wires; its own report says 169 unrouted and 2137 "violations", but under the
+project's real rules the adopted board is **94 unconnected / 0 DRC errors**
+(rip set empty, 2 forms). 2.4.1 is the autorouter to use from here: it is a
+real headless CLI (no display, no dialog hang) and it beats 1.9.0 on this
+board. Its unrouted count was flat at 169 from pass 1 to pass 8, so it too
+is at the placement floor.
+
+**Board of record: a4dc73b — 94 unconnected, 0 DRC errors, ERC 0 errors,
+SYS one net, checkpins 48/48.** Session total: 174 -> 94.

@@ -179,3 +179,11 @@ second FreeRouting pass on this placement is still untested.
 
 Follow-ups on F: a further finisher pass gave 101 (noise floor), the pocket
 restart gave 131 (destructive on this placement). **Board of record: 98 / 0.**
+
+2026-09-16 evening: four finisher experiments (fine grid, wide negotiation,
+both, and a 0.15 mm clearance measurement) all ended at 98 - the in-house
+router is exhausted. FreeRouting 2.4.1 (headless CLI) then took the board to
+**94 / 0** and is the autorouter of record going forward. Remaining 94 edges
+(~46 nets) are in the U2 pocket; closing them needs hand routing or a
+larger placement change (U2 itself), or the owner's decision on a 0.15 mm
+Default clearance.
