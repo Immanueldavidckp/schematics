@@ -3112,3 +3112,23 @@ is at the placement floor.
 
 **Board of record: a4dc73b — 94 unconnected, 0 DRC errors, ERC 0 errors,
 SYS one net, checkpins 48/48.** Session total: 174 -> 94.
+
+
+# Relief round 4 + alternative router — 2026-09-16/17
+
+Owner approval (2026-09-16): relax Default clearance to 0.15 mm, move U2 if
+needed, merge the result. Applied: Default clearance 0.20 -> 0.15 (commit
+c6d03b1; board min_clearance was already 0.15; DRC unchanged 94 / 0).
+
+- FreeRouting 2.4.1 on the board of record at 0.15 mm: unrouted 167 -> 166
+  after pass 1 and flat - the clearance relaxation buys the autorouter
+  almost nothing on this geometry. Run stopped to free CPU.
+- KiCadRoutingTools (drandyhaas, Rust A*, headless; installed under
+  ~/.cache/pcb-tools): routed some of the 46 open nets but disconnected
+  others; its own improvement gate reverted the output ("the output is the
+  input board"), 36 nets failed. No gain, nothing committed.
+- Placement round 4: U2 rotated 90 / 270 / 180 (P1/P2/P3), full
+  regeneration with the 0.15 mm rules and FreeRouting 2.4.1. The first run
+  died with a session restart at FreeRouting pass 4 (2.4.1 writes its
+  session only at the end); resumed 2026-09-17 as detached jobs. Results
+  appended below.
