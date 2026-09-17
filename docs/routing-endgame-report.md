@@ -187,3 +187,10 @@ router is exhausted. FreeRouting 2.4.1 (headless CLI) then took the board to
 (~46 nets) are in the U2 pocket; closing them needs hand routing or a
 larger placement change (U2 itself), or the owner's decision on a 0.15 mm
 Default clearance.
+
+2026-09-17: relief round 4 (U2 rotated 90/180/270, 0.15 mm Default
+clearance, FreeRouting 2.4.1) ended at 123 / 131 / 161 - all worse than the
+unrotated board. KiCadRoutingTools: no gain (its own gate reverted). The
+0.15 mm clearance is now the project rule (owner-approved) but moved the
+autorouter by <1 %. **Final board of record: 94 / 0.** Close-out path: hand
+route the ~46 pocket nets in KiCad on branch worktree-route-finish.

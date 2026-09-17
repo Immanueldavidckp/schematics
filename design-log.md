@@ -3132,3 +3132,25 @@ c6d03b1; board min_clearance was already 0.15; DRC unchanged 94 / 0).
   died with a session restart at FreeRouting pass 4 (2.4.1 writes its
   session only at the end); resumed 2026-09-17 as detached jobs. Results
   appended below.
+
+Round 4 results (full regeneration at 0.15 mm, FreeRouting 2.4.1 6 passes,
+adopt, 40 min finisher):
+
+| variant | U2 rotation | FR unrouted | post-adopt | final |
+|---|---|---|---|---|
+| P1 | 90 | 157 | 185 | 123 |
+| P2 | 270 | 159 | 186 | 161 |
+| P3 | 180 | 157 | 194 | 131 |
+
+All three are worse than the unrotated board of record (94). Adopt ripped
+3V3/5V0/SYS/VBAT_MODEM wholesale on every variant because FreeRouting's
+power-net copper violated the rules - the whole-net rip in pcbroute_adopt.py
+is now the most expensive step of the pipeline and a fragment-level rip
+(scrub_fouls.py style) is the obvious next tooling improvement if the
+pipeline is used again.
+
+**Final board of record: 94 unconnected, 0 DRC errors** (a4dc73b board, rules
+at 0.15 mm Default clearance from c6d03b1, ERC 0 errors, SYS one net,
+checkpins 48/48). Session total 174 -> 94; the schematic SYS fault fixed;
+FreeRouting 2.4.1 headless adopted. Everything tried is recorded above; the
+remaining ~46 nets in the U2 pocket need interactive routing.
