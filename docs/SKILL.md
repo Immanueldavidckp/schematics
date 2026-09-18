@@ -141,10 +141,15 @@ block circuits in `telematics-handoff.md` §5–§6 exactly.
 
 ## Fabrication outputs
 ```
+PYTHONPATH=tools python3 tools/release.py
 gerbers (JLCPCB preset) + drill  → out/gerbers.zip
 BOM: Comment,Designator,Footprint,LCSC  → out/bom.csv
 CPL: Designator,Mid X,Mid Y,Layer,Rotation → out/positions.csv
 ```
+`tools/release.py` REFUSES to export while DRC shows any violation OR any
+unconnected item, ERC shows an error, or checkpins fails - "0 violations"
+alone is not a complete board. `--force` exports into `out/NOT-FOR-FAB/`
+for checking the mechanics only.
 Check rotations of the modem, MCU and QFN parts against JLCPCB's rotation
 conventions before release.
 

@@ -19,3 +19,4 @@ telematics-tracker.kicad_pcb.lastgood
 .chain9.lock
 .cycles.sh
 *.blend1
+.release-tmp/
