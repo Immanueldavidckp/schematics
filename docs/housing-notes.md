@@ -32,7 +32,7 @@ makes the difference explicit:
 | +X wall | solid; two Ø12 SMA seats with **1 mm sealed pilot dimples** only | two Ø6.5 SMA bulkhead holes, each with a Ø9 × 0.4 O-ring recess |
 | Lid interior | 8.0 mm deep (patch 6.5 + tabs) | 3.5 mm skirt only |
 | Lid height | 10.5 mm | 6.0 mm |
-| Base | identical 90 × 70 × 31.1 mm | identical |
+| Base | identical 98 × 70 × 31.1 mm | identical |
 
 The base is the same mould in both cases; the SMA positions are the same
 casting features, drilled through or left sealed. Only the lid differs.
