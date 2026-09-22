@@ -65,14 +65,14 @@ is no open aperture.
 
 ## Common: mechanics
 
-- **Five M3 bosses** at H1 (3.5, 3.5), H2 (78.5, 3.5), H3 (3.5, 58.5),
-  H4 (78.5, 58.5) and **H5 (23.5, 55)** — H5's boss satisfies **F-18**.
+- **Five M3 bosses** at H1 (3.5, 3.5), H2 (86.5, 3.5), H3 (3.5, 58.5),
+  H4 (86.5, 58.5) and **H5 (23.5, 55)** — H5's boss satisfies **F-18**.
   Bosses OD 8, bored 4.0 for M3 heat-set inserts. Board sits 5.0 mm above the
   2.5 mm floor with 1.5 mm cavity margin per side; 22 mm clear above the board
   (set by the mated vertical Micro-Fit plus wire bend).
 - **Chassis mounting**: two 14 mm flanges (±Y ends, 4 mm thick) with four
   6 × 11 mm slots for M5 chassis bolts.
-- **SIM service**: lid-off access; X1 push-push at (53.7, 52.4) faces up.
+- **SIM service**: lid-off access; X1 push-push at (61.7, 52.4) faces up.
   Nothing in either lid reaches down toward it (tallest lid feature is the
   6.7 mm patch tab inside an 8 mm pocket; the board is 22 mm below the rim).
 - **Colour/thermal**: light grey per the product spec (−20…+70 °C operating,
@@ -85,13 +85,13 @@ the main PCB · GNSS patch ≥ 3 mm from the enclosure wall and ≥ 10 mm from t
 metal · > 40 dB isolation · **no metal fixings over the antenna areas** ·
 **mechanical retention, adhesive alone rejected (F-23)**.
 
-- **LTE FPC bay** centred (56, 11): 40.6 × 15.5 × 0.4 mm locating recess in the
+- **LTE FPC bay** centred (64, 11): 40.6 × 15.5 × 0.4 mm locating recess in the
   lid ceiling. Retention is a plastic clamp frame **heat-staked** onto four
   Ø1.6 × 2.0 mm posts at the bay corners, plus a strap channel between two
-  ribs (x ≈ 31.7 and 78.8) as a second retention path. No screws. The FPC
+  ribs (x ≈ 39.7 and 86.8) as a second retention path. No screws. The FPC
   sits 30 mm above the board (22 + 8), far beyond the 5 mm rule, and the LTE
-  U.FL (79.3, 10.2) is ~25 mm away — well within the 120 mm pigtail.
-- **GNSS patch pocket** centred (68, 40): the 25 × 25 × 6.5 ceramic mounts
+  U.FL (87.3, 10.2) is ~25 mm away — well within the 120 mm pigtail.
+- **GNSS patch pocket** centred (76, 40): the 25 × 25 × 6.5 ceramic mounts
   ground-side to the lid ceiling so its radiating face looks up through the
   2.5 mm ASA plate. Four corner L-tabs (1.5 mm thick, 6 mm arms, 0.2 mm
   clearance, 6.7 mm tall) each with a 0.6 mm lip tucked under the ceramic —
@@ -125,7 +125,7 @@ metal · > 40 dB isolation · **no metal fixings over the antenna areas** ·
 1. Seal cord material/hardness → confirm compression with the 1.6 groove and
    0.8 tongue; adjust groove depth if a Ø2.5 cord is preferred.
 2. Gland and vent makes/IP ratings (M16 gland cable OD range must cover the
-   12-way loom; vent airflow vs. the 90 × 70 × 31 internal volume).
+   12-way loom; vent airflow vs. the 98 × 70 × 31 internal volume).
 3. FPC clamp frame is referenced but not modelled (flat plastic frame, four
    stake holes).
 4. No draft angles / radii — model is machining/print-oriented, not molding.
