@@ -2,15 +2,23 @@
 """Adopt the autorouted scratch board as the real board, after cleaning it.
 
 Steps:
-  1. DRC the scratch. Every net named in an ERROR violation (anything but
-     unconnected_items) is marked for rip, and the protected RF/HV/MV nets
-     are always marked - the autorouter must own nothing there.
-  2. Rip those nets' UNLOCKED copper TEXTUALLY (top-level segment/via forms).
-     board.Remove() crashes pcbnew at scale (SKILL.md); text surgery on the
-     s-expression file is deterministic and cannot crash the library.
+  1. DRC the scratch. Rip the EXACT copper fragments named by every ERROR
+     violation (segments whose start point, or vias whose centre, sits at a
+     reported violation position) - never locked, never protected copper.
+     Repeat until the report is clean or nothing rippable remains.
+  2. Only then fall back to the old behaviour for what is still violating:
+     rip the whole net's UNLOCKED copper. The protected RF/HV/MV nets are
+     always ripped in full - the autorouter must own nothing there.
+     (Measured before this change: a single 0.15 mm foul on a 3V3 stub cost
+     the entire 3V3, 5V0, SYS and VBAT_MODEM nets on every cycle - 50 to 70
+     connections thrown away per adopt.)
   3. Write the result over the real board file, refill zones, canonicalise.
-  4. DRC the adopted board - the non-ratsnest error count must be 0, because
-     it becomes the LV finisher's baseline.
+  4. DRC the adopted board and repeat the fragment-first / net-second rip
+     there; the non-ratsnest error count must reach 0 because the adopted
+     board becomes the LV finisher's baseline.
+
+All ripping is TEXTUAL on the .kicad_pcb s-expression: board.Remove()
+crashes pcbnew at scale (SKILL.md) and text surgery is deterministic.
 
 Run:  PYTHONPATH=tools python3 tools/pcbroute_adopt.py
 """
@@ -25,6 +33,7 @@ from netclasses import HV, MV, RF                          # noqa: E402
 
 SCRATCH = os.path.join(PROJ, "autoroute-scratch.kicad_pcb")
 PROTECTED = set(HV) | set(MV) | set(RF)
+ITEM = re.compile(r"@\(([\d.]+) mm, ([\d.]+) mm\): (Track|Via) \[([^\]]*)\]")
 
 
 def drc(path, out):
@@ -33,108 +42,134 @@ def drc(path, out):
     return open(out).read()
 
 
-def main():
-    rpt = os.path.join(PROJ, "adopt-drc.rpt")
-    text = drc(SCRATCH, rpt)
-
-    ripnets = set(PROTECTED)
-    current = None
-    for line in text.splitlines():
-        m = re.match(r"\[([a-z_]+)\]", line)
-        if m:
-            current = m.group(1)
+def violations(text):
+    """[(type, [(x, y, kind, net), ...], [net names])] for non-ratsnest errors."""
+    out = []
+    for block in re.split(r"\n(?=\[)", text):
+        m = re.match(r"\[([a-z_]+)\]", block)
+        if not m or m.group(1) == "unconnected_items":
             continue
-        if current and current != "unconnected_items" and \
-                line.lstrip().startswith("@"):
-            for nm in re.findall(r"\[([^]\[]*)\]", line):
-                if nm and nm != "<no net>":
-                    ripnets.add(nm)
-    # the regexy net harvest can catch violation-type tags; they are all
-    # lowercase_with_underscores and cannot collide with net names on this
-    # board except literal rails - filter against the board's net table below.
+        items = [(float(x), float(y), k, n) for x, y, k, n in ITEM.findall(block)]
+        nets = [n for n in re.findall(r"\[([^\]\[]*)\]", block)[1:]
+                if n and n != "<no net>"]
+        out.append((m.group(1), items, nets))
+    return out
 
-    txt = open(SCRATCH, encoding="utf-8").read()
+
+def _forms(path):
+    txt = open(path, encoding="utf-8").read()
+    head = txt[:txt.index("\n") + 1]
     body = txt[txt.index("\n") + 1:txt.rstrip().rfind(")")]
-    forms = _split_forms(body)
-    # KiCad 10 references nets BY NAME on every item: (net "GND"). There is
-    # no numeric net table to translate through.
-    present = set(re.findall(r'\(net "([^"]*)"\)', txt))
-    ripnets &= (present | PROTECTED)
+    tail = txt[txt.rstrip().rfind(")"):]
+    return head, _split_forms(body), tail
 
+
+def rip_fragments(path, viols):
+    """Remove the unlocked, unprotected segment/via forms that sit exactly at
+    a reported violation position. Returns the number of forms removed."""
+    targets = [(x, y, n) for _t, items, _n in viols for x, y, _k, n in items
+               if n not in PROTECTED]
+    if not targets:
+        return 0
+    head, forms, tail = _forms(path)
+    kept, ripped = [], 0
+    for f in forms:
+        tag = re.match(r"\(\s*([A-Za-z_0-9]+)", f).group(1)
+        drop = False
+        if tag in ("segment", "via") and "(locked yes)" not in f:
+            mnet = re.search(r'\(net "([^"]*)"\)', f)
+            pts = re.findall(r"\((?:start|end|at) ([-\d.]+) ([-\d.]+)\)", f)
+            if mnet and pts:
+                for tx, ty, tn in targets:
+                    if tn == mnet.group(1) and any(
+                            abs(float(px) - tx) < 0.01 and abs(float(py) - ty) < 0.01
+                            for px, py in pts):
+                        drop = True
+                        break
+        if drop:
+            ripped += 1
+        else:
+            kept.append(f)
+    open(path, "w", encoding="utf-8").write(head + "".join(kept) + tail)
+    return ripped
+
+
+def rip_nets(path, nets):
+    """Remove every unlocked segment/via of the named nets."""
+    head, forms, tail = _forms(path)
     kept, ripped = [], 0
     for f in forms:
         tag = re.match(r"\(\s*([A-Za-z_0-9]+)", f).group(1)
         if tag in ("segment", "via") and "(locked yes)" not in f:
             m = re.search(r'\(net "([^"]*)"\)', f)
-            if m and m.group(1) in ripnets:
+            if m and m.group(1) in nets:
                 ripped += 1
                 continue
         kept.append(f)
-    print(f"ripping nets ({len(ripnets)} incl. protected): "
-          f"{sorted(n for n in ripnets if n not in PROTECTED)}")
-    print(f"forms ripped: {ripped}")
+    open(path, "w", encoding="utf-8").write(head + "".join(kept) + tail)
+    return ripped
 
-    head = txt[:txt.index("\n") + 1]
-    tail = txt[txt.rstrip().rfind(")"):]
-    open(PCB, "w", encoding="utf-8").write(head + "".join(kept) + tail)
 
+def refill(path):
     import pcbnew
-    board = pcbnew.LoadBoard(PCB)
+    board = pcbnew.LoadBoard(path)
     board.BuildListOfNets()
     pcbnew.ZONE_FILLER(board).Fill(board.Zones())
-    pcbnew.SaveBoard(PCB, board)
-    canonicalise(PCB)
+    pcbnew.SaveBoard(path, board)
 
-    # Iterative rip on the ADOPTED board: some violation classes only
-    # manifest after adoption/refill, and FreeRouting cannot know the 1.5 mm
-    # HV rule (a DSN carries only netclass values), so its LV copper can
-    # land inside the strip's halos. Each iteration rips the named nets'
-    # unlocked copper; the LV finisher reroutes them under the full model.
-    for it in range(3):
-        text2 = drc(PCB, rpt)
+
+def clean(path, rpt, label, max_frag=6, max_net=3, canon=False):
+    """Fragment-first, net-second cleaning loop. Returns remaining error count."""
+    errs = None
+    for it in range(max_frag):
+        viols = violations(drc(path, rpt))
+        errs = len(viols)
         kinds = {}
-        for k in re.findall(r"^\[([a-z_]+)\]", text2, re.M):
-            kinds[k] = kinds.get(k, 0) + 1
-        errs = sum(v for k, v in kinds.items() if k != "unconnected_items")
-        print(f"adopted board DRC (iter {it}): {kinds}")
+        for t, _i, _n in viols:
+            kinds[t] = kinds.get(t, 0) + 1
+        print(f"{label} DRC (frag iter {it}): errors={errs} {kinds}")
         if not errs:
+            return 0
+        n = rip_fragments(path, viols)
+        print(f"  ripped {n} violating fragment(s)")
+        if not n:
             break
-        more = set()
-        current = None
-        for line in text2.splitlines():
-            m = re.match(r"\[([a-z_]+)\]", line)
-            if m:
-                current = m.group(1)
-                continue
-            if current and current != "unconnected_items" and \
-                    line.lstrip().startswith("@"):
-                for nm in re.findall(r"\[([^]\[]*)\]", line):
-                    if nm and nm != "<no net>":
-                        more.add(nm)
-        txt = open(PCB, encoding="utf-8").read()
-        body = txt[txt.index("\n") + 1:txt.rstrip().rfind(")")]
-        forms = _split_forms(body)
-        kept, ripped = [], 0
-        for f in forms:
-            tag = re.match(r"\(\s*([A-Za-z_0-9]+)", f).group(1)
-            if tag in ("segment", "via") and "(locked yes)" not in f:
-                m = re.search(r'\(net "([^"]*)"\)', f)
-                if m and m.group(1) in more:
-                    ripped += 1
-                    continue
-            kept.append(f)
-        print(f"  iter {it}: ripping {sorted(more)} - {ripped} forms")
-        if not ripped:
-            print("  violations remain on LOCKED copper - placement problem")
+        if canon:
+            refill(path)
+            canonicalise(path)
+    for it in range(max_net):
+        viols = violations(drc(path, rpt))
+        errs = len(viols)
+        if not errs:
+            return 0
+        nets = {n for _t, _i, ns in viols for n in ns} - PROTECTED
+        present = set(re.findall(r'\(net "([^"]*)"\)', open(path, encoding="utf-8").read()))
+        nets &= present
+        n = rip_nets(path, nets)
+        print(f"{label} DRC (net iter {it}): errors={errs}; ripping whole nets "
+              f"{sorted(nets)} - {n} forms")
+        if not n:
+            print("  violations remain on LOCKED or protected copper - placement problem")
             break
-        head = txt[:txt.index("\n") + 1]
-        tail = txt[txt.rstrip().rfind(")"):]
-        open(PCB, "w", encoding="utf-8").write(head + "".join(kept) + tail)
-        board = pcbnew.LoadBoard(PCB)
-        board.BuildListOfNets()
-        pcbnew.ZONE_FILLER(board).Fill(board.Zones())
-        pcbnew.SaveBoard(PCB, board)
-        canonicalise(PCB)
+        if canon:
+            refill(path)
+            canonicalise(path)
+    return len(violations(drc(path, rpt)))
+
+
+def main():
+    rpt = os.path.join(PROJ, "adopt-drc.rpt")
+    # 1+2: clean the scratch (fragments first), then always rip protected nets
+    clean(SCRATCH, rpt, "scratch", canon=False)
+    n = rip_nets(SCRATCH, PROTECTED)
+    print(f"protected nets: {n} unlocked form(s) ripped")
+    # 3: adopt
+    head, forms, tail = _forms(SCRATCH)
+    open(PCB, "w", encoding="utf-8").write(head + "".join(forms) + tail)
+    refill(PCB)
+    canonicalise(PCB)
+    # 4: the adopted board must be error-free
+    errs = clean(PCB, rpt, "adopted", canon=True)
     os.unlink(rpt)
     if errs:
         print("ADOPT_BASELINE_NOT_CLEAN")
