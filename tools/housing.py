@@ -48,7 +48,7 @@ OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
 os.makedirs(OUT, exist_ok=True)
 
 # ---------------- parameters (mm) ------------------------------------------
-BW, BH = 82.0, 62.0                 # board
+BW, BH = 90.0, 62.0                 # board (relief round 5: +8 mm)
 MARGIN = 1.5                        # cavity margin around the board
 WALL = 2.5
 FLOOR = 2.5
@@ -58,7 +58,7 @@ LID_PLATE = 2.5
 # lid interior: the internal variant must swallow the 6.5 mm patch plus its
 # tabs; the external lid only needs a skirt for the seal.
 LID_POCKET = 8.0 if INTERNAL else 3.5
-HOLES = [(3.5, 3.5), (78.5, 3.5), (3.5, 58.5), (78.5, 58.5), (23.5, 55.0)]
+HOLES = [(3.5, 3.5), (BW - 3.5, 3.5), (3.5, BH - 3.5), (BW - 3.5, BH - 3.5), (23.5, 55.0)]
 
 IX0, IY0 = -MARGIN, -MARGIN                     # cavity inner rect
 IX1, IY1 = BW + MARGIN, BH + MARGIN
@@ -78,8 +78,8 @@ SX1, SY1 = OX1 - SEAL_MID, OY1 - SEAL_MID
 # antennas (installation-sheet.md 5a)
 FPC_L, FPC_W, FPC_T = 39.6, 14.5, 0.3           # BW4GFNX39-15B1
 PATCH, PATCH_H = 25.0, 6.5                      # BWGNSCNX25-25B1Y4L120
-FPC_C = (56.0, 11.0)        # bay centre: toward the LTE U.FL corner (79.3,10.2)
-PATCH_C = (68.0, 40.0)      # pocket centre: >= 3 mm off the +X wall, near AF2
+FPC_C = (64.0, 11.0)        # bay centre: toward the LTE U.FL corner (79.3,10.2)
+PATCH_C = (76.0, 40.0)      # pocket centre: >= 3 mm off the +X wall, near AF2
 WALL_CLR = 3.0              # patch to enclosure wall, mandatory minimum
 
 # through-wall fittings

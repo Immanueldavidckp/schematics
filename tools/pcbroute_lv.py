@@ -164,7 +164,7 @@ def main(single_net=None, rip=None):
     # ---- no-go regions (both layers, for ALL new copper) -----------------
     nogo = []
     # RF corridor: everything outboard of x = 76.8 is CPWG + fence + U.FL
-    nogo.append((76.8, y0, x1, y1, "RF corridor"))
+    nogo.append((x1 - 5.2, y0, x1, y1, "RF corridor"))   # 76.8 on the 82 mm board
     for ref, pads in (("U1", [str(i) for i in range(85, 113)]), ("U5", ["9"])):
         fp = next(f for f in board.GetFootprints() if f.GetReference() == ref)
         xs, ys, xe, ye = 1e9, 1e9, -1e9, -1e9

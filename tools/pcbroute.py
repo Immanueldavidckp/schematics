@@ -23,7 +23,8 @@ import sys
 import pcbnew
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from pcbgen import PROJ, PCB, mm, pt, canonicalise         # noqa: E402
+from pcbgen import PROJ, PCB, BW, mm, pt, canonicalise     # noqa: E402
+RF_SHIFT = BW - 82.0     # relief round 5: RF corridor moved east with the board edge
 
 # pcbgen.mm is FromMM (mm -> nm, for WRITING geometry). Reading a position back
 # needs the inverse. Conflating the two overflows VECTOR2I.
@@ -185,7 +186,7 @@ def main():
     # Out of the ANT pad into the corridor, along it, then in to the target.
     # Corridor x is set so the trace clears U1's keepout edge and still leaves
     # room for the fence on both sides.
-    CORR = 79.8   # corridor centreline: (77.80 + 81.75) / 2
+    CORR = 79.8 + RF_SHIFT   # corridor centreline: (77.80 + 81.75) / 2 on the 82 mm board
     rf_runs = [
         ("ANT_MAIN_M",  [("U1", "49"), ("R71", "1")]),
         ("ANT_MAIN_C",  [("R71", "2"), ("AF1", "3")]),
@@ -216,7 +217,7 @@ def main():
             # Turn INBOARD of the corridor before running to the target pad.
             # Jogging at the source y ran the trace along the far pad of the
             # same part (R71/R72 pads are ~1.0 mm apart in y).
-            pts = [a, (78.6, a[1]), (78.6, b[1]), b]
+            pts = [a, (78.6 + RF_SHIFT, a[1]), (78.6 + RF_SHIFT, b[1]), b]
         route(board, pts, RF_W, net)
         n_tracks += len(pts) - 1
         n_vias += fence(board, pts, gnd, edge_x)
@@ -237,8 +238,8 @@ def main():
     # begins. The tap via does NOT touch the run without the F.Cu extension
     # down to it - measured on the routed board as the only two unconnected
     # RF edges (C48.1 and C50.1, 1.59/1.02 mm gaps).
-    SHUNTS = [("C48", "bv", (78.6, 21.6), 23.19),
-              ("C50", "bv", (78.6, 27.3), 28.32),
+    SHUNTS = [("C48", "bv", (78.6 + RF_SHIFT, 21.6), 23.19),
+              ("C50", "bv", (78.6 + RF_SHIFT, 27.3), 28.32),
               ("C49", "v", CORR, None), ("C51", "v", CORR, None)]
     for ref, style, coord, run_y in SHUNTS:
         p1 = pad(board, ref, "1")

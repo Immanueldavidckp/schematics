@@ -48,7 +48,7 @@ SYSFP = "/usr/share/kicad/footprints"
 # strip and pushed C73's VIN_B pad to 0.215 mm from U5's LV pins (check 3
 # needs 1.5 mm between components). Growing X by 2 mm and putting U1 back at
 # x=61 keeps the 3.73 mm corridor AND restores the power zone to 22.25 mm.
-BW, BH = 82.0, 62.0          # mm, board width x height
+BW, BH = 90.0, 62.0          # mm, board width x height (relief round 5: +8 mm, was 82)
 CORNER = 2.0                 # mm, corner radius (housing-friendly, avoids a
                              # sharp point at the M3 bosses)
 HOLE_INSET = 3.5             # mm, M3 hole centre from each edge

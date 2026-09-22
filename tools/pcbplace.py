@@ -28,6 +28,12 @@ import pcbnew
 from pcbgen import (PROJ, PCB, SYSFP, BW, BH, HV_X, canonicalise, get_net,
                     mm, pt, add_seg)
 
+# Relief round 5 (2026-09-22): the board is BW wide; everything that lived in
+# the RF half (x >= 44, i.e. U1/X1/X2/antennas and the parts parked beside
+# them) moves east by the widening so the digital pocket gains the room.
+RF_SHIFT = BW - 82.0
+
+
 JLCFP = os.path.join(PROJ, "lib", "jlc.pretty")
 NETLIST = os.path.join(PROJ, "nl.net")
 
@@ -48,9 +54,9 @@ ZONES = {
     # Power gets 23 mm of height, not 15.5. L1 alone is 13.8 x 12.4 mm, and at
     # the smaller size the relaxation had nowhere to put C73/C74 and stacked
     # them on L1. x stops at 43.0 because U1's keepout reaches x = 44.2.
-    "pwr":     (HV_X + 0.75, EDGE, 43.0, 27.0),
-    "dig":     (HV_X + 0.75, 27.5, 43.0, BH - EDGE),
-    "rf":      (44.0, EDGE, BW - EDGE, BH - EDGE),
+    "pwr":     (HV_X + 0.75, EDGE, 43.0 + RF_SHIFT, 27.0),
+    "dig":     (HV_X + 0.75, 27.5, 43.0 + RF_SHIFT, BH - EDGE),
+    "rf":      (44.0 + RF_SHIFT, EDGE, BW - EDGE, BH - EDGE),
 }
 
 # Explicit positions: (x, y, rotation_deg, side) - side 0 = top, 1 = bottom.
@@ -314,6 +320,11 @@ ANCHORS = {
     "C78": (26.5, 7.0, 180, 1),
 }
 
+if RF_SHIFT:
+    for _r, (_x, _y, _rot, _side) in list(ANCHORS.items()):
+        if _x >= 44.0:
+            ANCHORS[_r] = (round(_x + RF_SHIFT, 3), _y, _rot, _side)
+
 def relax_anchors(anchor_boxes, bounds, min_gap=1.10, iters=1500):
     """Nudge overlapping anchors apart, keeping each inside its bounds.
 
@@ -460,13 +471,13 @@ def hv_nets():
 
 POWER_POURS = [
     # variant F: the pre-round-3 pour plan, kept to isolate the pour redesign
-    ("5V0", "In2.Cu", HV_X + 0.75, 27.5, 43.0, 39.0, 0),
-    ("SYS", "In2.Cu", HV_X + 0.75, 39.5, 43.0, 48.0, 0),
-    ("3V3", "In2.Cu", HV_X + 0.75, 48.5, 76.0, BH - EDGE, 0),
-    ("3V3", "In2.Cu", 44.0, 22.5, 76.0, 40.0, 0),
+    ("5V0", "In2.Cu", HV_X + 0.75, 27.5, 43.0 + RF_SHIFT, 39.0, 0),
+    ("SYS", "In2.Cu", HV_X + 0.75, 39.5, 43.0 + RF_SHIFT, 48.0, 0),
+    ("3V3", "In2.Cu", HV_X + 0.75, 48.5, 76.0 + RF_SHIFT, BH - EDGE, 0),
+    ("3V3", "In2.Cu", 44.0 + RF_SHIFT, 22.5, 76.0 + RF_SHIFT, 40.0, 0),
     ("3V3", "In2.Cu", 20.8, 15.0, 44.5, 26.9, 1),
     ("3V3", "In2.Cu", 21.0, 5.0, 33.5, 15.2, 2),
-    ("/modem_rf/VBAT_MODEM", "In2.Cu", 62.0, 7.0, 76.0, 21.0, 0),
+    ("/modem_rf/VBAT_MODEM", "In2.Cu", 62.0 + RF_SHIFT, 7.0, 76.0 + RF_SHIFT, 21.0, 0),
 ]
 
 # The EG11752 exposed pad is VIN_B (F-20), and the skill file requires the
