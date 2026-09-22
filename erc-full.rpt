@@ -37,7 +37,7 @@ Report includes: Errors, Warnings
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 27.94 mm): Global Label '3V3'
-    @(270.51 mm, 116.84 mm): Label '3V3'
+    @(340.36 mm, 73.66 mm): Label '3V3'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 38.10 mm): Global Label 'DI1'
@@ -65,15 +65,15 @@ Report includes: Errors, Warnings
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 81.28 mm): Global Label 'VBAT_SENSE'
-    @(307.34 mm, 129.54 mm): Label 'VBAT_SENSE'
+    @(322.58 mm, 129.54 mm): Label 'VBAT_SENSE'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(17.78 mm, 83.82 mm): Global Label 'VIN_SENSE'
-    @(322.58 mm, 58.42 mm): Label 'VIN_SENSE'
+    @(340.36 mm, 43.18 mm): Label 'VIN_SENSE'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(220.98 mm, 30.48 mm): Global Label '5V0'
-    @(149.86 mm, 27.94 mm): Label '5V0'
+    @(96.52 mm, 297.18 mm): Label '5V0'
 [same_local_global_label]: Local and global labels have same name
     ; warning
     @(220.98 mm, 50.80 mm): Global Label 'SYS'
