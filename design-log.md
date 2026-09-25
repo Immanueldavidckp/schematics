@@ -3291,3 +3291,21 @@ placement (the board of record reached 94 only after adopt and the finisher).
 So the stretched pocket at the approved clearance is the first placement
 change that moves FreeRouting's own floor down, by ~45 items, and T2 (the
 smaller of the two) is ahead. Adopt + finisher results follow.
+
+## Round 6 cycle 1 at 0.15 mm — 2026-09-26 02:40
+
+FreeRouting 2.4.1, 8 passes + optimizer (both finished inside the 200 min
+budget), fragment-first adopt, 60 min finisher:
+
+| board | FR floor (pass 8) | after adopt | after finisher | finisher nets |
+|---|---|---|---|---|
+| T2 96 x 66 stretched | 113 | 123 / 0 | **78 / 0** | 19 of 37 routed |
+| T1 100 x 68 stretched | 128 | 131 / 0 | 113 / 0 | 24 of 37 routed |
+| 82 x 62 board of record | ~160 | – | 94 / 0 | – |
+
+**New best: T2 at 78 unconnected, 0 errors** (commit "relief round 6 T2
+cycle 1 finisher" on branch worktree-agent-a16ae0030fc9feefa). The smaller
+stretch wins clearly; the extra 4 x 2 mm of T1 lengthens every pocket route
+and FreeRouting leaves more multi-pin nets partly routed. Cycle 2
+(FreeRouting on top of the finished board, adopt, finisher) is running on
+both. Residue analysis of T2 follows.
