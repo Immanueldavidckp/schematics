@@ -31,7 +31,7 @@ from pcbgen import (PROJ, PCB, SYSFP, BW, BH, HV_X, canonicalise, get_net,
 # Relief round 5 (2026-09-22): the board is BW wide; everything that lived in
 # the RF half (x >= 44, i.e. U1/X1/X2/antennas and the parts parked beside
 # them) moves east by the widening so the digital pocket gains the room.
-RF_SHIFT = BW - 82.0
+from pcbgen import RF_SHIFT, X_STRETCH, POCKET_Y0, Y_STRETCH   # noqa: E402
 
 
 JLCFP = os.path.join(PROJ, "lib", "jlc.pretty")
@@ -326,11 +326,7 @@ ANCHORS = {
 # height; the HV strip and the buck cluster (y < 18) keep their geometry (the
 # buck hot loop must not grow); the RF half shifts rigidly; the crystals and
 # their load caps ride rigidly with U2.
-X_STRETCH = (23.25 + RF_SHIFT) / 23.25
-# the stretched rows start 3 mm lower than before (21 instead of 18) so U2's
-# north pins clear the 100 V cap C73 above them (measured: 10 shorts at 18)
-POCKET_Y0 = 21.0
-Y_STRETCH = (BH - 1.0 - POCKET_Y0) / 43.0
+# X_STRETCH / POCKET_Y0 / Y_STRETCH come from pcbgen (shared with the 5th hole)
 U2_SATELLITES = ("Y1", "C1", "C2", "Y2", "C3", "C4")
 WIDE_HOME = {"U2"}
 

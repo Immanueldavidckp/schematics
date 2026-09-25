@@ -56,7 +56,16 @@ HOLE_INSET = 3.5             # mm, M3 hole centre from each edge
 # F-18: fifth M3 in the digital zone, for the IMU anchor and to stiffen the
 # panel under the 31 x 28 mm LCC module. Provisional exactly like the outline
 # - it needs a matching boss in the purchased housing.
-FIFTH_HOLE = (23.5, 55.0)
+# Relief round 6: the digital pocket is stretched over the widened board (see
+# pcbplace); the fifth hole supports that quadrant, so it moves with it (the
+# opto OK1 landed on it otherwise). Housing bosses use the same formula.
+RF_SHIFT = BW - 82.0
+X_STRETCH = (23.25 + RF_SHIFT) / 23.25
+POCKET_Y0 = 21.0
+Y_STRETCH = (BH - 1.0 - POCKET_Y0) / 43.0
+FIFTH_HOLE = ((round(20.75 + (23.5 - 20.75) * X_STRETCH, 2),
+               round(POCKET_Y0 + (55.0 - 18.0) * Y_STRETCH, 2))
+              if (RF_SHIFT or BH != 62.0) else (23.5, 55.0))
 
 # The HV boundary from the placement study: everything left of x = 20 mm is
 # the HV zone (handoff section 7). Marked on silk, not copper.

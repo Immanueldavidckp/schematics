@@ -58,7 +58,10 @@ LID_PLATE = 2.5
 # lid interior: the internal variant must swallow the 6.5 mm patch plus its
 # tabs; the external lid only needs a skirt for the seal.
 LID_POCKET = 8.0 if INTERNAL else 3.5
-HOLES = [(3.5, 3.5), (BW - 3.5, 3.5), (3.5, BH - 3.5), (BW - 3.5, BH - 3.5), (23.5, 55.0)]
+_RS = BW - 82.0
+_H5 = ((round(20.75 + 2.75 * (23.25 + _RS) / 23.25, 2), round(21.0 + 37.0 * (BH - 22.0) / 43.0, 2))
+       if (_RS or BH != 62.0) else (23.5, 55.0))     # same stretch as pcbgen.FIFTH_HOLE
+HOLES = [(3.5, 3.5), (BW - 3.5, 3.5), (3.5, BH - 3.5), (BW - 3.5, BH - 3.5), _H5]
 
 IX0, IY0 = -MARGIN, -MARGIN                     # cavity inner rect
 IX1, IY1 = BW + MARGIN, BH + MARGIN
