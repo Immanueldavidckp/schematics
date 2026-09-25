@@ -3154,3 +3154,78 @@ at 0.15 mm Default clearance from c6d03b1, ERC 0 errors, SYS one net,
 checkpins 48/48). Session total 174 -> 94; the schematic SYS fault fixed;
 FreeRouting 2.4.1 headless adopted. Everything tried is recorded above; the
 remaining ~46 nets in the U2 pocket need interactive routing.
+
+# Relief rounds 5 and 6 — bigger board, stretched pocket (2026-09-18 … 25)
+
+User instruction 2026-09-18: "for me also there is no place to route then you
+can increase the size, do modification on the board and complete", and later
+"there are 4 layers … connect on those layers too". Both were acted on.
+
+## Round 5 — wider board (branch `relief5-wide`)
+
+`BW` in pcbgen.py is now the single source of the outline; `RF_SHIFT = BW - 82`
+moves the whole RF half (U1, antennas, SMA/FPC, keepouts, pours, CPWG corridor
+in pcbroute.py) right by the extra width, so the digital pocket between the HV
+strip and the RF half grows by RF_SHIFT. Housing (tools/housing.py) follows the
+same constants. Results (full regeneration at 0.15 mm, FreeRouting 2.4.1 8
+passes, fragment-first adopt, 40-60 min finisher):
+
+| board | unconnected | errors |
+|---|---|---|
+| 82 x 62 (board of record) | 94 | 0 |
+| 90 x 62 | 107 | 0 |
+| 96 x 62 | 112 | 0 |
+| 90 x 66 | 156 | 0 |
+| 96 x 66 | 101 | 0 |
+
+Widening alone does not help: the anchors keep their absolute positions, so
+the extra copper is an empty strip beside the RF wall and the U2 pocket stays
+exactly as dense as before. The routers use the strip only for detours, which
+cost more crossings than they save.
+
+Tooling fixed on the way (all in main-line tools, not variant-specific):
+- `pcbroute_adopt.py` rips violating FRAGMENTS first (segments/vias touching a
+  reported violation position), whole nets only as a fallback; the old
+  whole-net rip cost 30-40 connections per cycle on the power nets.
+- `pcbroute_auto.py` copies the real `.kicad_dru`/`.kicad_pro` next to the
+  scratch board (snapshot DRC without them reported phantom violations and
+  the adopt then ripped GND every cycle).
+- `add_zone(..., priority=)` in pcbplace.py: overlapping same-net L3 fingers
+  need distinct priorities or DRC flags `zones_intersect`.
+
+## Round 6 — stretched pocket (branch `relief6-stretch`)
+
+Instead of adding an empty strip, the digital pocket itself is stretched: every
+anchor with x >= 20.75 and y >= 18 (the pocket right of the HV strip and below
+the buck cluster) is mapped by
+`x' = 20.75 + (x - 20.75) * X_STRETCH`, `y' = POCKET_Y0 + (y - 18) * Y_STRETCH`
+with `X_STRETCH = (23.25 + RF_SHIFT) / 23.25`, `POCKET_Y0 = 21`,
+`Y_STRETCH = (BH - 1 - POCKET_Y0) / 43`. The U2 crystals and their load caps
+(Y1/C1/C2/Y2/C3/C4) move rigidly with U2; the buck cluster (y < 18) and the HV
+strip do not move; the RF half shifts by RF_SHIFT as in round 5; the L3 power
+pours and the fifth mounting hole are mapped by the same functions
+(`FIFTH_HOLE` in pcbgen.py). U2's relaxer bound is the whole LV column
+(`WIDE_HOME`), not the power zone, so it is no longer clamped against C73.
+
+Three pre-route faults found and fixed before any router ran: U2 shorting the
+100 V cap C73 at y 18 (POCKET_Y0 raised to 21), U2 still clamped by the pwr
+zone bound (WIDE_HOME), OK1 landing on the fifth mounting hole after the
+stretch (hole now moves with the pocket). Both stretched boards now
+regenerate with 0 pre-route DRC errors:
+
+| board | pre-route unconnected | pre-route errors |
+|---|---|---|
+| T1 100 x 68 | 267 | 0 |
+| T2 96 x 66 | 265 | 0 |
+
+FreeRouting 2.4.1 (8 passes, 100 min) → fragment adopt → 40 min finisher
+started 20:38 on both. Results are appended below when they land.
+
+## PWR_L3 as a signal layer (LV_L3=1, experiment on the 94 board)
+
+`pcbroute_lv.py` gains `LV_L3=1`: the finisher may lay signal tracks on
+PWR_L3 between the power pours (the user asked for the two inner layers to be
+used). GND_L2 stays solid — cutting the reference plane under the RF corridor
+and the MCU would break the CPWG impedance and the return paths, so it is not
+offered as a signal layer. Running on the board of record (94/0) in
+`agent-afc73cac07cadbe30`; result appended below.
