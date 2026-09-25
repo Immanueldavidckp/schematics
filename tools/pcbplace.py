@@ -327,7 +327,10 @@ ANCHORS = {
 # buck hot loop must not grow); the RF half shifts rigidly; the crystals and
 # their load caps ride rigidly with U2.
 X_STRETCH = (23.25 + RF_SHIFT) / 23.25
-Y_STRETCH = (BH - 19.0) / 43.0
+# the stretched rows start 3 mm lower than before (21 instead of 18) so U2's
+# north pins clear the 100 V cap C73 above them (measured: 10 shorts at 18)
+POCKET_Y0 = 21.0
+Y_STRETCH = (BH - 1.0 - POCKET_Y0) / 43.0
 U2_SATELLITES = ("Y1", "C1", "C2", "Y2", "C3", "C4")
 
 
@@ -335,7 +338,7 @@ def _map_xy(x, y):
     if x >= 44.0:
         return x + RF_SHIFT, y
     if x >= 20.75 and y >= 18.0:
-        return 20.75 + (x - 20.75) * X_STRETCH, 18.0 + (y - 18.0) * Y_STRETCH
+        return 20.75 + (x - 20.75) * X_STRETCH, POCKET_Y0 + (y - 18.0) * Y_STRETCH
     return x, y
 
 
@@ -505,7 +508,7 @@ POWER_POURS = [
 ]
 if BH != 62.0:
     def _my(v):
-        return round(18.0 + (v - 18.0) * Y_STRETCH, 3) if v >= 18.0 else v
+        return round(POCKET_Y0 + (v - 18.0) * Y_STRETCH, 3) if v >= 18.0 else v
     POWER_POURS = [(n, l, x0, (_my(y0) if x0 < 44.0 else y0), x1,
                     (_my(y1) if x0 < 44.0 else y1), pr)
                    for n, l, x0, y0, x1, y1, pr in POWER_POURS]
