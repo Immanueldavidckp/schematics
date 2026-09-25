@@ -3229,3 +3229,12 @@ used). GND_L2 stays solid — cutting the reference plane under the RF corridor
 and the MCU would break the CPWG impedance and the return paths, so it is not
 offered as a signal layer. Running on the board of record (94/0) in
 `agent-afc73cac07cadbe30`; result appended below.
+
+Result (2026-09-25, 60 min, LV_L3=1, 82 x 62 board of record): the finisher
+routed 1 of the 44 nets needing work and the DRC count did not move — still
+**94 unconnected, 0 errors**. The free area on PWR_L3 between the pours is a
+few isolated slots under the pocket, none of which spans from a source pad to
+its destination, so a third routing layer there adds nothing. Conclusion for
+the user's "use the other two layers" request: GND_L2 must stay solid and
+PWR_L3 has no usable channel; the four-layer stack cannot absorb the residue
+without a placement change.
