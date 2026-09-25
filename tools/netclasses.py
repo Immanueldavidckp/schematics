@@ -106,6 +106,10 @@ def cls(name, priority, clearance, track, vd, vdr):
     }
 
 
+# Default netclass clearance (approved 0.20 -> 0.15, 2026-09-16). Mirrored in
+# pcbroute_lv.py GEO["Default"]; both must agree.
+DEFAULT_CLEARANCE = 0.15
+
 # Board-level minima. KiCad reset min_clearance from 0.15 to 0.0 during one of
 # its project round-trips - the same silent-regression class as G2 wiping
 # net_settings. A zero minimum clearance means the board-wide floor stops
@@ -138,6 +142,14 @@ def apply():
     rules.update(BOARD_RULES)
     ns = d["net_settings"]
     default = [c for c in ns["classes"] if c["name"] == "Default"]
+    # Default clearance 0.15 mm was approved 2026-09-16 (JLCPCB 4-layer floor,
+    # commit c6d03b1) but only in the project file; a regeneration inherits
+    # whatever Default entry the incoming file carries, and rounds 4-6 were
+    # regenerated from a 0.20 file - every variant was routed AND checked at
+    # 0.20 while the LV finisher's GEO table assumed 0.15. Force it here so
+    # the approved value survives any regeneration or KiCad round trip.
+    for c in default:
+        c["clearance"] = DEFAULT_CLEARANCE
     ns["classes"] = default + [cls(*c) for c in CLASSES]
     ns["netclass_patterns"] = (
         [{"netclass": "RF", "pattern": p} for p in RF] +
@@ -167,6 +179,10 @@ def verify():
     print(f"after kicad round trip: classes={names}")
     print(f"                        patterns={len(pats)}")
     # board minima must survive too
+    dflt = [c for c in ns["classes"] if c["name"] == "Default"]
+    if not dflt or abs(float(dflt[0]["clearance"]) - DEFAULT_CLEARANCE) > 1e-9:
+        sys.exit(f"Default clearance is {dflt and dflt[0]['clearance']}, "
+                 f"expected {DEFAULT_CLEARANCE}")
     got = d.get("board", {}).get("design_settings", {}).get("rules", {})
     bad = {k: (v, got.get(k)) for k, v in BOARD_RULES.items()
            if abs(float(got.get(k, -1)) - v) > 1e-9}
