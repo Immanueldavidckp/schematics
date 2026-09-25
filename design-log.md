@@ -3370,3 +3370,34 @@ exactly as the second cycle did on the 82 x 62 board. Stopped at 03:30 after
 five passes; a second FreeRouting cycle on a finished board is not worth its
 three hours. The post-pass (pours + stitch -> finisher 60 min -> stitch)
 started on both boards from the committed cycle-1 results instead.
+
+## 2026-09-26 04:45 — post-pass results, and guard G2 bit at run time
+
+Post-pass (pours + stitch -> finisher 60 min -> stitch) on both live boards:
+
+| board | cycle 1 | after pours + stitch | after finisher hour |
+|---|---|---|---|
+| T1 100 x 68 | 113 / 0 | 41 / 0 | **40 / 0** (finisher routed 1 net) |
+| T2 96 x 66 | 78 / 0 | 53 / 0 | 53 / 0 (finisher routed 0 nets) |
+
+The finisher hour was lost on both: at 04:07 (T1) and 04:33 (T2) the project
+file was rewritten with KiCad's defaults - one Default class at 0.20 mm,
+min_clearance 0, no RF/HV/MV/PWR/GND classes - exactly the guard-G2 failure
+docs/SKILL.md describes. From that moment every batch failed the finisher's
+DRC gate (+400 errors against the wrong rules) and the final zone refill was
+computed at 0.20 mm from HV/RF/MV copper, so the boards read 419 / 443 errors
+and, after restoring the rules, 499 clearance errors from the pours alone.
+Restoring the project file from git and refilling gives 40 / 0 and 53 / 0.
+
+A controlled test (good project file, kicad-cli DRC, then a Python
+LoadBoard + fill + SaveBoard, then DRC again) keeps all 7 classes, so the
+wipe is not the plain save path; the likeliest mechanism is a read of the
+project file while another process was writing it (the finisher's child
+processes save the board, and SaveBoard rewrites the .kicad_pro), which
+leaves KiCad with a default in-memory project that the next save persists.
+
+Fix: `netclasses.ensure()` (new) re-checks the class set, the Default
+clearance, the board minima and the pattern count, and rewrites the file when
+anything is missing. It runs before every kicad-cli DRC in the finisher's
+gate, in stitch_gnd.py and in the pipeline scripts, so a wipe can cost at most
+one batch. The T2 finisher hour is rerun with the guard in place.
