@@ -1,7 +1,6 @@
-=== [T1] build.py (regenerate) 19:50:53
-     relaxation did NOT converge for 2 pair(s): C73+U2 (x +4.35, y +0.69), L1+U2 (x +4.08, y +1.04)
-=== [T1] pcbroute.py (RF) 19:51:32
-=== [T1] pcbroute_hv.py (HV) 19:51:33
+=== [T1] build.py (regenerate) 20:07:40
+=== [T1] pcbroute.py (RF) 20:08:15
+=== [T1] pcbroute_hv.py (HV) 20:08:16
 HV routed: 41/42 connections (1 net(s) incomplete)
   UNROUTED /io/DI1_LED: OK1.1
-PRE_AUTO unconnected=270 errors=10
+PRE_AUTO unconnected=270 errors=3
