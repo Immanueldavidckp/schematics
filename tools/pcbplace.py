@@ -320,10 +320,34 @@ ANCHORS = {
     "C78": (26.5, 7.0, 180, 1),
 }
 
-if RF_SHIFT:
+# Relief round 6 (2026-09-25): widening alone only moved the RF half; the
+# pocket parts are pinned, so the lanes between them never grew. Now the
+# digital pocket (x 20.75..44, y >= 18) is STRETCHED over the extra width and
+# height; the HV strip and the buck cluster (y < 18) keep their geometry (the
+# buck hot loop must not grow); the RF half shifts rigidly; the crystals and
+# their load caps ride rigidly with U2.
+X_STRETCH = (23.25 + RF_SHIFT) / 23.25
+Y_STRETCH = (BH - 19.0) / 43.0
+U2_SATELLITES = ("Y1", "C1", "C2", "Y2", "C3", "C4")
+
+
+def _map_xy(x, y):
+    if x >= 44.0:
+        return x + RF_SHIFT, y
+    if x >= 20.75 and y >= 18.0:
+        return 20.75 + (x - 20.75) * X_STRETCH, 18.0 + (y - 18.0) * Y_STRETCH
+    return x, y
+
+
+if RF_SHIFT or BH != 62.0:
+    _u2x, _u2y = ANCHORS["U2"][:2]
+    _nu2 = _map_xy(_u2x, _u2y)
     for _r, (_x, _y, _rot, _side) in list(ANCHORS.items()):
-        if _x >= 44.0:
-            ANCHORS[_r] = (round(_x + RF_SHIFT, 3), _y, _rot, _side)
+        if _r in U2_SATELLITES:
+            _nx, _ny = _x + (_nu2[0] - _u2x), _y + (_nu2[1] - _u2y)
+        else:
+            _nx, _ny = _map_xy(_x, _y)
+        ANCHORS[_r] = (round(_nx, 3), round(_ny, 3), _rot, _side)
 
 def relax_anchors(anchor_boxes, bounds, min_gap=1.10, iters=1500):
     """Nudge overlapping anchors apart, keeping each inside its bounds.
@@ -479,6 +503,12 @@ POWER_POURS = [
     ("3V3", "In2.Cu", 21.0, 5.0, 33.5, 15.2, 2),
     ("/modem_rf/VBAT_MODEM", "In2.Cu", 62.0 + RF_SHIFT, 7.0, 76.0 + RF_SHIFT, 21.0, 0),
 ]
+if BH != 62.0:
+    def _my(v):
+        return round(18.0 + (v - 18.0) * Y_STRETCH, 3) if v >= 18.0 else v
+    POWER_POURS = [(n, l, x0, (_my(y0) if x0 < 44.0 else y0), x1,
+                    (_my(y1) if x0 < 44.0 else y1), pr)
+                   for n, l, x0, y0, x1, y1, pr in POWER_POURS]
 
 # The EG11752 exposed pad is VIN_B (F-20), and the skill file requires the
 # buck's thermal pad stitched down with >= 9 vias. Those vias need copper to
