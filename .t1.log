@@ -1,6 +1,5 @@
-=== [T1] build.py (regenerate) 20:07:40
-=== [T1] pcbroute.py (RF) 20:08:15
-=== [T1] pcbroute_hv.py (HV) 20:08:16
-HV routed: 41/42 connections (1 net(s) incomplete)
-  UNROUTED /io/DI1_LED: OK1.1
-PRE_AUTO unconnected=270 errors=3
+=== [T1] build.py (regenerate) 20:27:11
+=== [T1] pcbroute.py (RF) 20:27:54
+=== [T1] pcbroute_hv.py (HV) 20:27:56
+HV routed: 42/42 connections (0 net(s) incomplete)
+PRE_AUTO unconnected=267 errors=0
