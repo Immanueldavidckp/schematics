@@ -3401,3 +3401,10 @@ clearance, the board minima and the pattern count, and rewrites the file when
 anything is missing. It runs before every kicad-cli DRC in the finisher's
 gate, in stitch_gnd.py and in the pipeline scripts, so a wipe can cost at most
 one batch. The T2 finisher hour is rerun with the guard in place.
+
+Residue-only FreeRouting (T1 scratch copy at 41/0, all 3492 existing
+tracks/vias locked and exported as fixed, 8 passes): FreeRouting reported 145
+unrouted under its own connectivity model from the first pass on and never
+improved; the 14 kB session adopted cleanly and changed nothing - **41 -> 41**.
+With everything fixed there is no rip-up to trade, so the maze finisher and
+FreeRouting see the same walls. Not worth repeating.
