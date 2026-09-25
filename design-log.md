@@ -3238,3 +3238,30 @@ its destination, so a third routing layer there adds nothing. Conclusion for
 the user's "use the other two layers" request: GND_L2 must stay solid and
 PWR_L3 has no usable channel; the four-layer stack cannot absorb the residue
 without a placement change.
+
+## Correction 2026-09-25 21:30 — rounds 4-6 ran at the wrong clearance
+
+Found while waiting for the round 6 routers: the project files in every
+regenerated variant directory carried **Default clearance 0.20 mm**, not the
+approved 0.15 mm. Commit c6d03b1 (2026-09-16) changed only the project file;
+`tools/netclasses.py` copies whatever Default entry the incoming file has, and
+the round 5 regeneration (df3485f) started from a 0.20 file. Consequences:
+
+- FreeRouting routed rounds 4, 5 and 6 at 0.20 (the DSN takes its class rules
+  from the project file) and the pipeline DRC gated them at 0.20.
+- The LV finisher plans at 0.15 (its GEO table was mirrored in c6d03b1) but
+  gates every batch with a kicad-cli DRC that ran at 0.20, so it rolled back
+  most of what it routed. The "no gain" finisher results in rounds 4-6 are
+  therefore not evidence about the placements.
+- The round 5 table above (107 / 112 / 156 / 101) is not comparable with the
+  94 of the board of record, which was routed at 0.15. "Widening alone does
+  not help" is unproven; the stretched boards are being rerun at 0.15 first
+  because they are the better design either way.
+- The board of record (94/0) and the PWR_L3 experiment ran at 0.15 and stand.
+
+Fix (515e491): `netclasses.py` now forces `DEFAULT_CLEARANCE = 0.15` on the
+Default entry and fails its round-trip verification if the value does not
+survive. Both T1 (100 x 68) and T2 (96 x 66) were stopped at FreeRouting pass
+3-4 and relaunched from regeneration at 21:24 under the corrected rule.
+Lesson for any future variant comparison: read the Default clearance out of
+each variant's project file before trusting its numbers.
