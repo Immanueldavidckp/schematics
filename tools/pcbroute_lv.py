@@ -148,6 +148,11 @@ def main(single_net=None, rip=None):
     else:
         board = pcbnew.LoadBoard(PCB)
     LAYERS = [pcbnew.F_Cu, pcbnew.B_Cu]
+    # LV_L3=1: also route signals on the inner power layer (experiment,
+    # 2026-09-25). L3 carries the power islands; new tracks there make the
+    # pours refill around them, so this trades island continuity for lanes.
+    if os.environ.get("LV_L3"):
+        LAYERS = [pcbnew.F_Cu, board.GetLayerID("PWR_L3"), pcbnew.B_Cu]
 
     bb = board.GetBoardEdgesBoundingBox()
     x0, y0 = to_mm(bb.GetLeft()), to_mm(bb.GetTop())
