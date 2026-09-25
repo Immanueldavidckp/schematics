@@ -3309,3 +3309,57 @@ stretch wins clearly; the extra 4 x 2 mm of T1 lengthens every pocket route
 and FreeRouting leaves more multi-pin nets partly routed. Cycle 2
 (FreeRouting on top of the finished board, adopt, finisher) is running on
 both. Residue analysis of T2 follows.
+
+## 2026-09-26 03:30 — half the "unconnected" count was never routing
+
+Reading T2's cycle-1 DRC report entry by entry: of 78 unconnected items, 38
+were zone-to-zone and 36 involved a GND pad. Those are GND clusters with no
+path to the GND_L2 plane - pieces of the F/B GND pour that survive island
+removal because they touch a GND pad, and SMD GND pads the pour never reaches.
+Two causes, both fixed:
+
+1. **Pour clearance was KiCad's 0.5 mm default.** `add_zone()` in pcbplace.py
+   never set the zone's own clearance, so every pour stopped 0.5 mm short of
+   each track and pad (three times the 0.15 mm rule) and could not flow between
+   tracks to the GND pads in the pocket; and any via in an L3 pour cut a
+   0.8 mm-radius hole out of a finger. Setting GND pours to 0.20 mm and power
+   pours to 0.25 mm (thermal gap 0.30; DRC still applies the netclass and HV
+   rules to the fill) and refilling, with nothing else changed:
+
+   | board | before | after refill |
+   |---|---|---|
+   | T2 96 x 66 (cycle 1) | 78 / 0 | 56 / 0 |
+   | 82 x 62 board of record | 94 / 0 | 71 / 0 |
+
+   add_zone() now sets these values for every future regeneration.
+
+2. **`tools/stitch_gnd.py`** (new): applies the same pour settings to an
+   existing board, then drops a GND via into each pour island that has none
+   and beside each unconnected GND pad (adjacent via + 0.25 mm link, via-in-pad
+   as fallback, 0.6 then 0.5 mm via), every spot checked against all
+   other-net copper on all four layers, the hole-to-hole rule, no-via rule
+   areas and a pour-split test on PWR_L3; then refills and DRC-gates, removing
+   anything KiCad rejects. On these boards it adds only 1-3 vias: the pocket
+   under U2 and the crystal is packed with tracks on all four layers, so
+   there is no legal through-via spot next to U2.8/23/35/47, Y1.2/4, C3/C4.
+   Those remaining GND pads need a short same-layer track to the pour, which
+   is the finisher's job once the pours are right.
+
+   | board | after pours + stitch |
+   |---|---|
+   | T2 96 x 66 (cycle 1) | **53 / 0** |
+   | 82 x 62 board of record | **69 / 0** |
+
+Also seen while checking via spots: **FreeRouting routes on GND_L2 and PWR_L3**
+on every board, including the board of record (141 segments on GND_L2, 120 on
+PWR_L3 at 82 x 62; 341 / 280 on T2). The DSN export marks both inner layers
+`(type signal)`, and the placement tool documents that L3 is a routing layer
+during the autoroute pass. So GND_L2 is not a solid plane: it is a pour with
+10-20 islands stitched by vias. It passes DRC and is electrically fine, but it
+weakens the RF return path and the buck's loop; if the LTE/GNSS bench numbers
+(docs/bringup-test-plan.md, section 4) disappoint, the first thing to try is a
+re-route with GND_L2 excluded from routing, at the cost of more unconnected
+items. Left as is for the first prototype, per the user's priority to order.
+
+Next: cycle 2 finishes ~06:10 on both stretched boards; then stitch_gnd.py on
+the live T2 board, another finisher hour with the pours fixed, and DRC.
