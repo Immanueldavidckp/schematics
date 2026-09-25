@@ -3363,3 +3363,10 @@ items. Left as is for the first prototype, per the user's priority to order.
 
 Next: cycle 2 finishes ~06:10 on both stretched boards; then stitch_gnd.py on
 the live T2 board, another finisher hour with the pours fixed, and DRC.
+
+Cycle 2 (FreeRouting on top of the cycle-1 finisher result) stagnated on both
+boards - unrouted 148 (T1) / 126 (T2) unchanged for two passes, score 0.00 -
+exactly as the second cycle did on the 82 x 62 board. Stopped at 03:30 after
+five passes; a second FreeRouting cycle on a finished board is not worth its
+three hours. The post-pass (pours + stitch -> finisher 60 min -> stitch)
+started on both boards from the committed cycle-1 results instead.
