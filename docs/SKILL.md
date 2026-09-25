@@ -128,7 +128,7 @@ Every net named, every sheet with hierarchical pins. Follow the pin map and
 block circuits in `telematics-handoff.md` §5–§6 exactly.
 
 ## PCB rules
-- 4 layers: L1 signal/RF, L2 solid GND, L3 power, L4 signal. Board 90 × 62 mm (the handoff's ~60 × 80 was superseded at milestone 4; widened 82 -> 90 in relief round 5, 2026-09-22).
+- 4 layers: L1 signal/RF, L2 GND pour, L3 power pours, L4 signal (the autorouter also uses L2 and L3 for signals). Board 100 × 68 mm (the handoff's ~60 × 80 was superseded at milestone 4; 82 × 62 until relief round 6, 2026-09-26, when the digital pocket was stretched over a 100 × 68 outline - `BW, BH` in tools/pcbgen.py, see design-log "Relief rounds 5 and 6"). GND_L2 is a pour, not a solid plane: the autorouter routes on both inner layers (see design-log 2026-09-26).
 - RF: 50 Ω CPWG from EC200U ANT pads to U.FL, stitching vias, no plane
   splits under RF. GNSS and LTE U.FL at opposite board corners.
 - HV zone (VIN up to 100 V) physically separated; ≥ 1.5 mm clearance

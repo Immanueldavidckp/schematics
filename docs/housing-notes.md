@@ -32,7 +32,7 @@ makes the difference explicit:
 | +X wall | solid; two Ø12 SMA seats with **1 mm sealed pilot dimples** only | two Ø6.5 SMA bulkhead holes, each with a Ø9 × 0.4 O-ring recess |
 | Lid interior | 8.0 mm deep (patch 6.5 + tabs) | 3.5 mm skirt only |
 | Lid height | 10.5 mm | 6.0 mm |
-| Base | identical 98 × 70 × 31.1 mm | identical |
+| Base | identical 108 × 76 × 31.1 mm | identical |
 
 The base is the same mould in both cases; the SMA positions are the same
 casting features, drilled through or left sealed. Only the lid differs.
@@ -47,7 +47,7 @@ is no open aperture.
   on the base wall top. Both sit on the wall midline. Target ≈20 % cord
   compression; confirm once the cord hardness is chosen.
 - **Six lid screws, all outside the seal line**: four corner posts plus two
-  long-side midpoint posts (the long sides are 90 mm — corners alone leave
+  long-side midpoint posts (the long sides are 100 mm — corners alone leave
   the gasket under-compressed mid-span). Ø9 posts, 12 mm × Ø2.5 pilots for
   M3 self-tappers; Ø3.4 countersunk holes in the lid ears. Screws never
   penetrate the seal.
@@ -125,7 +125,7 @@ metal · > 40 dB isolation · **no metal fixings over the antenna areas** ·
 1. Seal cord material/hardness → confirm compression with the 1.6 groove and
    0.8 tongue; adjust groove depth if a Ø2.5 cord is preferred.
 2. Gland and vent makes/IP ratings (M16 gland cable OD range must cover the
-   12-way loom; vent airflow vs. the 98 × 70 × 31 internal volume).
+   12-way loom; vent airflow vs. the 108 × 76 × 31 internal volume).
 3. FPC clamp frame is referenced but not modelled (flat plastic frame, four
    stake holes).
 4. No draft angles / radii — model is machining/print-oriented, not molding.
