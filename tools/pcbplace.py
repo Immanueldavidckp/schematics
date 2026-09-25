@@ -705,6 +705,17 @@ def add_zone(board, layer, net, rect, name="", priority=0):
     # FreeRouting adopt stage with ADOPT_BASELINE_NOT_CLEAN.
     z.SetAssignedPriority(priority)
     z.SetPadConnection(pcbnew.ZONE_CONNECTION_FULL)   # no thermal spokes
+    # KiCad gives a new zone a 0.5 mm clearance and a 0.5 mm thermal gap.
+    # Never overridden, that made every pour stop 0.5 mm short of each track
+    # and pad, so the F/B GND pours could not reach GND pads inside the
+    # routed pocket (T2 cycle 1: 78 -> 58 unconnected from this alone) and
+    # any via in an L3 pour cut the finger. The DRC engine still applies the
+    # netclass and custom-rule clearances to the fill (HV 0.6 / 1.5 mm etc.);
+    # this is only the pour's own floor. tools/stitch_gnd.py applies the same
+    # values to boards generated before this change.
+    is_gnd = net is not None and net.GetNetname() == "GND"
+    z.SetLocalClearance(mm(0.20 if is_gnd else 0.25))
+    z.SetThermalReliefGap(mm(0.30))
     # Remove pad-less fill fragments: without this, every isolated pour
     # island the routing carves off counts as an unconnected ratsnest item -
     # 60 of the 162 "unconnected" edges were F_GND/B_GND fragment-to-fragment
