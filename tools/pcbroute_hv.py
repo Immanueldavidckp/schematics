@@ -499,7 +499,7 @@ def main():
         pcbnew.ZONE_FILLER(board).Fill(board.Zones())
     except Exception as e:
         print(f"  zone refill: {e}")
-    pcbnew.SaveBoard(PCB, board)
+    pcbnew.SaveBoard(PCB, board, True)
     canonicalise(PCB)
     print("saved and canonicalised (all HV copper LOCKED)")
 

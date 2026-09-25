@@ -80,6 +80,12 @@ def net_class(n):
 
 def drc_errors(path):
     """Non-ratsnest DRC error count (the per-net gate)."""
+    # Guard G2 at run time: a KiCad re-save can drop the whole class set from
+    # the project file (seen 2026-09-26 04:07 mid-run: every batch then failed
+    # the gate against a 0.20 mm Default class and the pours were filled at
+    # 0.20 from HV copper). Restore before measuring.
+    import netclasses
+    netclasses.ensure()
     rpt = path + ".drc"
     subprocess.run(["kicad-cli", "pcb", "drc", "--severity-error",
                     "-o", rpt, path], capture_output=True)
@@ -754,7 +760,7 @@ def main(single_net=None, rip=None):
 
     if single_net == "--finish--":
         refill()
-        pcbnew.SaveBoard(PCB, board)
+        pcbnew.SaveBoard(PCB, board, True)
         canonicalise(PCB)
         print("CHILD_FINISHED")
         return
@@ -1063,7 +1069,7 @@ def main(single_net=None, rip=None):
                 print(f"CHILD_FAIL rip-retry stalled on {nn}: {cause}")
                 sys.exit(3)          # unsaved: the rip never reaches disk
         refill()
-        pcbnew.SaveBoard(PCB, board)
+        pcbnew.SaveBoard(PCB, board, True)
         for nn in rip:
             if nn in pours:
                 print(f"REQUEUE {nn}")
@@ -1073,12 +1079,12 @@ def main(single_net=None, rip=None):
     ok, cause, nv, tl, man = route_net(single_net)
     if ok:
         refill()
-        pcbnew.SaveBoard(PCB, board)
+        pcbnew.SaveBoard(PCB, board, True)
         print(f"CHILD_OK vias={nv} len={tl:.2f} man={man:.2f}")
         return
     if nv > 0 or tl > 0:
         refill()
-        pcbnew.SaveBoard(PCB, board)
+        pcbnew.SaveBoard(PCB, board, True)
         print(f"CHILD_PARTIAL vias={nv} len={tl:.2f} man={man:.2f} cause={cause}")
         sys.exit(4)
     print(f"CHILD_FAIL {cause}")

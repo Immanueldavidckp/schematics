@@ -194,7 +194,7 @@ def main():
         pcbnew.ZONE_FILLER(scratch).Fill(scratch.Zones())
     except Exception as e:
         print(f"zone refill: {e}")
-    pcbnew.SaveBoard(SCRATCH, scratch)
+    pcbnew.SaveBoard(SCRATCH, scratch, True)
     print(f"scratch board saved: {SCRATCH}")
 
 

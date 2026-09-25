@@ -115,7 +115,7 @@ def refill(path):
     board = pcbnew.LoadBoard(path)
     board.BuildListOfNets()
     pcbnew.ZONE_FILLER(board).Fill(board.Zones())
-    pcbnew.SaveBoard(path, board)
+    pcbnew.SaveBoard(path, board, True)
 
 
 def clean(path, rpt, label, max_frag=6, max_net=3, canon=False):

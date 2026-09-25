@@ -165,6 +165,38 @@ def apply():
           f"{len(ns['netclass_patterns'])} patterns")
 
 
+def ensure(quiet=True):
+    """Guard G2 at run time: if a KiCad re-save dropped the class set (the
+    project file falls back to a single Default class at 0.20 mm and
+    min_clearance 0, and every DRC from then on is wrong), rewrite it.
+    Cheap (one JSON rewrite), meant to run before every kicad-cli DRC in the
+    routing tools. Returns True when it had to restore."""
+    try:
+        d = json.load(open(PRO))
+    except Exception:
+        return False
+    ns = d.get("net_settings", {})
+    names = {c.get("name") for c in ns.get("classes", [])}
+    dflt = [c for c in ns.get("classes", []) if c.get("name") == "Default"]
+    rules = d.get("board", {}).get("design_settings", {}).get("rules", {})
+    ok = (names == {"Default"} | {c[0] for c in CLASSES}
+          and dflt and abs(float(dflt[0].get("clearance", 0)) - DEFAULT_CLEARANCE) < 1e-9
+          and abs(float(rules.get("min_clearance", -1)) - BOARD_RULES["min_clearance"]) < 1e-9
+          and len(ns.get("netclass_patterns") or []) == len(RF) + len(HV) + len(MV) + len(BULK) + len(PWR) + 1)
+    if ok:
+        return False
+    print(f"G2: net classes were missing from {os.path.basename(PRO)} "
+          f"(found {sorted(n for n in names if n)}) - restored")
+    _stdout = sys.stdout
+    if quiet:
+        sys.stdout = open(os.devnull, "w")
+    try:
+        apply()
+    finally:
+        sys.stdout = _stdout
+    return True
+
+
 def verify():
     """Force KiCad to load and re-save the project, then re-read it."""
     subprocess.run(["kicad-cli", "pcb", "drc", "--output", os.devnull, PCB],

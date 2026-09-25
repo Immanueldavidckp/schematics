@@ -308,7 +308,7 @@ def main():
         pcbnew.ZONE_FILLER(board).Fill(board.Zones())
     except Exception as e:
         print(f"  zone refill skipped: {e}")
-    pcbnew.SaveBoard(PCB, board)
+    pcbnew.SaveBoard(PCB, board, True)
     # Same reason as pcbgen/pcbplace: pcbnew mints random KIIDs and writes
     # tracks from an unordered container, so without this the board is not
     # byte-stable and "rebuild, then git diff must be empty" stops working.

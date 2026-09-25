@@ -416,9 +416,12 @@ class Board:
     # ---- stage 3: gate -------------------------------------------------------------
     def fill_and_save(self):
         pcbnew.ZONE_FILLER(self.b).Fill(self.b.Zones())
-        pcbnew.SaveBoard(self.path, self.b)
+        pcbnew.SaveBoard(self.path, self.b, True)
 
     def drc(self, tag):
+        if os.path.dirname(self.path) == PROJ:
+            import netclasses            # guard G2: restore the class set if a re-save dropped it
+            netclasses.ensure()
         rpt = self.path + f".stitch-{tag}.rpt"
         subprocess.run(["kicad-cli", "pcb", "drc", "--severity-error", "-o", rpt, self.path],
                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
