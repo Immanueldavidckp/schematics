@@ -1,73 +1,52 @@
 LV routing metrics (tools/pcbroute_lv.py)
-nets routed: 2/66   total vias: 2
+nets routed: 6/46   total vias: 3
 net                            vias   len mm manhattan  ratio
-/io/CANL                          0      1.4      41.8   0.03
-GND                               2      0.0       0.0   1.00
+/mcu/OSC32_IN                     0      6.5       9.8   0.66
+/mcu/OSC_OUT                      0      6.5       7.8   0.83
+/modem_rf/Q10_B                   1     31.2      32.9   0.95
+/modem_rf/Q12_B                   1     61.2      59.6   1.03
+/modem_rf/SIM_CLK                 0     65.5      43.4   1.51
+/power/U5_VCC                     1      6.3       9.4   0.67
 
 UNROUTED:
-  3V3: rip-retry stalled on 3V3: no path U3.2 -> U3.8
-  /modem_rf/VDD_EXT_1V8: rip-retry stalled on /modem_rf/VDD_EXT_1V8: no path R63.1 -> C44.1
-  5V0: no path R49.1 -> U6.24
-  /mcu/3V3A: no path FB1.2 -> U2.9
-  /io/VIN_SENSE: no path R36.1 -> R32.2
-  /modem_rf/Q14_B: no path R54.1 -> Q14.1
-  /modem_rf/Q11_B: no path R60.1 -> Q11.1
-  /io/CANH: no path L2.1 -> J1.4
-  /mcu/I2C1_SCL: no path U3.13 -> R7.2
-  /modem_rf/Q10_B: no path R58.1 -> Q10.1
-  /power/SYS: no path C66.1 -> C68.1
-  /modem_rf/USIM_VDD: no path U1.14 -> R69.1
-  /mcu/I2C1_SDA: no path U3.14 -> R8.2
-  /modem_rf/USIM_RST_M: no path U1.17 -> R68.1
-  /modem_rf/USIM_VDD_SIM: no path X1.C1 -> R69.2
-  /io/IGN_SENSE: no path R35.2 -> D11.3
-  DO1_GATE: no path U2.27 -> R42.1
-  /modem_rf/USIM_VDD_ESIM: no path X2.8 -> R70.2
-  /modem_rf/USIM_CLK_M: no path U1.16 -> R67.1
-  /io/Q2_G: no path Q2.1 -> R24.2
-  /modem_rf/USIM_DATA_M: no path U1.15 -> R66.1
-  MODEM_RX: no path TP28.1 -> U2.31
-  /mcu/NET_STATUS_LED: no path U2.22 -> R5.1
-  /mcu/BOOT0: no path U2.44 -> R1.1
-  DI1: no path OK1.4 -> U2.25
-  /power/U5_VCC: no path C75.1 -> R81.1
-  MODEM_TX: no path TP27.1 -> U2.30
-  /io/VBAT_SENSE: no path R39.1 -> C29.1
-  /mcu/SWDIO: no path U2.34 -> TP1.1
-  /mcu/SWCLK: no path U2.37 -> TP2.1
-  DI2: no path OK2.4 -> U2.26
-  /mcu/VBAT_MCU: no path U2.1 -> R3.2
-  /modem_rf/USB_VBUS: no path TP17.1 -> D15.5
-  /power/U6_TS: no path R88.2 -> U6.11
-  DO2_GATE: no path U2.28 -> R46.1
-  MODEM_DTR: no path U2.33 -> U8.10
-  CAN1_TX: no path U4.1 -> U2.46
-  /mcu/SYS_LED_A: no path D20.2 -> R4.2
+  /modem_rf/VBAT_MODEM: rip-retry stalled on /modem_rf/VBAT_MODEM: no path U1.60 -> TP24.1
+  3V3: rip-retry stalled on 3V3: no path C14.1 -> C21.1
+  SYS: child crashed (rc=1)
+  /mcu/3V3A: rip-retry stalled on /mcu/3V3A: no path C8.1 -> U2.9
+  GND: rip-retry stalled on GND: no path C11.2 -> U2.47
+  MODEM_PWRKEY: rip-retry stalled on MODEM_PWRKEY: no path R55.1 -> U2.29
+  /modem_rf/NETLED_A: DRC regression in batch (+1)
+  /io/CANL: rip-retry stalled on /io/CANL: no path TP26.1 -> J1.5
+  /modem_rf/SIM_DATA: DRC regression in batch (+1)
+  /io/VIN_SENSE: DRC regression in batch (+1)
+  /io/CANH: no path TP25.1 -> J1.4
+  MODEM_TX: no path U8.13 -> U2.30
+  /modem_rf/SIM_RST: DRC regression in batch (+2)
+  MODEM_RX: no path U8.12 -> U2.31
   MODEM_RI: no path U2.32 -> U8.11
-  SPI1_MISO: no path U7.2 -> U2.16
-  /io/CANH_T: no path R11.1 -> U4.7
-  CAN_STB: no path U4.8 -> U2.38
-  CAN1_RX: no path U4.4 -> U2.45
-  /power/VBAT_BT: no path J2.1 -> C67.1
-  /mcu/NSL_A: no path D21.2 -> R6.2
+  MODEM_DTR: no path U2.33 -> U8.10
+  /modem_rf/USIM_VDD: no path U1.14 -> C47.1
+  DO1_GATE: no path R42.1 -> U2.27
+  /io/IGN_SENSE: no path D11.3 -> R35.2
+  /modem_rf/USIM_RST_M: no path R68.1 -> U1.17
+  /modem_rf/USIM_VDD_ESIM: no path R70.2 -> X2.8
+  /modem_rf/USIM_VDD_SIM: no path R69.2 -> X1.C1
+  DI2: no path R22.2 -> U2.26
+  /modem_rf/USIM_CLK_M: no path R67.1 -> U1.16
+  /io/VBAT_SENSE: no path R38.2 -> R39.1
+  /io/Q1_G: no path R23.2 -> Q1.1
+  /mcu/SWDIO: no path TP1.1 -> U2.34
+  /mcu/SWCLK: no path TP2.1 -> U2.37
+  /modem_rf/USIM_DATA_M: no path R66.1 -> U1.15
+  /io/Q2_G: no path R24.2 -> Q2.1
+  /mcu/BOOT0: no path JP1.2 -> R1.1
+  /modem_rf/NETLED_K: no path D13.1 -> Q12.3
+  /modem_rf/USB_VBUS: no path TP17.1 -> U1.71
+  DO2_GATE: no path R46.1 -> U2.28
+  CAN_STB: no path U2.38 -> U4.8
+  /modem_rf/GNSS_BIAS: no path R90.2 -> L4.2
+  /mcu/OSC_IN: no path U2.5 -> C1.1
+  /power/U6_OTG: no path R87.1 -> U6.6
   /power/U5_FB: no path R83.2 -> U5.4
-  /io/CANL_T: no path R12.1 -> U4.6
-  /mcu/SYS_LED: no path U2.2 -> D20.1
-  /mcu/NSL_K: no path D21.1 -> Q4.3
-  SPI1_MOSI: no path U7.5 -> U2.17
-  /power/U6_ILIM: no path U6.8 -> R86.1
-  /modem_rf/USB_DP_M: no path U1.69 -> D15.1
-  /io/DO2_X: no path Q7.3 -> R48.2
-  /mcu/NSL_BASE: no path Q4.1 -> R5.2
-  /power/REGN: no path U6.22 -> R88.1
-  /mcu/OSC_OUT: no path U2.6 -> Y1.3
-  /io/DO1_X: no path Q5.3 -> Q6.1
-  /power/U6_OTG: no path U6.6 -> R87.1
-  /power/SW_CHG: no path L3.1 -> C64.2
-  /modem_rf/USB_DM_TP: no path D15.4 -> TP16.1
-  /modem_rf/Q13_B: no path R52.2 -> Q13.1
-  /modem_rf/USB_DP_TP: no path D15.6 -> TP15.1
-  /modem_rf/NETLED_A: no path D13.2 -> R65.2
-  /modem_rf/NETLED_K: no path Q12.3 -> D13.1
-  GND: LV deadline reached
-  /io/CANL: LV deadline reached
+  /power/U5_EN: no path R81.2 -> U5.2
+  /modem_rf/Q10_B: LV deadline reached

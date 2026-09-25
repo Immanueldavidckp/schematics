@@ -1,0 +1,25 @@
+DRC[start] unconnected=155 errors=0
+=== [c5] finisher 3600s 22:44:08
+nets needing work: 54
+--- pass 1: 54 net(s)
+--- pass 2: 40 net(s)
+LV_DEADLINE 3600s reached - stopping with 40 net(s) unfinished
+ROUTED 18/54 nets  vias 90  via-flags 4  ratio-flags 0
+DRC[cy1-fin] unconnected=117 errors=0
+CYCLE_RESULT cycle=1 unconnected=117 errors=0 best_before=155
+=== [c5] cycle 2 FreeRouting 2.4.1 (6 passes, 150 min budget) 23:47:10
+session file: /home/david/pcb/.claude/worktrees/route-finish/autoroute.ses (346604 bytes)
+=== [c5] cycle 2 adopt 18:52:24
+scratch DRC (frag iter 0): errors=4 {'clearance': 4}
+  ripped 5 violating fragment(s)
+scratch DRC (frag iter 1): errors=0 {}
+protected nets: 6 unlocked form(s) ripped
+adopted DRC (frag iter 0): errors=0 {}
+ADOPT_OK
+DRC[cy2-adopt] unconnected=117 errors=0
+=== [c5] finisher 3600s 18:52:51
+nets needing work: 46
+--- pass 1: 46 net(s)
+--- pass 2: 41 net(s)
+LV_DEADLINE 3600s reached - stopping with 41 net(s) unfinished
+ROUTED 9/46 nets  vias 21  via-flags 1  ratio-flags 0

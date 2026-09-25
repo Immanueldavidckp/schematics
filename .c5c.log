@@ -1,0 +1,11 @@
+DRC[start] unconnected=107 errors=0
+=== [c5] finisher 3600s 23:41:35
+nets needing work: 46
+--- pass 1: 46 net(s)
+--- pass 2: 42 net(s)
+LV_DEADLINE 3600s reached - stopping with 42 net(s) unfinished
+ROUTED 6/46 nets  vias 3  via-flags 0  ratio-flags 0
+DRC[cy1-fin] unconnected=107 errors=0
+CYCLE_RESULT cycle=1 unconnected=107 errors=0 best_before=107
+no gain this cycle - stopping
+C5_DONE unconnected=107 errors=0

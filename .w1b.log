@@ -1,0 +1,13 @@
+=== [W1b] waiting for java 22:20:30
+=== [W1b] java exited; ses 115968 bytes 22:40:13
+INFO   [F0072A\610A44] Auto-routing stage completed: started with 316 unrouted nets, completed in 5932.99 seconds, final score: 309.33 (
+ImportSpecctraSES: True  (826 -> 2411 items)
+scratch board saved
+=== [W1b] adopt 22:40:16
+ripping nets (36 incl. protected): ['/io/VBAT_SENSE', '/mcu/BOOT0', '/mcu/DBG_TX', '/modem_rf/STATUS_MOD', '/modem_rf/VBAT_MODEM', '3V3', '5V0', 'SYS']
+forms ripped: 367
+ADOPT_OK
+POST_ADOPT unconnected=183 errors=0
+=== [W1b] finisher 3600s 22:40:33
+nets needing work: 55
+--- pass 1: 55 net(s)
