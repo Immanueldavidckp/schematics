@@ -3265,3 +3265,29 @@ survive. Both T1 (100 x 68) and T2 (96 x 66) were stopped at FreeRouting pass
 3-4 and relaunched from regeneration at 21:24 under the corrected rule.
 Lesson for any future variant comparison: read the Default clearance out of
 each variant's project file before trusting its numbers.
+
+## 2026-09-25 23:20 — first 0.15 mm run of round 6 lost to a budget bug
+
+The round 6 pipeline script gave FreeRouting 8 passes but only a 100 minute
+budget; on the 100 x 68 and 96 x 66 boards a pass takes 13-16 minutes, so the
+JVM was killed after pass 6 and FreeRouting 2.4.1 writes its session file
+only at the end. The adopt stage then reported `ADOPT_OK` on an unchanged
+board (the "no .ses produced" exit went to a discarded stderr) and the
+finisher ran on the unrouted board. Both pipelines were stopped at 23:18 and
+relaunched with the two-cycle driver (8 passes, 200 minute budget, FreeRouting
+stderr kept in the log).
+
+What FreeRouting's own log shows for the stretched boards at 0.15 mm before
+it was killed - its unrouted count after each pass (it reports every pass):
+
+| pass | T1 100 x 68 | T2 96 x 66 |
+|---|---|---|
+| 4 | 140 | 120 |
+| 5 | 133 | 119 |
+| 6 | 130 | 113 |
+
+For comparison FreeRouting plateaued at ~157-165 unrouted on the 82 x 62
+placement (the board of record reached 94 only after adopt and the finisher).
+So the stretched pocket at the approved clearance is the first placement
+change that moves FreeRouting's own floor down, by ~45 items, and T2 (the
+smaller of the two) is ahead. Adopt + finisher results follow.
