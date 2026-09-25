@@ -332,6 +332,7 @@ X_STRETCH = (23.25 + RF_SHIFT) / 23.25
 POCKET_Y0 = 21.0
 Y_STRETCH = (BH - 1.0 - POCKET_Y0) / 43.0
 U2_SATELLITES = ("Y1", "C1", "C2", "Y2", "C3", "C4")
+WIDE_HOME = {"U2"}
 
 
 def _map_xy(x, y):
@@ -1096,6 +1097,12 @@ def main():
                 break
         if ref in FIXED:
             bounds[ref] = (bcx, bcy, bcx, bcy)   # immovable
+        elif ref in WIDE_HOME:
+            # U2 straddles the pwr/dig split at y 27: confined to "pwr" it was
+            # clamped up against the buck cluster on every build (the
+            # perpetual L1+U2 non-convergence, and 10 shorts against C73 once
+            # the pocket was stretched). Give it the whole LV column.
+            bounds[ref] = (HV_X + 0.75, EDGE, 43.0 + RF_SHIFT, BH - EDGE)
         else:
             bounds[ref] = home or (EDGE, EDGE, BW - EDGE, BH - EDGE)
     # mounting holes take part but cannot move
