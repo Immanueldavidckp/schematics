@@ -3460,3 +3460,11 @@ versus 3 on the 40 board, and re-establishing pour continuity on L3 by hand
 is harder than routing a signal net. The branch head is the 40 / 0 board
 (e18de0a: intact power pours, 14 GND, 23 signal items) - the better base for
 hand-finishing and for the T3 comparison.
+
+Local rip-up FreeRouting (T1 scratch at 40/0; only copper within 2.5 mm of
+a residue endpoint left unlocked - 879 items - everything else fixed, 8
+passes): FreeRouting reported 147 unrouted under its own model from pass 1,
+never converged, hit the 90 min budget and wrote no session. No result.
+Together with cycle 2 (stagnant) and the all-locked run (41 -> 41), that is
+every FreeRouting mode on this placement; the only automated lever left is
+placement (round 7, running as T3).
