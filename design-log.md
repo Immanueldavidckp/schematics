@@ -3451,3 +3451,12 @@ that had been connected through the pours; the finisher's gate counts DRC
 errors only, so a connectivity loss on other nets passes it. Conclusion, now
 measured twice: routing signals on PWR_L3 is a net loss on this design. T1
 is restored to commit e18de0a (40 / 0); the L3 commits stay in history.
+
+The stitch pass after that L3 finisher then added 5 GND vias and reached
+**39 / 0** on T1 (commit "relief round 6 T1 GND stitch after L3 finisher").
+Kept in history but NOT as the branch head: 12 of its 39 items are power-net
+pads stranded by cut L3 pours (3V3 4, VBAT_MODEM 4, 5V0 3, VDD_EXT_1V8 1)
+versus 3 on the 40 board, and re-establishing pour continuity on L3 by hand
+is harder than routing a signal net. The branch head is the 40 / 0 board
+(e18de0a: intact power pours, 14 GND, 23 signal items) - the better base for
+hand-finishing and for the T3 comparison.
