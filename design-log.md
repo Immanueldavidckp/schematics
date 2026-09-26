@@ -3441,3 +3441,13 @@ build had 20 shorts from rf vs rf_low packing the same spots). Regeneration:
 307 unconnected / 0 errors before routing, the group at x 63-90, y 46-66.
 Running as variant T3 (100 x 68) in a third worktree dir: regen -> RF -> HV
 -> FreeRouting 8 passes -> adopt -> finisher -> pours + stitch -> finisher.
+
+Post-pass 3 (finisher with `LV_L3=1`, 60 min, rules intact): the finisher
+DID route nets on PWR_L3 - 10 of 24 on T1 (22 vias), 6 of 27 on T2 - but the
+DRC count went UP: **T1 40 -> 44, T2 53 -> 57.** Per net on T1: GND 14 -> 18,
+3V3 1 -> 4, VBAT_MODEM 0 -> 4, 5V0 2 -> 3. The new L3 tracks cut the L3 power
+pours (and the F/B GND pours re-fill around the new vias), stranding pads
+that had been connected through the pours; the finisher's gate counts DRC
+errors only, so a connectivity loss on other nets passes it. Conclusion, now
+measured twice: routing signals on PWR_L3 is a net loss on this design. T1
+is restored to commit e18de0a (40 / 0); the L3 commits stay in history.
