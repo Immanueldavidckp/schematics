@@ -3468,3 +3468,13 @@ never converged, hit the 90 min budget and wrote no session. No result.
 Together with cycle 2 (stagnant) and the all-locked run (41 -> 41), that is
 every FreeRouting mode on this placement; the only automated lever left is
 placement (round 7, running as T3).
+
+T3 interim (2026-09-26 13:50; the machine slept 08:25-13:30 with FreeRouting
+frozen mid-optimizer, no harm): FreeRouting floor 127 (T1: 128), but after
+the fragment adopt **95 / 0** against T1's 131 and T2's 123 at the same
+stage. Of the 95: 18 GND, 34 power-net items (3V3 10, 5V0 10, VBAT_MODEM 5,
+SYS 4, VDD_EXT_1V8 3, U5_VCC/U5_FB 2 each - pour-tap work for the finisher
+once the pours are tightened) and the modem-side signal items are now short
+local links inside the regrouped cluster (x 80-89, y 46-66) instead of
+detours around the LGA. Finisher, pours + stitch and a second finisher hour
+follow.
