@@ -3408,3 +3408,9 @@ unrouted under its own connectivity model from the first pass on and never
 improved; the 14 kB session adopted cleanly and changed nothing - **41 -> 41**.
 With everything fixed there is no rip-up to trade, so the maze finisher and
 FreeRouting see the same walls. Not worth repeating.
+
+Post-pass 2 (rules verified intact throughout, guard never fired, project
+files kept all 7 classes): finisher 60 min on T1 routed **0 of 24** nets, on
+T2 **0 of 27**. Final: **T1 40 / 0, T2 53 / 0.** The maze finisher is
+exhausted on both boards at this placement; a PWR_L3-enabled finisher pass
+(post-pass 3) runs next on both.
