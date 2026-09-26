@@ -3414,3 +3414,30 @@ files kept all 7 classes): finisher 60 min on T1 routed **0 of 24** nets, on
 T2 **0 of 27**. Final: **T1 40 / 0, T2 53 / 0.** The maze finisher is
 exhausted on both boards at this placement; a PWR_L3-enabled finisher pass
 (post-pass 3) runs next on both.
+
+# Relief round 7 — modem-side satellites regrouped (2026-09-26 06:00)
+
+What the T1 residue (40) actually is, from the finisher's per-net causes and
+a render with the ratsnest overlaid (`no path` = the start pad is walled in
+on its own layer):
+
+- ~14 GND items under U2 and the crystal where no through via fits (all four
+  layers carry tracks there) - a same-layer link job, not a via job.
+- SIM / USB / control nets between parts the packer had put on the TOP edge
+  (D14 SIM ESD, D15 USB ESD, D13 LED, Q9-Q12, TP15) and their partners BELOW
+  the modem (X1/X2 SIM holders, R54-R70 pull-ups and series resistors, TP16/
+  TP17): every one has to go around the 31 x 28 mm LGA.
+- R59, R63, R68 and L4 inside the outer 5.2 mm the finisher reserves for the
+  RF corridor (`x > BW - 5.2`): unroutable by construction for the finisher,
+  fenced by the CPWG ground for FreeRouting.
+- CANH/CANL from J1 to the CAN test pads, VIN_SENSE/IGN_SENSE from the HV
+  dividers, and two boxed-in MCU pins (U2.29, U2.39).
+
+Round 7 (pcbplace.py): a new packing zone `rf_low` below U1 and left of the
+corridor takes the whole SIM/USB/control group (D13-D15, TP15-TP17, Q9-Q12,
+R54-R70, X2); the packer is blocked out of the outer 8 mm of the RF half;
+parts placed by one zone are obstacles in all same-side zones (the first
+build had 20 shorts from rf vs rf_low packing the same spots). Regeneration:
+307 unconnected / 0 errors before routing, the group at x 63-90, y 46-66.
+Running as variant T3 (100 x 68) in a third worktree dir: regen -> RF -> HV
+-> FreeRouting 8 passes -> adopt -> finisher -> pours + stitch -> finisher.
