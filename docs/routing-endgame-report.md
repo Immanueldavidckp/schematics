@@ -194,3 +194,70 @@ unrotated board. KiCadRoutingTools: no gain (its own gate reverted). The
 0.15 mm clearance is now the project rule (owner-approved) but moved the
 autorouter by <1 %. **Final board of record: 94 / 0.** Close-out path: hand
 route the ~46 pocket nets in KiCad on branch worktree-route-finish.
+
+# Addendum 2026-09-26 — relief rounds 5-7: the board is now 100 × 68 mm and the count is 40
+
+Owner instruction (2026-09-18): enlarge the board and change the placement if
+that is what it takes; use the inner layers too. Everything below is on branch
+`relief6-stretch` (pushed), design-log entries "Relief rounds 5 and 6",
+"half the unconnected count was never routing", "Relief round 7".
+
+## Where the count stands (all boards 0 DRC errors)
+
+| board | placement | unconnected |
+|---|---|---|
+| **T1 100 × 68** | digital pocket stretched over the extra area (round 6) | **40** |
+| T2 96 × 66 | same, smaller stretch | 53 |
+| 82 × 62 board of record | original | 94 → 69 after the pour/stitch fix below |
+| T3 100 × 68 | T1 + modem-side satellites regrouped (round 7) | running |
+
+## What moved the number
+
+1. **Rules regression found and fixed.** Every regenerated variant since
+   2026-09-16 had been routed and checked at the old 0.20 mm Default
+   clearance (the generator copied whatever the project file carried).
+   Rounds 4-6 were rerun at the approved 0.15 mm; `netclasses.py` now forces
+   it and, at run time, restores the whole class set if KiCad drops it (this
+   happened mid-finisher twice on 2026-09-26 and cost two finisher hours
+   before the guard existed).
+2. **Half the "unconnected" items were never routing.** Pour pieces and GND
+   pads with no path to the ground plane, because every pour had KiCad's
+   default 0.5 mm clearance and could not reach the pads. Pours are now
+   0.20 mm (GND) / 0.25 mm (power); `tools/stitch_gnd.py` adds GND vias where
+   a legal spot exists. T2 78 → 53, T1 113 → 41, board of record 94 → 69,
+   from these two changes alone.
+3. **Stretched pocket (round 6)** is the first placement change that lowered
+   FreeRouting's own floor (≈160 → 113-128 unrouted before adopt).
+
+## What the last 40 on T1 are
+
+- 14 GND items under the MCU and the crystal: all four layers carry tracks
+  there, so no through via fits; they need short same-layer links.
+- SIM / USB / modem-control nets whose two ends were packed on opposite sides
+  of the 31 × 28 mm modem (round 7 fixes this in the placement).
+- Three pull-ups and the GNSS bias inductor inside the RF corridor strip
+  (round 7 keeps the packer out of it).
+- CAN and the VIN/IGN sense dividers crossing the HV strip, and two MCU pins
+  boxed in by their neighbours' escapes.
+
+Every automated router has been exhausted on T1: FreeRouting cycle 2
+(stagnant), residue-only FreeRouting with all copper locked (41 → 41), the
+maze finisher (0 of 24 nets in an hour, rules verified), the finisher with
+PWR_L3 enabled (see design-log). Round 7 is the remaining automated lever.
+
+## Decision points for the owner
+
+1. **Ordering.** JLCPCB needs 0 unconnected; `tools/release.py` refuses
+   otherwise. Nothing is orderable yet.
+2. **Finishing the last connections.** Three routes: (a) let round 7 finish
+   and repeat the placement loop (≈5 h per round, diminishing); (b) hand-route
+   the residue in KiCad from `docs/hand-routing-worksheet.md` (regenerated
+   for T1) - at 40 open connections this is a few hours for someone used to
+   the interactive router, and each one is listed with its pads and
+   coordinates; (c) hand the branch to a layout engineer.
+3. **Ground plane.** GND_L2 is a pour with islands, not a solid plane, on
+   every routed board (the autorouter uses both inner layers). Fine for a
+   first prototype; if the bench RF numbers disappoint, re-route with GND_L2
+   excluded from routing (design-log 2026-09-26).
+4. **Housing** is regenerated for 100 × 68 (base 108 × 76 × 31.1 mm), both
+   variants, in docs/housing/.
