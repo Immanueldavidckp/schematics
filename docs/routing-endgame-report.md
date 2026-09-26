@@ -206,10 +206,18 @@ that is what it takes; use the inner layers too. Everything below is on branch
 
 | board | placement | unconnected |
 |---|---|---|
-| **T1 100 × 68** | digital pocket stretched over the extra area (round 6) | **40** |
+| **T3 100 × 68 (recommended, branch head)** | T1 + modem-side satellites regrouped (round 7) | **41** |
+| T1 100 × 68 | digital pocket stretched over the extra area (round 6) | 40 (commit e18de0a) |
 | T2 96 × 66 | same, smaller stretch | 53 |
 | 82 × 62 board of record | original | 94 → 69 after the pour/stitch fix below |
-| T3 100 × 68 | T1 + modem-side satellites regrouped (round 7) | running |
+
+T3 is recommended over T1 despite the one-item difference: its 41 are 12 GND
+items, 8 power items and 21 signal links, and the modem-side links are now
+short (SIM, USB and status lines mostly under 10 mm inside the regrouped
+cluster), whereas T1's residue has a dozen 40-60 mm runs around the modem and
+three ends inside the RF lane. `docs/hand-routing-worksheet.md` and
+`docs/t3-residue.png` (render with the open connections in magenta) are
+generated from T3.
 
 ## What moved the number
 
@@ -240,7 +248,7 @@ that is what it takes; use the inner layers too. Everything below is on branch
 - CAN and the VIN/IGN sense dividers crossing the HV strip, and two MCU pins
   boxed in by their neighbours' escapes.
 
-Every automated router has been exhausted on T1: FreeRouting cycle 2
+Every automated router has been exhausted on T1 and T3: FreeRouting cycle 2
 (stagnant), residue-only FreeRouting with all copper locked (41 → 41), the
 maze finisher (0 of 24 nets in an hour, rules verified), and the finisher
 with PWR_L3 enabled, which routed 10 nets but cut the L3 power pours and
@@ -251,12 +259,13 @@ automated lever.
 
 1. **Ordering.** JLCPCB needs 0 unconnected; `tools/release.py` refuses
    otherwise. Nothing is orderable yet.
-2. **Finishing the last connections.** Three routes: (a) let round 7 finish
-   and repeat the placement loop (≈5 h per round, diminishing); (b) hand-route
-   the residue in KiCad from `docs/hand-routing-worksheet.md` (regenerated
-   for T1) - at 40 open connections this is a few hours for someone used to
-   the interactive router, and each one is listed with its pads and
-   coordinates; (c) hand the branch to a layout engineer.
+2. **Finishing the last connections.** Three routes: (a) another placement
+   round (≈5 h each; round 7 moved the residue from long detours to short
+   links but not the count, so returns are diminishing); (b) hand-route the
+   residue in KiCad from `docs/hand-routing-worksheet.md` (generated for T3)
+   - at 41 open connections, most of them short, this is a few hours for
+   someone used to the interactive router, and each one is listed with its
+   pads and coordinates; (c) hand the branch to a layout engineer.
 3. **Ground plane.** GND_L2 is a pour with islands, not a solid plane, on
    every routed board (the autorouter uses both inner layers). Fine for a
    first prototype; if the bench RF numbers disappoint, re-route with GND_L2

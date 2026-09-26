@@ -3478,3 +3478,19 @@ once the pours are tightened) and the modem-side signal items are now short
 local links inside the regrouped cluster (x 80-89, y 46-66) instead of
 detours around the LGA. Finisher, pours + stitch and a second finisher hour
 follow.
+
+## Round 7 result — T3 41 / 0, recommended board (2026-09-26 15:30)
+
+T3 pipeline: FreeRouting floor 127 -> adopt 95 / 0 -> finisher 42 / 0 (25 of
+40 nets) -> pours + stitch 41 / 0 -> finisher 0 of 26 -> stitch **41 / 0**.
+Same count as T1 (40) but a different residue: 12 GND, 8 power items, 21
+signal links, and the modem-side links are now short and local (SIM_DATA,
+SIM_CLK, USB_DM/DP_TP, USIM_VDD, NETLED_K all within x 79-90, y 46-57)
+instead of T1's 40-60 mm runs around the LGA and three ends in the RF lane.
+T3 is the branch head of `relief6-stretch` and the base for hand-finishing;
+T1 stays at commit e18de0a, T2 (53) on its own branch.
+
+Placement-round returns: round 6 (stretch) 94 -> 40, round 7 (regroup) moved
+the residue's character but not its count. The remaining items are pad
+escapes and pour taps that neither router resolves at 0.15 mm rules; the
+practical finish is interactive routing from the worksheet.
