@@ -242,8 +242,10 @@ that is what it takes; use the inner layers too. Everything below is on branch
 
 Every automated router has been exhausted on T1: FreeRouting cycle 2
 (stagnant), residue-only FreeRouting with all copper locked (41 → 41), the
-maze finisher (0 of 24 nets in an hour, rules verified), the finisher with
-PWR_L3 enabled (see design-log). Round 7 is the remaining automated lever.
+maze finisher (0 of 24 nets in an hour, rules verified), and the finisher
+with PWR_L3 enabled, which routed 10 nets but cut the L3 power pours and
+raised the count (40 → 44; 53 → 57 on T2). Round 7 is the remaining
+automated lever.
 
 ## Decision points for the owner
 
