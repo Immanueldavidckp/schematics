@@ -57,6 +57,13 @@ ZONES = {
     "pwr":     (HV_X + 0.75, EDGE, 43.0 + RF_SHIFT, 27.0),
     "dig":     (HV_X + 0.75, 27.5, 43.0 + RF_SHIFT, BH - EDGE),
     "rf":      (44.0 + RF_SHIFT, EDGE, BW - EDGE, BH - EDGE),
+    # Relief round 7: the strip BELOW the modem, left of the RF corridor. The
+    # skyline packer fills the rf zone from its top-left, so the SIM and USB
+    # protection arrays, the status LED and the modem control transistors
+    # landed on the top edge while their only partners (SIM holder, pull-ups,
+    # test pads) sit below U1 - every one of those nets had to go around the
+    # 31 x 28 mm LGA and ended up in the residue on every board.
+    "rf_low":  (44.0 + RF_SHIFT, 45.0, BW - 8.0, BH - EDGE),
 }
 
 # Explicit positions: (x, y, rotation_deg, side) - side 0 = top, 1 = bottom.
@@ -463,7 +470,7 @@ SHEET_ZONE = {"power": "pwr", "mcu": "dig", "storage": "dig",
 # nowhere except its own bottom side - a 100 V part must not wander out of the
 # zone the 1.5 mm clearance rule and the silk boundary are drawn around.
 SPILL = {"pwr": ["dig", "rf"], "dig": ["pwr", "rf"],
-         "rf": ["dig"], "hv": []}
+         "rf": ["dig"], "rf_low": ["rf", "dig"], "hv": []}
 
 # The io sheet is a mix of HV and LV, so sheet name alone cannot place it:
 # the DI/DO/divider front ends sit at up to 100 V while the gate drive, the
@@ -478,6 +485,15 @@ SPILL = {"pwr": ["dig", "rf"], "dig": ["pwr", "rf"],
 # so there is one source of truth.
 ZONE_OVERRIDE = {
     "TP27": "dig", "TP28": "dig", "TP24": "rf",
+    # relief round 7: pack these with their partners below U1 (see ZONES)
+    "D14": "rf_low", "D15": "rf_low", "TP15": "rf_low", "D13": "rf_low",
+    "Q9": "rf_low", "Q10": "rf_low", "Q11": "rf_low", "Q12": "rf_low",
+    # ... and the pull-ups, series resistors, 0R links, eSIM pads and USB test
+    # pads they connect to, so the whole SIM / USB / control group is one
+    # cluster below U1 instead of being split across the top and bottom edges.
+    **{r: "rf_low" for r in ("R54", "R55", "R56", "R57", "R58", "R59", "R60",
+                             "R61", "R62", "R63", "R64", "R65", "R66", "R67",
+                             "R68", "R69", "R70", "TP16", "TP17", "X2")},
 }
 
 
@@ -1047,6 +1063,15 @@ def main():
         y = pcbnew.ToMM(fp.GetPosition().y)
         for z in zones.values():
             z.block(x, y, w + 1.0, h + 1.0)   # extra ring: screw head keepout
+    # RF CORRIDOR RESERVATION (relief round 7): the outer 8 mm of the RF half
+    # is the CPWG lane, its fence and the U.FL / matching parts (all
+    # anchored). The LV finisher refuses to route there (x > BW - 5.2) and
+    # FreeRouting is fenced out by the CPWG ground, so any pull-up or ESD part
+    # the packer dropped there (R59, R63, R68 on T1) was unroutable by
+    # construction. Blocks the packer only; anchors are unaffected.
+    for zn in ("rf", "rf_b", "rf_low", "rf_low_b"):
+        zones[zn].block(BW - 8.0 + (8.0 - EDGE) / 2, BH / 2,
+                        8.0 - EDGE, BH - 2 * EDGE)
     # BUCK FIELD RESERVATION: nothing may be PACKED into x 34..44, y 1..18 on
     # either side. U5's pin escapes live in sub-0.1 mm windows and every
     # reshuffle that spilled a stray part there (Y1, C67-C69, debug TPs, SWD
@@ -1205,6 +1230,14 @@ def main():
             unplaced.append(ref)
             continue
         add(ref, c, spot[0] - pox, spot[1] - poy, 0, side)
+        # Shelf.place() blocked the spot in ITS zone only. Zones overlap
+        # (rf_low lies inside rf), so a part placed by one zone must be an
+        # obstacle in every zone of the same side or the next zone packs a
+        # part on top of it (round 7 first build: 20 shorts, 12 courtyard
+        # overlaps, all pairs from rf vs rf_low).
+        for zn in zones:
+            if zn.endswith("_b") == bool(side):
+                zones[zn].block(spot[0], spot[1], w, h, is_hv)
 
     # --- bind pads to nets ----------------------------------------------
     bound = 0
