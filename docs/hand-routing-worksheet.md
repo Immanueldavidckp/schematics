@@ -1,5 +1,9 @@
 # Hand-routing worksheet - T3 board (100 x 68 mm, relief round 7)
 
+> **2026-09-29: done - nothing left to route by hand.** Every connection below was closed by the
+> tools and the hand routes in `tools/manual_routes.py`; see design-log.md, 2026-09-29.
+
+
 41 open connections on 25 nets, generated from the
 DRC report of the board on branch `relief6-stretch` (commit "Relief round 7: T3 board ... unconnected=41 errors=0").
 

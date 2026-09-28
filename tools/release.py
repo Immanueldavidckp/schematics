@@ -62,6 +62,16 @@ def gate(tmp):
         why.append(f"DRC reports {viol} rule violation(s)")
     if unc != 0:
         why.append(f"DRC reports {unc} unconnected item(s) - copper is MISSING")
+    # board setup has hole_to_hole at warning severity, which the error-only
+    # run above does not see; overlapping drills are a fab problem whatever
+    # the setting says (2026-09-29: four same-net via pairs drilled on top of
+    # each other - tools/tidy.py removes them)
+    allr = os.path.join(tmp, "release-drc-all.rpt")
+    run(["kicad-cli", "pcb", "drc", "--severity-all", "-o", allr, PCB])
+    h2h = len(re.findall(r"^\[hole_to_hole\]", open(allr).read(), re.M)) if os.path.exists(allr) else -1
+    print(f"DRC hole_to_hole (any severity): {h2h}")
+    if h2h != 0:
+        why.append(f"{h2h} drilled hole(s) too close to another - run tools/tidy.py")
 
     erc = os.path.join(tmp, "release-erc.rpt")
     run(["kicad-cli", "sch", "erc", "--severity-error", "-o", erc, SCH])

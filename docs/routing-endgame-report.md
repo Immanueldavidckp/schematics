@@ -1,5 +1,10 @@
 # Routing endgame report — milestone-5 decision package
 
+> **2026-09-29: routing complete.** Branch `relief6-stretch`: 0 unconnected, 0 DRC errors,
+> release gate passed (`out/gerbers.zip`, `out/bom.csv`, `out/positions.csv`). How the last
+> 24 were closed, and the few design changes involved: design-log.md, 2026-09-29.
+
+
 Date: 2026-09-11. Board at the latest `main` commit.
 **State: 136 unconnected edges over 69 nets, 0 DRC rule errors.
 No rule was loosened at any point.**

@@ -3573,3 +3573,53 @@ Tooling bug found and fixed: the pipeline scripts piped progress through grep
 without --line-buffered, so the owner saw "34" for an hour while the board was at
 27. All scripts now pass progress through unbuffered, and a live watch measures
 each line's current best board every two minutes.
+
+## 2026-09-29 — board complete: 24 -> 0 unconnected, 0 errors, release gate passed
+
+Branch `relief6-stretch`, line E2 (C's T3 placement re-routed under LV-127, then
+the finisher-first endgame). `tools/release.py`: DRC 0 violations / 0 unconnected,
+0 hole-to-hole, ERC 0, checkpins 47/47, 0 duplicate items -> `out/`.
+
+| step | tool | unconnected |
+|---|---|---|
+| parallel rip-and-reroute workers on copies, uuid patch merge; pad_cells HitTest fix | pocket_par.py | 24 -> 17 |
+| DRC two-point gaps routed point to point (LV_GAP) | gapfix.py | 17 -> 12 |
+| floating DO1_GATE stub removed | prune_orphans.py | 12 -> 11 |
+| gap round 2 (5V0) | gapfix.py | 11 -> 10 |
+| sim_data: 0.6 mm channel between the SIM and USB ESD arrays | manual_routes.py | 10 -> 9 |
+| usim_vdd: Q14_B jogs 0.23 mm west on GND_L2 so a via fits beside D14.5 | manual_routes.py | 9 -> 8 |
+| do1_gate: NET_STATUS_LED's 45-degree drop into R5.1 squared off, opening the strip above R5 | manual_routes.py | 8 -> 7 |
+| GND pour islands C62.2 (plain via), C13.2 (SWDIO jogs on L3), C29.2 (VBAT_SENSE jogs on L2) | island_via.py | 7 -> 4 |
+| u2_8 (VSSA): via past the pin tip, NRST steps down, CANH / BOOT0 jog | manual_routes.py | 4 -> 3 |
+| u2_47 (VSS): via in the pad, U2.48's 3V3 exit at pad width | manual_routes.py | 3 -> 2 |
+| c42_c43: the VBAT_MODEM bulk caps' B.Cu feed re-laid, GND vias into L2 | manual_routes.py | 2 -> 0 |
+| 91 router leftovers (dangling stubs / vias, 4 overlapping same-net via pairs) | tidy.py | 0 -> 0 |
+
+Design changes a reviewer should know about (everything else is routing):
+
+- **`.kicad_dru` "GND via inside U2 to PWR"**: a GND via keeps the board-wide
+  0.127 mm to U2's own PWR pads instead of PWR's 0.15 mm. U2.46 and U2.48 are
+  0.72 mm apart and a 0.45 mm via needs 0.727 with 0.127 + 0.15; actual 0.1355.
+  0.15 was margin, not a need at 3.3 V (JLCPCB pad-to-track 0.10 mm).
+- **U2.47's GND via is in the pad** (0.20 mm drill). Order with plugged vias
+  ("epoxy filled & capped") if the price is acceptable; otherwise expect a little
+  solder wicking on this one of U2's four ground pins.
+- **VBAT_MODEM branch to C42 / C43** (B.Cu): the 3.5 mm C42.1-C43.1 link is 1.4 mm
+  wide (was 2.0; the VBAT_MODEM floor is 0.5 mm) and the parallel upper 2 mm path to
+  (71.65, 2.85) is gone - the lower 2 mm path carries the feed. This branch only
+  serves the two caps.
+- U2.48's 3V3 track leaves the 0.28 mm pad at 0.28 mm for its first 0.57 mm (the
+  0.5 mm track's end cap stood proud of the pad).
+
+Tool lessons:
+
+- KiCad's connectivity treats a zone as one item, so orphan pour islands have to
+  be found another way: `conn.GetConnectedItems(pad)` cluster sizes give the orphan
+  GND pads directly (7 pads in 1-pad clusters vs 179 in the main one), and
+  `island_via.py` does the same by union-find over fill outlines, pads, vias and
+  tracks. The finisher's grid view had two of the seven wrong.
+- Removing two or more items with pcbnew's `Remove()` in one session segfaults in
+  `Zones()`; every tool now deletes by editing the file text.
+- `hole_to_hole` is a warning in this board's setup, so the error-only gate never
+  saw four same-net via pairs drilled on top of each other. `release.py` now
+  refuses any hole-to-hole item at any severity.
