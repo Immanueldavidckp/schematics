@@ -260,6 +260,19 @@ def main():
             U_CUR = u
             continue
         shutil.copyfile(backup, PCB)
+        # second chance on PWR_L3: in the HV strip and between the pours L3
+        # is empty (the sense lines from the input dividers cross under the
+        # connector there - VIN_SENSE: 1 via, 31 mm, measured 2026-09-28).
+        # The connectivity gate below rejects a route that cuts a pour.
+        if os.environ.get("POCKET_L3", "1") != "0":
+            out3 = child(net, {"LV_L3": "1"}, timeout=1800)
+            e, u, _ = drc("sig-survey-l3")
+            if e <= E0 and u < U_CUR:
+                log(f"{net}: routed on PWR_L3, unconnected {U_CUR} -> {u}")
+                U_CUR = u
+                continue
+            shutil.copyfile(backup, PCB)
+            out += "\n" + out3
         walls = walls_of(out)
         cands = [n for n, _c in sorted(walls.items(), key=lambda kv: -kv[1])
                  if n not in NEVER_RIP and n != net][:CANDS]
