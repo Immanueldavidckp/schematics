@@ -79,6 +79,25 @@ def gate(tmp):
     print(f"checkpins: rc={r.returncode}")
     if r.returncode != 0:
         why.append("checkpins.py failed - netlist does not match the pin map")
+
+    # stacked duplicate vias are double drill hits at one spot; duplicate
+    # segments are harmless but hide real geometry - both come from session
+    # imports and repeated router passes (2026-09-28: 46 vias, 506 segments)
+    from dedupe_tracks import key
+    from pcbgen import _split_forms
+    txt = open(PCB, encoding="utf-8").read()
+    body = txt[txt.index("\n") + 1: txt.rstrip().rfind(")")]
+    seen, dup = set(), 0
+    for fo in _split_forms(body):
+        k = key(fo)
+        if k is None:
+            continue
+        if k in seen:
+            dup += 1
+        seen.add(k)
+    print(f"duplicate tracks/vias: {dup}")
+    if dup:
+        why.append(f"{dup} duplicate track/via item(s) - run tools/dedupe_tracks.py")
     return why
 
 
