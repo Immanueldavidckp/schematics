@@ -106,6 +106,37 @@ ROUTES = {
         ("trk", "DO1_GATE", "F.Cu", 22.4888, 42.7642, 22.4888, 42.0736, 0.15),
         ("trk", "DO1_GATE", "F.Cu", 22.4888, 42.0736, 23.6232, 42.0736, 0.15),
     ],
+    # U2.8 (the MCU's VSSA pin) sits in a 0.3 mm sliver of F.Cu pour between
+    # its neighbours, with NRST running under the pin row at y 33.895, the
+    # OSC_OUT via and the 3V3A track above: no via fits in the sliver. The
+    # via goes just past the pin tip at (36.14, 33.64), where B.Cu is
+    # connected GND pour, joined to the pin by a 0.34 mm stub. Three nudges
+    # make room: NRST steps down to y 34.071 under the via (0.149 to the
+    # R1 pad), CANH on L3 jogs 0.02 mm south, and BOOT0 on L2 jogs 0.43 mm
+    # south-west into the pour. Every gap >= 0.131 mm (rule 0.127).
+    "u2_8": [
+        ("del", "/mcu/NRST", "F.Cu", 35.6400, 33.6137, 35.9213, 33.8950),
+        ("del", "/mcu/NRST", "F.Cu", 35.9213, 33.8950, 40.5514, 33.8950),
+        ("trk", "/mcu/NRST", "F.Cu", 35.6400, 33.6137, 35.6400, 33.9000, 0.15),
+        ("trk", "/mcu/NRST", "F.Cu", 35.6400, 33.9000, 35.8110, 34.0710, 0.15),
+        ("trk", "/mcu/NRST", "F.Cu", 35.8110, 34.0710, 36.5710, 34.0710, 0.15),
+        ("trk", "/mcu/NRST", "F.Cu", 36.5710, 34.0710, 36.7470, 33.8950, 0.15),
+        ("trk", "/mcu/NRST", "F.Cu", 36.7470, 33.8950, 40.5514, 33.8950, 0.15),
+        ("del", "/io/CANH", "PWR_L3", 42.0869, 34.0539, 32.6942, 34.0539),
+        ("trk", "/io/CANH", "PWR_L3", 42.0869, 34.0539, 36.5921, 34.0539, 0.15),
+        ("trk", "/io/CANH", "PWR_L3", 36.5921, 34.0539, 36.5730, 34.0730, 0.15),
+        ("trk", "/io/CANH", "PWR_L3", 36.5730, 34.0730, 35.7070, 34.0730, 0.15),
+        ("trk", "/io/CANH", "PWR_L3", 35.7070, 34.0730, 35.6879, 34.0539, 0.15),
+        ("trk", "/io/CANH", "PWR_L3", 35.6879, 34.0539, 32.6942, 34.0539, 0.15),
+        ("del", "/mcu/BOOT0", "GND_L2", 34.3700, 31.8793, 36.9750, 34.4843),
+        ("trk", "/mcu/BOOT0", "GND_L2", 34.3700, 31.8793, 35.5277, 33.0370, 0.15),
+        ("trk", "/mcu/BOOT0", "GND_L2", 35.5277, 33.0370, 35.5277, 33.6400, 0.15),
+        ("trk", "/mcu/BOOT0", "GND_L2", 35.5277, 33.6400, 36.1400, 34.2523, 0.15),
+        ("trk", "/mcu/BOOT0", "GND_L2", 36.1400, 34.2523, 36.7430, 34.2523, 0.15),
+        ("trk", "/mcu/BOOT0", "GND_L2", 36.7430, 34.2523, 36.9750, 34.4843, 0.15),
+        ("trk", "GND", "F.Cu", 36.1400, 33.3000, 36.1400, 33.6400, 0.20),
+        ("via", "GND", 36.1400, 33.6400, 0.45, 0.20),
+    ],
 }
 
 
