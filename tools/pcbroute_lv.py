@@ -39,6 +39,8 @@ import pcbnew
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from pcbgen import PROJ, PCB, mm, pt, canonicalise           # noqa: E402
 from netclasses import HV, MV, RF, PWR, BULK                 # noqa: E402
+import netclasses                                            # noqa: E402
+netclasses.ensure()      # guard G2: every process (parent and net children) starts on intact rules
 
 to_mm = pcbnew.ToMM
 
@@ -653,6 +655,7 @@ def main(single_net=None, rip=None):
     # ---- the work list -----------------------------------------------------
     def refill():
         board.BuildListOfNets()
+        netclasses.ensure()
         pcbnew.ZONE_FILLER(board).Fill(board.Zones())
 
     def refresh_connectivity():

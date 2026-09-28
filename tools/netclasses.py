@@ -185,8 +185,15 @@ def ensure(quiet=True):
           and len(ns.get("netclass_patterns") or []) == len(RF) + len(HV) + len(MV) + len(BULK) + len(PWR) + 1)
     if ok:
         return False
-    print(f"G2: net classes were missing from {os.path.basename(PRO)} "
-          f"(found {sorted(n for n in names if n)}) - restored")
+    msg = (f"G2: net classes were missing from {os.path.basename(PRO)} "
+           f"(found {sorted(n for n in names if n)}) - restored")
+    print(msg)
+    try:
+        import time
+        with open(os.path.join(PROJ, ".g2.log"), "a") as fh:
+            fh.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} pid {os.getpid()} {msg}\n")
+    except OSError:
+        pass
     _stdout = sys.stdout
     if quiet:
         sys.stdout = open(os.devnull, "w")
