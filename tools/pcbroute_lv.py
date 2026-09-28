@@ -45,6 +45,9 @@ netclasses.ensure()      # guard G2: every process (parent and net children) sta
 to_mm = pcbnew.ToMM
 
 RES = float(os.environ.get("LV_RES", "0.10"))   # grid pitch; LV_RES=0.05 halves halo quantisation loss
+# island stubs: how far (mm) outside an orphan pour island to look for a via
+# site or a connected fill of the same net
+STUB_REACH = float(os.environ.get("LV_STUB_REACH", "3.0"))
 CLR_EDGE = 0.50                 # copper-to-edge board rule for LV
 LAST_GOOD = PCB + ".lastgood"
 PROTECTED = set(HV) | set(MV) | set(RF)
@@ -430,6 +433,16 @@ def main(single_net=None, rip=None):
         goalset = set(goals)
         if not goalset:
             return None
+        # A through via lands on EVERY layer. With two layers the old check
+        # (source and target grid) was exact; with PWR_L3 enabled it both
+        # skipped the third grid and never allowed a transition to B.Cu.
+        nlay = len(vg)
+        vany = None
+        if nlay > 2:
+            acc = 0
+            for g_ in vg:
+                acc |= int.from_bytes(g_, "little")
+            vany = acc.to_bytes(NX * NY, "little")
         gx = sum(g[1] for g in goals) / len(goals)
         gy = sum(g[2] for g in goals) / len(goals)
         openh, best, came = [], {}, {}
@@ -467,8 +480,13 @@ def main(single_net=None, rip=None):
                     best[nxt] = ng
                     heapq.heappush(openh, (ng + math.hypot(nx_ - gx, ny_ - gy),
                                            ng, nxt, cur))
-            for lj in range(2):
-                if lj == li or vg[lj][iy * NX + ix] or vg[li][iy * NX + ix]:
+            for lj in range(nlay):
+                if lj == li:
+                    continue
+                if vany is not None:
+                    if vany[iy * NX + ix]:
+                        continue
+                elif vg[lj][iy * NX + ix] or vg[li][iy * NX + ix]:
                     continue
                 nxt, ng = (lj, ix, iy), g + 14
                 if ng < best.get(nxt, 1e18):
@@ -624,12 +642,12 @@ def main(single_net=None, rip=None):
             i1, j1 = cell(wx1, wy1)
             for j in range(max(0, j0), min(NY - 1, j1) + 1):
                 for i in range(max(0, i0), min(NX - 1, i1) + 1):
-                    if vg[0][j * NX + i] or vg[1][j * NX + i]:
+                    if any(g_[j * NX + i] for g_ in vg):
                         continue
                     x, y = pos(i, j)
                     if z.HitTestFilledArea(lay, pt(x, y), 0):
-                        goals.append((0, i, j))
-                        goals.append((1, i, j))
+                        for k_ in range(len(vg)):
+                            goals.append((k_, i, j))
         if not goals:
             return None
         starts = []
@@ -716,15 +734,144 @@ def main(single_net=None, rip=None):
                 out.append((z, lay, oi, bb))
         return out
 
+    def island_stub(netname, net, z, lay, polys, oi, bb, vd, vdr, my_clr, fills):
+        """No via fits INSIDE an orphan island (the pocket under U2 and the
+        crystal is tracked on all four layers): maze a short stub out of the
+        island to a via site that hits another fill of the net (the L2 plane
+        for GND, the L3 pour for a rail), or to a connected outline of the
+        same pour on the same layer. KiCad sees a pour as ONE item, so these
+        islands never become clusters and tap_pour() never ran for them.
+        Returns True when copper was added."""
+        if lay not in LAYERS:
+            return False
+        li = LAYERS.index(lay)
+        w_stub = min(GEO[net_class(netname)][0], 0.25)
+        tg = build(netname, my_clr, w_stub / 2)
+        open_pad_entries(netname, tg, w_stub / 2)
+        vg = build(netname, my_clr, vd / 2, via_mode=True)
+        i0, j0 = cell(to_mm(bb.GetLeft()), to_mm(bb.GetTop()))
+        i1, j1 = cell(to_mm(bb.GetRight()), to_mm(bb.GetBottom()))
+        starts = []
+        for j in range(max(0, j0), min(NY - 1, j1) + 1):
+            for i in range(max(0, i0), min(NX - 1, i1) + 1):
+                if tg[li][j * NX + i]:
+                    continue
+                if polys.Contains(pt(*pos(i, j)), oi):
+                    starts.append((li, i, j))
+        if not starts:
+            if os.environ.get("LV_DEBUG"):
+                print(f"    DEBUG island stub (layer {lay}) at "
+                      f"({to_mm(bb.GetLeft()):.1f},{to_mm(bb.GetTop()):.1f}): "
+                      f"no free start cell inside the island")
+            return False
+        R = int(round(STUB_REACH / RES))
+        wi0, wj0 = max(0, i0 - R), max(0, j0 - R)
+        wi1, wj1 = min(NX - 1, i1 + R), min(NY - 1, j1 + R)
+        wx0, wy0 = pos(wi0, wj0)
+        wx1, wy1 = pos(wi1, wj1)
+        anchors = net_anchors(netname)
+        linked = []
+        for k in range(polys.OutlineCount()):
+            if k == oi:
+                continue
+            kb = polys.Outline(k).BBox()
+            if to_mm(kb.GetRight()) < wx0 or to_mm(kb.GetLeft()) > wx1 or \
+                    to_mm(kb.GetBottom()) < wy0 or to_mm(kb.GetTop()) > wy1:
+                continue
+            if any(kb.Contains(a) and polys.Contains(a, k) for a in anchors):
+                linked.append((k, kb))
+        other = [(z2, l2) for z2, l2 in fills if not (z2 is z and l2 == lay)]
+        nl = len(vg)
+        goals, via_goals = set(), set()
+        for j in range(wj0, wj1 + 1):
+            for i in range(wi0, wi1 + 1):
+                p_ = pt(*pos(i, j))
+                if not tg[li][j * NX + i] and any(
+                        kb.Contains(p_) and polys.Contains(p_, k)
+                        for k, kb in linked):
+                    goals.add((li, i, j))
+                    continue
+                if any(vg[k][j * NX + i] for k in range(nl)):
+                    continue
+                if any(z2.HitTestFilledArea(l2, p_, 0) for z2, l2 in other):
+                    for k in range(nl):
+                        via_goals.add((k, i, j))
+        path = astar(tg, vg, starts, goals | via_goals)
+        if path is None:
+            if os.environ.get("LV_DEBUG"):
+                print(f"    DEBUG island stub (layer {lay}) at "
+                      f"({to_mm(bb.GetLeft()):.1f},{to_mm(bb.GetTop()):.1f}) "
+                      f"size {to_mm(bb.GetWidth()):.1f}x{to_mm(bb.GetHeight()):.1f}: "
+                      f"no path - {len(starts)} start cells, {len(goals)} "
+                      f"linked-fill goals, {len(via_goals) // max(1, nl)} via sites")
+            # Name the pocket's walls in the format the parent's negotiation
+            # parses, so the next pass can rip-retry this net with them: the
+            # island is sealed by other nets' tracks, and only moving one of
+            # them opens a lane or a via site.
+            half_ = w_stub / 2
+            local = [o for o in obst + placed
+                     if o[0] != netname and lay in o[1]
+                     and wx0 - 1.0 <= o[2] <= wx1 + 1.0
+                     and wy0 - 1.0 <= o[3] <= wy1 + 1.0]
+            seen_, stack_ = set(starts), list(starts)
+            wall_ = Counter()
+            while stack_ and len(seen_) < 20000:
+                cl_, ci_, cj_ = stack_.pop()
+                for dx_, dy_ in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                    ni_, nj_ = ci_ + dx_, cj_ + dy_
+                    if not (wi0 <= ni_ <= wi1 and wj0 <= nj_ <= wj1):
+                        continue
+                    k_ = (cl_, ni_, nj_)
+                    if k_ in seen_:
+                        continue
+                    if not tg[cl_][nj_ * NX + ni_]:
+                        seen_.add(k_)
+                        stack_.append(k_)
+                        continue
+                    px_, py_ = pos(ni_, nj_)
+                    for on2, _l2, ox, oy, ohw, ohh, _oref in local:
+                        oc = net_class(on2) if on2 else "HV"
+                        c2 = max(my_clr, CLS_CLR.get(oc, 0.15))
+                        if abs(px_ - ox) <= ohw + c2 + half_ and \
+                                abs(py_ - oy) <= ohh + c2 + half_:
+                            wall_[on2 or "netless"] += 1
+                            break
+            if wall_:
+                print(f"    DEBUG pocket walls: {dict(wall_.most_common(8))}")
+            return False
+        emit_path(path, net, w_stub, vd, vdr)
+        end = path[-1]
+        if end in via_goals and not (len(path) >= 2 and path[-2][0] != end[0]):
+            v = pcbnew.PCB_VIA(board)
+            v.SetPosition(pt(*pos(end[1], end[2])))
+            v.SetWidth(mm(vd)); v.SetDrill(mm(vdr))
+            v.SetNet(net); v.SetLayerPair(pcbnew.F_Cu, pcbnew.B_Cu)
+            board.Add(v)
+            stats["vias"] += 1
+            placed.append((netname, LAYERS, *pos(end[1], end[2]), vd / 2, vd / 2, ""))
+        if os.environ.get("LV_DEBUG"):
+            print(f"    DEBUG island stub (layer {lay}) at "
+                  f"({to_mm(bb.GetLeft()):.1f},{to_mm(bb.GetTop()):.1f}): "
+                  f"{len(path)} cells to {'a via site' if end in via_goals else 'a linked fill'}")
+        return True
+
     def island_taps(netname, net, vd, vdr, my_clr):
         """Place the bonding vias. Returns how many were added; refills and
         rebuilds connectivity when any were."""
         orphans = orphan_islands(netname)
+        # LV_ISLAND_AT="x,y": work on the island at that point only
+        # (tools/pocket_open.py opens one sealed island per attempt)
+        if os.environ.get("LV_ISLAND_AT"):
+            ax_, ay_ = map(float, os.environ["LV_ISLAND_AT"].split(","))
+            orphans = [o for o in orphans
+                       if to_mm(o[3].GetLeft()) - 0.5 <= ax_ <= to_mm(o[3].GetRight()) + 0.5
+                       and to_mm(o[3].GetTop()) - 0.5 <= ay_ <= to_mm(o[3].GetBottom()) + 0.5]
         if not orphans:
             return 0
         vg = build(netname, my_clr, vd / 2, via_mode=True)
         fills = net_fills(netname)
         added = []
+        stubs = 0
         for z, lay, oi, bb in orphans:
             polys = z.GetFilledPolysList(lay)
             i0, j0 = cell(to_mm(bb.GetLeft()), to_mm(bb.GetTop()))
@@ -732,7 +879,7 @@ def main(single_net=None, rip=None):
             spot = None
             for j in range(max(0, j0), min(NY - 1, j1) + 1):
                 for i in range(max(0, i0), min(NX - 1, i1) + 1):
-                    if vg[0][j * NX + i] or vg[1][j * NX + i]:
+                    if any(g_[j * NX + i] for g_ in vg):
                         continue
                     x, y = pos(i, j)
                     # a fresh via is not in vg: keep new ones apart
@@ -750,6 +897,12 @@ def main(single_net=None, rip=None):
                 if spot:
                     break
             if spot is None:
+                if island_stub(netname, net, z, lay, polys, oi, bb,
+                               vd, vdr, my_clr, fills):
+                    stubs += 1
+                    # the stub and its via are obstacles for the next island
+                    vg = build(netname, my_clr, vd / 2, via_mode=True)
+                    continue
                 if os.environ.get("LV_DEBUG"):
                     print(f"    DEBUG island (layer {lay}) at "
                           f"({to_mm(bb.GetLeft()):.1f},{to_mm(bb.GetTop()):.1f})"
@@ -763,13 +916,13 @@ def main(single_net=None, rip=None):
             stats["vias"] += 1
             placed.append((netname, LAYERS, *spot, vd / 2, vd / 2, ""))
             added.append(spot)
-        if added:
+        if added or stubs:
             if os.environ.get("LV_DEBUG"):
-                print(f"    DEBUG island taps: {len(added)} vias "
+                print(f"    DEBUG island taps: {len(added)} vias, {stubs} stubs "
                       f"({len(orphans)} orphan islands)")
             refill()
             refresh_connectivity()
-        return len(added)
+        return len(added) + stubs
 
     if single_net == "--finish--":
         refill()
@@ -917,7 +1070,7 @@ def main(single_net=None, rip=None):
                     if isinstance(it, pcbnew.PCB_VIA):
                         c = cell(to_mm(it.GetPosition().x),
                                  to_mm(it.GetPosition().y))
-                        starts += [(0, *c), (1, *c)]
+                        starts += [(k_, *c) for k_ in range(len(LAYERS))]
                 goals = []
                 for p in cl[j][0]:
                     goals += pad_cells(p)
