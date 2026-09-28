@@ -24,6 +24,7 @@ Env:  POCKET_RIP_R (mm, default 2.0), POCKET_CANDS (walls tried, default 3),
       POCKET_DEADLINE_S (default 10800)
 """
 import ast
+import itertools
 import os
 import re
 import shutil
@@ -168,13 +169,16 @@ def signal_targets(rpt):
     return nets
 
 
-def attempt(target, wall, box, island_at):
-    """One rip / route / reroute / gate cycle. Returns True when kept."""
+def attempt(target, walls, box, island_at):
+    """One rip / route / reroute / gate cycle for a SET of wall nets.
+    Returns True when kept."""
     global E0, U_CUR
     backup = os.path.join(WORK, "before-attempt.kicad_pcb")
     shutil.copyfile(PCB, backup)
-    local = wall in RAILS
-    n = rip(wall, box if local else None)
+    label = f"{target} x {'+'.join(walls)}"
+    n = 0
+    for wall in walls:
+        n += rip(wall, box if wall in RAILS else None)
     if n == 0:
         return False
     env = {"LV_ISLAND_AT": f"{island_at[0]:.2f},{island_at[1]:.2f}"} if island_at else None
@@ -184,20 +188,30 @@ def attempt(target, wall, box, island_at):
         progressed = progressed and "cells to" in out1
     if not progressed:
         shutil.copyfile(backup, PCB)
-        log(f"  {target} x {wall}: target still blocked after ripping {n} items")
+        log(f"  {label}: target still blocked after ripping {n} items")
         return False
-    out2 = child(wall)
+    tails = []
+    for wall in walls:
+        out2 = child(wall)
+        t = [l for l in out2.splitlines() if l.startswith("CHILD_")]
+        tails.append(f"{wall}: {t[-1][:40] if t else '?'}")
     e, u, _ = drc("attempt")
     if e <= E0 and u < U_CUR:
-        log(f"  KEPT {target} x {wall} ({'local' if local else 'whole-net'} rip "
-            f"of {n}): unconnected {U_CUR} -> {u}, errors {e}")
+        log(f"  KEPT {label} (rip of {n}): unconnected {U_CUR} -> {u}, errors {e}")
         U_CUR = u
         return True
     shutil.copyfile(backup, PCB)
-    tail = [l for l in out2.splitlines() if l.startswith("CHILD_")]
-    log(f"  {target} x {wall}: rejected (errors {e}, unconnected {u} vs {U_CUR}; "
-        f"reroute {tail[-1] if tail else '?'})")
+    log(f"  {label}: rejected (errors {e}, unconnected {u} vs {U_CUR}; {'; '.join(tails)})")
     return False
+
+
+def combos(cands):
+    """Single walls first, then pairs, then the top three together."""
+    out = [[c] for c in cands]
+    out += [list(c) for c in itertools.combinations(cands, 2)]
+    if len(cands) >= 3:
+        out.append(list(cands[:3]))
+    return out
 
 
 def main():
@@ -226,8 +240,10 @@ def main():
                  if n not in NEVER_RIP][:CANDS]
         log(f"island ({x0:.1f},{y0:.1f}) {x1 - x0:.1f}x{y1 - y0:.1f}: walls {cands}")
         centre = ((x0 + x1) / 2, (y0 + y1) / 2)
-        for wall in cands:
-            if attempt("GND", wall, (x0, y0, x1, y1), centre):
+        for ws in combos(cands):
+            if time.time() - T0 > DEADLINE:
+                break
+            if attempt("GND", ws, (x0, y0, x1, y1), centre):
                 break
 
     # ---- signal nets --------------------------------------------------------
@@ -254,10 +270,12 @@ def main():
             box = (min(p[0] for p in pads), min(p[1] for p in pads),
                    max(p[0] for p in pads), max(p[1] for p in pads))
         log(f"{net}: walls {cands}")
-        for wall in cands:
-            if box is None and wall in RAILS:
+        for ws in combos(cands):
+            if time.time() - T0 > DEADLINE:
+                break
+            if box is None and any(w in RAILS for w in ws):
                 continue
-            if attempt(net, wall, box, None):
+            if attempt(net, ws, box, None):
                 break
 
     e, u, _ = drc("end")
