@@ -3532,3 +3532,44 @@ Experiments started 19:15, all from the T3 board unless noted:
 - C (worktree agent-a504...): T3 placement regenerated and routed from
   scratch under LV-127 (FreeRouting 8 passes -> adopt -> finisher -> A's
   post-pass).
+
+## 2026-09-28 evening — LV-127 experiments, endgame tools, 41 -> 24
+
+All boards 100 x 68 (T3 placement), all DRC 0 errors, LV-127 rules.
+
+| line | what | result so far |
+|---|---|---|
+| A | T3 board, stitch + finisher 60 + 40 min | 41 -> 39 (stitch, 0.45 vias) -> 35 (finisher) -> 35 |
+| B | same with PWR_L3 (old via bug) | 39 -> 39, stopped |
+| E1 | A's 35: dedupe, GNSS hand route, pocket_open, finisher | 35 -> 34 -> 26 -> **24** (running) |
+| C | T3 placement re-routed from scratch under LV-127 | FR floor 122, adopt 100, finisher 30 |
+| E2 | C's 30 through the finisher-first endgame | 30 -> 28 (stitch) -> 27 (GNSS) -> 26 (running) |
+| D | as C with FR_NO_L2=1 (GND_L2 kept a plane) | FR floor 130, adopt 105, finisher 37; 0 signal tracks on L2 |
+| E3 | D's 37 through the finisher-first endgame | 37 -> 36 (stitch, 7 vias) -> 35 (GNSS) (running) |
+| F | A's 34 with GND_L2 reclaimed under U2 (106 L2 segments of 21 nets ripped), L3 finisher | 55 -> 39; stitch gained nothing (GND 10 -> 10); stopped |
+
+What each tool contributed, measured:
+
+- **LV-127 + finisher**: T3 39 -> 35; on a fresh FreeRouting board (C) 100 -> 30 in
+  one pass (46 of 48 nets).
+- **manual_routes.py gnss_bias** (L4 bias pad outboard of the GNSS CPWG line; via +
+  B.Cu under the line): -1 on every board it was applied to.
+- **pocket_open.py** (one-at-a-time rip-and-reroute with a connectivity gate, PWR_L3
+  second chance): E1 34 -> 26. VIN_SENSE and IGN_SENSE route on the empty PWR_L3
+  under the HV strip (1 and 3 vias).
+- **dedupe_tracks.py**: 313-557 duplicate segments and 31-46 duplicate vias per
+  board, DRC unchanged; the release gate now refuses a board with any.
+- **Rip-and-reroute of GND islands**: 64 attempts, none opened. Diagnosis: on
+  every board where FreeRouting routed on GND_L2 the plane under U2 is bare
+  between its tracks, so a GND via there lands on nothing. F (reclaiming L2 after
+  the fact) did not help either, because the F.Cu islands stay sealed on F.Cu;
+  D/E3 (plane kept solid from the start) has half the GND residue (6 vs 12 at the
+  same stage).
+
+Stopped when they stopped paying: B (no gain), the single-wall and combination
+pocket tests (superseded by E1), F (net loss).
+
+Tooling bug found and fixed: the pipeline scripts piped progress through grep
+without --line-buffered, so the owner saw "34" for an hour while the board was at
+27. All scripts now pass progress through unbuffered, and a live watch measures
+each line's current best board every two minutes.
