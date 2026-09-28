@@ -47,6 +47,21 @@ ROUTES = {
         ("via", "/modem_rf/GNSS_BIAS", 94.150, 44.600, 0.45, 0.20),
         ("trk", "/modem_rf/GNSS_BIAS", "F.Cu", 94.150, 44.600, 94.150, 45.570, 0.20),
     ],
+    # SIM_DATA from the SIM ESD array D14 pad 1 to the eSIM holder X2 pad 3.
+    # D14 sits directly above the USB ESD array D15 and pad 1 is walled east
+    # by USB_DP_M and north by D14.2 (GND); the only way out is the 0.6 mm
+    # channel between the two SOT arrays (D14 bottom edge 50.895, D15 top
+    # 51.500, USB_VBUS via top 51.425), then down beside the eSIM holder and
+    # west between its NC pad (bottom 52.15) and X2.4 (top 52.95). Every
+    # clearance >= 0.15 mm (rule 0.127). The finisher's 0.1 mm grid has no
+    # cell in the 0.05 mm window at y 51.12, which is why it never found it.
+    "sim_data": [
+        ("trk", "/modem_rf/SIM_DATA", "F.Cu", 88.250, 50.695, 88.250, 51.120, 0.15),
+        ("trk", "/modem_rf/SIM_DATA", "F.Cu", 88.250, 51.120, 85.200, 51.120, 0.15),
+        ("trk", "/modem_rf/SIM_DATA", "F.Cu", 85.200, 51.120, 85.200, 52.500, 0.15),
+        ("trk", "/modem_rf/SIM_DATA", "F.Cu", 85.200, 52.500, 83.250, 52.500, 0.15),
+        ("trk", "/modem_rf/SIM_DATA", "F.Cu", 83.250, 52.500, 83.175, 52.746, 0.15),
+    ],
 }
 
 
@@ -103,6 +118,12 @@ def main():
         shutil.copyfile(PCB, backup)
         apply(ROUTES[name])
         e, u, txt = drc(name)
+        if e <= e0 and u0 <= u <= u0 + 1:
+            # the new copper may have split a GND pour: stitch, measure again
+            subprocess.run([sys.executable, os.path.join(TOOLS, "stitch_gnd.py")],
+                           capture_output=True, text=True, timeout=1500,
+                           env=dict(os.environ, PYTHONPATH=TOOLS), cwd=PROJ)
+            e, u, txt = drc(name + "-settle")
         if e <= e0 and u < u0:
             print(f"KEPT {name}: unconnected {u0} -> {u}, errors {e}")
             u0 = u
