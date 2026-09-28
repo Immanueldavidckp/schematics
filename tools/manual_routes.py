@@ -9,6 +9,7 @@ otherwise the board is restored exactly.
 
   ("via", net, x, y, diameter, drill)
   ("trk", net, layer, x1, y1, x2, y2, width)
+  ("del", net, layer, x1, y1, x2, y2)      remove that track (to re-lay it)
 
 Run:  python3 tools/manual_routes.py [route-name ...]   (default: all)
 """
@@ -62,6 +63,27 @@ ROUTES = {
         ("trk", "/modem_rf/SIM_DATA", "F.Cu", 85.200, 52.500, 83.250, 52.500, 0.15),
         ("trk", "/modem_rf/SIM_DATA", "F.Cu", 83.250, 52.500, 83.175, 52.746, 0.15),
     ],
+    # USIM_VDD to the SIM ESD array D14 pad 5, the only pad of the net left
+    # out. The nearest USIM_VDD copper is the through via at (74.495, 49.400)
+    # 12 mm west, and PWR_L3 between them is empty. A via next to the pad is
+    # boxed in: the SIM_RST B.Cu track runs under the pad at x 86.05 (USB_VBUS
+    # at 86.55 stops it moving east) and the Q14_B track crosses GND_L2 at
+    # x 85.388, 0.66 mm apart - too narrow for a 0.45 via with 0.127 each side.
+    # So Q14_B jogs 0.23 mm west on L2 for 1.4 mm (nothing else is on L2
+    # there), the via sits at x 85.60 (0.14 to Q14_B, 0.15 to SIM_RST), and
+    # L3 runs at y 50.045 (0.65 mm from the USB_DP_TP via) into the far via.
+    "usim_vdd": [
+        ("del", "/modem_rf/Q14_B", "GND_L2", 85.3878, 58.4545, 85.3878, 16.3427),
+        ("trk", "/modem_rf/Q14_B", "GND_L2", 85.3878, 58.4545, 85.3878, 50.7500, 0.15),
+        ("trk", "/modem_rf/Q14_B", "GND_L2", 85.3878, 50.7500, 85.1600, 50.5222, 0.15),
+        ("trk", "/modem_rf/Q14_B", "GND_L2", 85.1600, 50.5222, 85.1600, 49.5678, 0.15),
+        ("trk", "/modem_rf/Q14_B", "GND_L2", 85.1600, 49.5678, 85.3878, 49.3400, 0.15),
+        ("trk", "/modem_rf/Q14_B", "GND_L2", 85.3878, 49.3400, 85.3878, 16.3427, 0.15),
+        ("trk", "/modem_rf/USIM_VDD", "F.Cu", 86.450, 50.045, 85.600, 50.045, 0.15),
+        ("via", "/modem_rf/USIM_VDD", 85.600, 50.045, 0.45, 0.20),
+        ("trk", "/modem_rf/USIM_VDD", "PWR_L3", 85.600, 50.045, 75.200, 50.045, 0.15),
+        ("trk", "/modem_rf/USIM_VDD", "PWR_L3", 75.200, 50.045, 74.495, 49.400, 0.15),
+    ],
 }
 
 
@@ -86,7 +108,18 @@ def apply(items):
         net = b.FindNet(it[1])
         if net is None:
             sys.exit(f"no net {it[1]}")
-        if it[0] == "via":
+        if it[0] == "del":
+            _, _, layer, x1, y1, x2, y2 = it
+            ends = {(mm(x1), mm(y1)), (mm(x2), mm(y2))}
+            near = lambda p, q: abs(p[0] - q[0]) <= 2000 and abs(p[1] - q[1]) <= 2000
+            hit = [t for t in b.GetTracks()
+                   if t.GetClass() != "PCB_VIA" and t.GetNetname() == it[1]
+                   and t.GetLayer() == b.GetLayerID(layer)
+                   and all(any(near((p.x, p.y), e) for e in ends) for p in (t.GetStart(), t.GetEnd()))]
+            if len(hit) != 1:
+                sys.exit(f"del: {len(hit)} tracks match {it}")
+            b.Remove(hit[0])
+        elif it[0] == "via":
             _, _, x, y, d, dr = it
             v = pcbnew.PCB_VIA(b)
             v.SetPosition(pcbnew.VECTOR2I(mm(x), mm(y)))
