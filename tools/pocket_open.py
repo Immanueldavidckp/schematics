@@ -146,13 +146,17 @@ def island_pockets(out):
             res.append(cur)
             continue
         if cur is not None:
-            m = re.search(r"DEBUG pocket walls: (\{.*\})", l)
+            # same-layer flood walls and, weighted double, the nets that block
+            # a through via inside the island on the other layers
+            m = re.search(r"DEBUG (pocket|via) walls: (\{.*\})", l)
             if m:
                 try:
-                    cur[4] = ast.literal_eval(m.group(1))
+                    w = ast.literal_eval(m.group(2))
+                    k = 2 if m.group(1) == "via" else 1
+                    for n, c in w.items():
+                        cur[4][n] = cur[4].get(n, 0) + k * c
                 except (ValueError, SyntaxError):
                     pass
-                cur = None
     return res
 
 
@@ -207,7 +211,9 @@ def attempt(target, walls, box, island_at):
     out1 = child(target, env)
     progressed = ("CHILD_OK" in out1 or "CHILD_PARTIAL" in out1)
     if island_at:
-        progressed = progressed and "cells to" in out1
+        # a stub out of the island, or a via placed straight inside it
+        progressed = progressed and ("cells to" in out1 or
+                                     re.search(r"island taps: [1-9]\d* vias", out1) is not None)
     if not progressed:
         shutil.copyfile(backup, PCB)
         log(f"  {label}: target still blocked after ripping {n} items")

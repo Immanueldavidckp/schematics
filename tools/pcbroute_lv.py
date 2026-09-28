@@ -881,6 +881,39 @@ def main(single_net=None, rip=None):
                             break
             if wall_:
                 print(f"    DEBUG pocket walls: {dict(wall_.most_common(8))}")
+            # The nets that keep a THROUGH VIA out of the island. One via
+            # inside the pour piece is the whole fix, and what blocks it is
+            # copper on the OTHER layers (B.Cu / L2 / L3 tracks under the
+            # piece) - the same-layer flood above never sees those, which is
+            # why ripping the flood walls opened no island (64 attempts).
+            # Weighted by how many of the island's best via spots each net
+            # blocks.
+            spots = []
+            for j in range(j0, j1 + 1):
+                for i in range(i0, i1 + 1):
+                    q = pt(*pos(i, j))
+                    if polys.Contains(q, oi):
+                        spots.append((i, j))
+            spots = spots[:: max(1, len(spots) // 40)]
+            local_all = [o for o in obst + placed
+                         if o[0] != netname
+                         and to_mm(bb.GetLeft()) - 2.0 <= o[2] <= to_mm(bb.GetRight()) + 2.0
+                         and to_mm(bb.GetTop()) - 2.0 <= o[3] <= to_mm(bb.GetBottom()) + 2.0]
+            vwall = Counter()
+            for i, j in spots:
+                px_, py_ = pos(i, j)
+                hit = set()
+                for on2, _l2, ox, oy, ohw, ohh, _oref in local_all:
+                    oc = net_class(on2) if on2 else "HV"
+                    c2 = max(my_clr, CLS_CLR.get(oc, 0.15))
+                    if oc == "HV" and ox < 20.0:
+                        c2 = 1.50
+                    if abs(px_ - ox) <= ohw + c2 + vd / 2 and abs(py_ - oy) <= ohh + c2 + vd / 2:
+                        hit.add(on2 or "netless")
+                for h in hit:
+                    vwall[h] += 1
+            if vwall:
+                print(f"    DEBUG via walls: {dict(vwall.most_common(8))}")
             return False
         emit_path(path, net, w_stub, vd, vdr)
         end = path[-1]
