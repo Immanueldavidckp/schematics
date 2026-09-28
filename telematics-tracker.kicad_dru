@@ -77,6 +77,18 @@
 	(constraint hole_to_hole (min 0.45mm))
 	(condition "A.Type == 'pad' || B.Type == 'pad'"))
 
+# --- MCU ground pin ------------------------------------------------------
+# U2 (LQFP-48, 0.5 mm pitch) pin 47 is VSS and is walled in: CAN1_TX and a
+# 0.6 mm 3V3 via at its outer end, the I2C1 pair on GND_L2 past its inner
+# end. Its ground via sits in the pad, 0.1355 mm from the 3V3 pad U2.48 next
+# to it - the pads are 0.72 mm apart and a 0.45 mm via with 0.127 + 0.15
+# needs 0.727. PWR's 0.15 mm is margin, not a need at 3.3 V (JLCPCB pad to
+# track floor 0.10 mm, IPC-2221 B2 0.10 mm), so a GND via inside U2 keeps
+# the board-wide 0.127 mm to U2's own PWR pads. Approved relaxation, 2026-09-29.
+(rule "GND via inside U2 to PWR"
+	(constraint clearance (min 0.127mm))
+	(condition "A.Type == 'via' && A.NetName == 'GND' && B.NetClass == 'PWR' && B.memberOfFootprint('U2')"))
+
 # --- thermal / current ---------------------------------------------------
 # handoff section 4: VBAT_MODEM carries the modem's 2 A transmit burst and is
 # specified >= 2 mm wide. Enforced so a narrow neck cannot slip through.

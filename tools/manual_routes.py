@@ -137,6 +137,25 @@ ROUTES = {
         ("trk", "GND", "F.Cu", 36.1400, 33.3000, 36.1400, 33.6400, 0.20),
         ("via", "GND", 36.1400, 33.6400, 0.45, 0.20),
     ],
+    # U2.47 (MCU VSS) is walled at its outer end by CAN1_TX and the 0.6 mm
+    # 3V3 via, and past its inner end by I2C1_SDA / I2C1_SCL on GND_L2 (0.53
+    # apart) and the BOOT0 via. The one clean spot is in the pad itself:
+    # 0.135 to U2.46 and U2.48, 0.19 to C4.1 on B.Cu, 0.47 to I2C1_SDA, and
+    # B.Cu there is connected pour (C4.2). Via in pad on a GND pin: order the
+    # board with plugged (filled and capped) vias, or accept a little solder
+    # wicking on this one ground pin. The pads are 0.72 mm apart, 7 um short
+    # of 0.45 + 0.127 + PWR's 0.15, so .kicad_dru lets a GND via keep 0.127
+    # to U2's PWR pads; and U2.48's 0.5 mm track leaves the 0.28 mm pad with
+    # its end cap proud of the pad, so its first 0.57 mm is re-laid at the
+    # pad's own 0.28 mm (0.183 to the via); the 0.05 mm stub from the pad
+    # centre to that track is dropped (its cap reached the pad's top edge,
+    # and the track now starts inside the pad).
+    "u2_47": [
+        ("del", "3V3", "F.Cu", 31.2800, 31.2880, 31.2800, 31.2400),
+        ("del", "3V3", "F.Cu", 31.2800, 31.2880, 30.8740, 31.6940),
+        ("trk", "3V3", "F.Cu", 31.2800, 31.2880, 30.8740, 31.6940, 0.28),
+        ("via", "GND", 31.3000, 30.7400, 0.45, 0.20),
+    ],
 }
 
 
