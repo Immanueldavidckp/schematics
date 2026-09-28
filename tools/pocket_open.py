@@ -169,6 +169,28 @@ def signal_targets(rpt):
     return nets
 
 
+def settle(tag):
+    """A new route often closes its own gap and cuts a GND pour in two
+    (measured: MODEM_RX fixed, GND 9 -> 10, net zero). Stitch the new GND
+    island (tools/stitch_gnd.py gates itself) and measure again."""
+    subprocess.run([sys.executable, os.path.join(TOOLS, "stitch_gnd.py")],
+                   capture_output=True, text=True, timeout=1500,
+                   env=dict(os.environ, PYTHONPATH=TOOLS), cwd=PROJ)
+    return drc(tag)[:2]
+
+
+def improved(e, u, tag):
+    """Gate: fewer unconnected, no new errors - after a GND settle when the
+    route alone was a near miss."""
+    if e <= E0 and u < U_CUR:
+        return True, u
+    if e <= E0 and u <= U_CUR + 1:
+        e2, u2 = settle(tag + "-settle")
+        if e2 <= E0 and u2 < U_CUR:
+            return True, u2
+    return False, u
+
+
 def attempt(target, walls, box, island_at):
     """One rip / route / reroute / gate cycle for a SET of wall nets.
     Returns True when kept."""
@@ -196,7 +218,8 @@ def attempt(target, walls, box, island_at):
         t = [l for l in out2.splitlines() if l.startswith("CHILD_")]
         tails.append(f"{wall}: {t[-1][:40] if t else '?'}")
     e, u, _ = drc("attempt")
-    if e <= E0 and u < U_CUR:
+    ok, u = improved(e, u, "attempt")
+    if ok:
         log(f"  KEPT {label} (rip of {n}): unconnected {U_CUR} -> {u}, errors {e}")
         U_CUR = u
         return True
@@ -252,14 +275,17 @@ def main():
 
     # ---- signal nets --------------------------------------------------------
     e, u, rpt = drc("signals")
-    for net in ([only] if only else signal_targets(rpt)):
+    # POCKET_GND_ONLY=1: the GND phase only (a pocket_par worker of its own)
+    todo = [] if os.environ.get("POCKET_GND_ONLY") else ([only] if only else signal_targets(rpt))
+    for net in todo:
         if time.time() - T0 > DEADLINE:
             break
         backup = os.path.join(WORK, "before-survey.kicad_pcb")
         shutil.copyfile(PCB, backup)
         out = child(net)
         e, u, _ = drc("sig-survey")
-        if e <= E0 and u < U_CUR:
+        ok, u = improved(e, u, "sig-survey")
+        if ok:
             log(f"{net}: routed directly, unconnected {U_CUR} -> {u}")
             U_CUR = u
             continue
@@ -271,7 +297,8 @@ def main():
         if os.environ.get("POCKET_L3", "1") != "0":
             out3 = child(net, {"LV_L3": "1"}, timeout=1800)
             e, u, _ = drc("sig-survey-l3")
-            if e <= E0 and u < U_CUR:
+            ok, u = improved(e, u, "sig-survey-l3")
+            if ok:
                 log(f"{net}: routed on PWR_L3, unconnected {U_CUR} -> {u}")
                 U_CUR = u
                 continue

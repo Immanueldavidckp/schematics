@@ -90,7 +90,11 @@ def worker(net, base):
         shutil.copyfile(os.path.join(PROJ, "telematics-tracker" + ext),
                         os.path.join(d, "telematics-tracker" + ext))
     env = dict(os.environ, PYTHONPATH=os.path.join(d, "tools"), PYTHONUNBUFFERED="1",
-               POCKET_ONLY_NET=net, POCKET_DEADLINE_S=PER_NET_S)
+               POCKET_DEADLINE_S=PER_NET_S)
+    if net == "__GND__":
+        env["POCKET_GND_ONLY"] = "1"          # the sealed-island phase, alone
+    else:
+        env["POCKET_ONLY_NET"] = net
     t0 = time.time()
     r = subprocess.run([sys.executable, os.path.join(d, "tools", "pocket_open.py")],
                        capture_output=True, text=True, env=env, cwd=d,
@@ -134,6 +138,8 @@ def main():
     if e0:
         sys.exit("PAR_BASELINE_NOT_CLEAN")
     nets = stuck_nets(rpt)
+    if re.search(r"^\[unconnected[^\n]*\n(?:[^\[][^\n]*\n)*?[^\n]*\[GND\]", rpt, re.M):
+        nets.insert(0, "__GND__")             # sealed GND islands get a worker too
     log(f"{len(nets)} stuck net(s), {WORKERS} workers: {nets}")
     results = []
     with cf.ThreadPoolExecutor(max_workers=WORKERS) as ex:

@@ -511,6 +511,40 @@ def main(single_net=None, rip=None):
                     out.append((li, i, j))
         return out
 
+    def item_cells(items, vg):
+        """Cells ON the copper of a cluster's tracks and vias, as extra path
+        ends. The endgame residue is mostly two track fragments of one net
+        ending 1-2 mm apart (the adopt's fragment rip leaves them); starting
+        only from pads, the finisher routed pad to pad the long way round or
+        not at all. Returns (cells, via_cells): a cell in via_cells lies on an
+        INNER-layer track that is not a routing layer, so a path ending there
+        must drop a through via to reach it (only offered where one is legal)."""
+        cells, via_cells = set(), set()
+        nl = len(LAYERS)
+        for it in items:
+            if isinstance(it, pcbnew.PCB_VIA):
+                c = cell(to_mm(it.GetPosition().x), to_mm(it.GetPosition().y))
+                for k in range(nl):
+                    cells.add((k, *c))
+                continue
+            ax, ay = to_mm(it.GetStart().x), to_mm(it.GetStart().y)
+            bx, by = to_mm(it.GetEnd().x), to_mm(it.GetEnd().y)
+            n = max(1, int(math.hypot(bx - ax, by - ay) / RES))
+            pts = [cell(ax + (bx - ax) * k / n, ay + (by - ay) * k / n) for k in range(n + 1)]
+            lay = it.GetLayer()
+            if lay in LAYERS:
+                li = LAYERS.index(lay)
+                for c in pts:
+                    cells.add((li, *c))
+            else:
+                for c in pts:
+                    i, j = c
+                    if 0 <= i < NX and 0 <= j < NY and not any(g_[j * NX + i] for g_ in vg):
+                        via_cells.add(c)
+                        for k in range(nl):
+                            cells.add((k, i, j))
+        return sorted(cells), via_cells
+
     # ---- clusters: BFS over the connectivity graph's DIRECT edges --------
     # GetConnectedItems(item) with no type filter returns just the item, and
     # even typed queries return only DIRECTLY touching items (measured:
@@ -1066,15 +1100,26 @@ def main(single_net=None, rip=None):
                 starts = []
                 for p in cl[i][0]:
                     starts += pad_cells(p)
-                for it in cl[i][1]:
-                    if isinstance(it, pcbnew.PCB_VIA):
-                        c = cell(to_mm(it.GetPosition().x),
-                                 to_mm(it.GetPosition().y))
-                        starts += [(k_, *c) for k_ in range(len(LAYERS))]
+                sc, s_via = item_cells(cl[i][1], vg)
+                starts += sc
                 goals = []
                 for p in cl[j][0]:
                     goals += pad_cells(p)
+                gc, g_via = item_cells(cl[j][1], vg)
+                goals += gc
                 path = astar(tg, vg, starts, goals)
+                if path is not None:
+                    # a path end on an inner-layer track needs its via
+                    for end_, vcells in ((path[0], s_via), (path[-1], g_via)):
+                        if (end_[1], end_[2]) in vcells:
+                            v = pcbnew.PCB_VIA(board)
+                            v.SetPosition(pt(*pos(end_[1], end_[2])))
+                            v.SetWidth(mm(vd)); v.SetDrill(mm(vdr))
+                            v.SetNet(net); v.SetLayerPair(pcbnew.F_Cu, pcbnew.B_Cu)
+                            board.Add(v)
+                            stats["vias"] += 1
+                            nv_net += 1
+                            placed.append((netname, LAYERS, *pos(end_[1], end_[2]), vd / 2, vd / 2, ""))
                 if path is not None:
                     break
                 if w_hop < w:
