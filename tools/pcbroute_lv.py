@@ -508,7 +508,16 @@ def main(single_net=None, rip=None):
             i1, j1 = cell(cx + hw * 0.9, cy + hh * 0.9)
             for j in range(max(0, j0), min(NY - 1, j1) + 1):
                 for i in range(max(0, i0), min(NX - 1, i1) + 1):
-                    out.append((li, i, j))
+                    # only cells ON the pad copper: for a round or oval pad
+                    # the bounding-box corners are off the copper, and a path
+                    # that started there never touched the pad (TP17: the
+                    # USB_VBUS link stopped 0.1 mm short of the round test pad
+                    # and the net stayed "stuck at 2 clusters")
+                    if p.HitTest(pt(*pos(i, j))):
+                        out.append((li, i, j))
+        if not out:           # tiny pad: fall back to its centre cell
+            c0 = cell(cx, cy)
+            out = [(li, *c0) for li, lay in enumerate(LAYERS) if lay in lays]
         return out
 
     def item_cells(items, vg):
