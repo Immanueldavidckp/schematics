@@ -93,7 +93,18 @@ def drc_errors(path):
     text = open(rpt).read()
     kinds = re.findall(r"^\[([a-z_]+)\]", text, re.M)
     os.unlink(rpt)
+    # the unconnected count of the same run, for the connectivity gate
+    LAST_DRC["unconnected"] = sum(1 for k in kinds if k == "unconnected_items")
     return sum(1 for k in kinds if k != "unconnected_items")
+
+
+LAST_DRC = {"unconnected": None}
+# Connectivity gate (2026-09-28). The error-only gate let a batch through
+# that routed its own nets but cut a pour and stranded pads of OTHER nets: on
+# PWR_L3 the finisher routed 10 nets and the board went 40 -> 44 unconnected.
+# With the gate on, a batch is rolled back when the board's unconnected count
+# rises above the last accepted state. LV_UNCONN_GATE=0 turns it off.
+UNCONN_GATE = os.environ.get("LV_UNCONN_GATE", "1") != "0"
 
 
 def git_progress(msg):
@@ -1146,6 +1157,9 @@ def orchestrate():
     shutil.copyfile(PCB, LAST_GOOD)
     baseline = drc_errors(PCB)
     print(f"baseline DRC errors (non-ratsnest): {baseline}")
+    best_unconn = [LAST_DRC["unconnected"]]
+    print(f"baseline unconnected: {best_unconn[0]} "
+          f"(connectivity gate {'on' if UNCONN_GATE else 'off'})")
 
     # span per net, from a --spans child (longest first: the cross-board
     # corridors are the scarce resource - CANH from J1 to the transceiver
@@ -1207,6 +1221,20 @@ def orchestrate():
                       f"(+{errs - baseline}) - rolled back")
                 batch.clear()
                 return
+            unc = LAST_DRC["unconnected"]
+            if UNCONN_GATE and unc is not None and best_unconn[0] is not None \
+                    and unc > best_unconn[0]:
+                shutil.copyfile(LAST_GOOD, PCB)
+                for n, _m in batch:
+                    failed[n] = (f"connectivity regression in batch "
+                                 f"({best_unconn[0]} -> {unc} unconnected)")
+                    next_queue.append(n)
+                print(f"  BATCH FAIL {[n for n, _ in batch]} unconnected "
+                      f"{best_unconn[0]} -> {unc} - rolled back")
+                batch.clear()
+                return
+            if unc is not None:
+                best_unconn[0] = unc
             shutil.copyfile(PCB, LAST_GOOD)
             for n, (nv, tl, man) in batch:
                 failed.pop(n, None)
