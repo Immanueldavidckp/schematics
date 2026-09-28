@@ -51,17 +51,16 @@ PROTECTED = set(HV) | set(MV) | set(RF)
 
 # (track_width, clearance, via_dia, via_drill) per class
 GEO = {
-    # Default clearance is 0.20: that is what the board's stock Default
-    # netclass carries, and the first run used 0.15 here - DRC (correctly)
-    # rejected 12 nets against the class rule. Gate 1 works; the constant
-    # was wrong.
-    "Default":    (0.20, 0.15, 0.50, 0.30),   # clearance 0.15 approved 2026-09-16 (JLCPCB floor)
-    "PWR":        (0.50, 0.20, 0.80, 0.40),
+    # Rule set LV-127 (2026-09-28): must mirror tools/netclasses.py. Earlier
+    # values: Default (0.20, 0.15, 0.50, 0.30), PWR clearance 0.20, GND
+    # (0.50, 0.15, 0.50, 0.30).
+    "Default":    (0.15, 0.127, 0.45, 0.20),
+    "PWR":        (0.50, 0.15, 0.60, 0.30),
     "MODEM_BULK": (2.00, 0.20, 0.80, 0.40),
-    "GND":        (0.50, 0.15, 0.50, 0.30),
+    "GND":        (0.30, 0.127, 0.45, 0.20),
 }
-CLS_CLR = {"HV": 0.60, "MV": 0.60, "RF": 0.30, "GND": 0.15,
-           "PWR": 0.20, "MODEM_BULK": 0.20, "Default": 0.20}
+CLS_CLR = {"HV": 0.60, "MV": 0.60, "RF": 0.30, "GND": 0.127,
+           "PWR": 0.15, "MODEM_BULK": 0.20, "Default": 0.127}
 
 
 def net_class(n):

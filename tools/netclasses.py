@@ -78,9 +78,17 @@ CLASSES = [
     ("MV",         2, 0.60, 0.20, 0.50, 0.30),
     # handoff section 4: VBAT_MODEM carries the 2 A transmit burst, >= 2 mm.
     ("MODEM_BULK", 3, 0.20, 2.00, 0.80, 0.40),
-    ("PWR",        4, 0.20, 0.50, 0.80, 0.40),
+    # Rule set LV-127 (2026-09-28): low-voltage clearances moved from the
+    # conservative 0.15/0.20 mm to 0.127 mm (5 mil) for signals and GND and
+    # 0.15 mm for the <= 5 V rails, and LV vias to 0.45/0.20 mm - all inside
+    # JLCPCB's STANDARD-PRICE 4-layer capability (0.09 mm track/space, 0.10
+    # pad-to-track, 0.45 mm via with 0.20 hole, via hole-to-hole 0.20;
+    # jlcpcb.com/capabilities/pcb-capabilities, read 2026-09-28). The last 41
+    # connections were pad escapes and GND taps that did not fit at 0.15/0.20
+    # with 0.5/0.3 vias. HV, MV, RF and MODEM_BULK are unchanged.
+    ("PWR",        4, 0.15, 0.50, 0.60, 0.30),
     # GND gets its own class purely so the HV rule can name it as an exception.
-    ("GND",        5, 0.15, 0.50, 0.60, 0.30),
+    ("GND",        5, 0.127, 0.30, 0.45, 0.20),
 ]
 
 
@@ -108,19 +116,22 @@ def cls(name, priority, clearance, track, vd, vdr):
 
 # Default netclass clearance (approved 0.20 -> 0.15, 2026-09-16). Mirrored in
 # pcbroute_lv.py GEO["Default"]; both must agree.
-DEFAULT_CLEARANCE = 0.15
+DEFAULT_CLEARANCE = 0.127         # LV-127 (was 0.15, approved 2026-09-16; 0.20 before)
+DEFAULT_TRACK = 0.15              # FreeRouting / interactive default width for signals
+DEFAULT_VIA = (0.45, 0.20)        # JLCPCB standard price needs >= 0.45 mm with a 0.20 hole
 
 # Board-level minima. KiCad reset min_clearance from 0.15 to 0.0 during one of
 # its project round-trips - the same silent-regression class as G2 wiping
 # net_settings. A zero minimum clearance means the board-wide floor stops
 # existing, so it is asserted here and verified after the round trip.
 BOARD_RULES = {
-    "min_clearance": 0.15,              # JLCPCB 4-layer floor
-    "min_track_width": 0.20,
-    "min_via_diameter": 0.50,
+    "min_clearance": 0.127,             # LV-127; JLCPCB 4-layer floor is 0.09
+    "min_track_width": 0.127,           # JLCPCB 0.09
+    "min_via_diameter": 0.45,           # JLCPCB standard price with a 0.20 hole
     "min_via_annular_width": 0.10,
-    "min_through_hole_diameter": 0.30,
-    "min_hole_to_hole": 0.50,           # matches the .kicad_dru rule
+    "min_through_hole_diameter": 0.20,
+    "min_hole_to_hole": 0.25,           # vias (JLCPCB 0.20); pads 0.45 in .kicad_dru
+    "min_hole_clearance": 0.20,         # JLCPCB "via hole to track 0.2 mm"
     "min_copper_edge_clearance": 0.50,
 }
 
@@ -128,10 +139,10 @@ BOARD_RULES = {
 def _assert_floors():
     """Every class must meet the board floor: track >= 0.20, annulus >= 0.10."""
     for name, _prio, _clr, track, vd, vdr in CLASSES:
-        assert track >= 0.20, f"{name}: track {track} < 0.20 board floor"
+        assert track >= BOARD_RULES["min_track_width"], f"{name}: track {track} below the board floor"
         ann = (vd - vdr) / 2
         assert ann >= 0.10 - 1e-9, f"{name}: via annulus {ann:.3f} < 0.10"
-    print("all net classes meet the board floors (track >= 0.20, annulus >= 0.10)")
+    print(f"all net classes meet the board floors (track >= {BOARD_RULES['min_track_width']}, annulus >= 0.10)")
 
 
 def apply():
@@ -150,6 +161,8 @@ def apply():
     # the approved value survives any regeneration or KiCad round trip.
     for c in default:
         c["clearance"] = DEFAULT_CLEARANCE
+        c["track_width"] = DEFAULT_TRACK
+        c["via_diameter"], c["via_drill"] = DEFAULT_VIA
     ns["classes"] = default + [cls(*c) for c in CLASSES]
     ns["netclass_patterns"] = (
         [{"netclass": "RF", "pattern": p} for p in RF] +

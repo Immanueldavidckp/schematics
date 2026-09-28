@@ -55,19 +55,27 @@
 	(condition "A.NetClass == 'RF'"))
 
 # --- JLCPCB process floor ------------------------------------------------
-# Skill file section PCB: 0.15 mm track/space is the safe figure for the
-# standard 4-layer process.
+# Rule set LV-127 (2026-09-28), from jlcpcb.com/capabilities/pcb-capabilities:
+# multilayer 1 oz track/space 0.09 mm, pad to track 0.10 mm, via 0.15/0.25 mm
+# minimum but 0.20-0.25 mm holes cost extra below a 0.45 mm via diameter, via
+# hole-to-hole 0.20 mm, pad hole-to-hole 0.45 mm. The values below keep a
+# margin above each figure and stay at standard price.
 (rule "JLCPCB min track"
-	(constraint track_width (min 0.15mm))
+	(constraint track_width (min 0.127mm))
 	(condition "A.Type == 'track'"))
 
 (rule "JLCPCB min via"
-	(constraint hole_size (min 0.3mm))
+	(constraint hole_size (min 0.2mm))
 	(constraint via_diameter (min 0.45mm))
 	(condition "A.Type == 'via'"))
 
-(rule "JLCPCB hole to hole"
-	(constraint hole_to_hole (min 0.5mm)))
+(rule "JLCPCB hole to hole, vias"
+	(constraint hole_to_hole (min 0.25mm))
+	(condition "A.Type == 'via' && B.Type == 'via'"))
+
+(rule "JLCPCB hole to hole, pads"
+	(constraint hole_to_hole (min 0.45mm))
+	(condition "A.Type == 'pad' || B.Type == 'pad'"))
 
 # --- thermal / current ---------------------------------------------------
 # handoff section 4: VBAT_MODEM carries the modem's 2 A transmit burst and is

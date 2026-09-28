@@ -54,14 +54,15 @@ PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PCB = sys.argv[1] if len(sys.argv) > 1 else os.path.join(PROJ, "telematics-tracker.kicad_pcb")
 PCB = os.path.abspath(PCB)
 
-VIA_D, VIA_DRILL = 0.60, 0.30          # GND class via
-TRACK_W = 0.25                          # pad-to-via link (board floor 0.20)
+VIA_D, VIA_DRILL = 0.45, 0.20          # GND class via (LV-127: JLCPCB standard-price minimum)
+TRACK_W = 0.20                          # pad-to-via link
 MARGIN = 0.02                           # on top of every clearance
-HOLE_TO_HOLE = 0.50                     # .kicad_dru "JLCPCB hole to hole"
+HOLE_TO_HOLE_VIA = 0.25                 # .kicad_dru "JLCPCB hole to hole, vias"
+HOLE_TO_HOLE_PAD = 0.45                 # .kicad_dru "JLCPCB hole to hole, pads"
 EDGE = 0.50 + 0.02                      # board setup copper-edge clearance
 POUR_CLR = {"GND": 0.20, "other": 0.25}  # zone clearance (KiCad's default 0.5 starved the pours)
 POUR_GAP = 0.30                         # thermal relief gap (pads connect solid anyway)
-VIA_SMALL = 0.50                        # fallback via (annulus 0.10 = board floor)
+VIA_SMALL = 0.45                        # fallback via; equals VIA_D under LV-127
 GRID = 0.20                             # candidate grid inside islands
 RING = (0.0, 0.10, 0.20, 0.35, 0.50, 0.70, 0.90)   # extra pad-via distances tried
 ANGLES = 16
@@ -174,7 +175,7 @@ class Board:
                 continue
             if pad.GetAttribute() in (pcbnew.PAD_ATTRIB_PTH, pcbnew.PAD_ATTRIB_NPTH):
                 d = math.hypot(to_mm(pad.GetPosition().x) - x, to_mm(pad.GetPosition().y) - y)
-                if d < HOLE_TO_HOLE + VIA_DRILL / 2 + to_mm(max(pad.GetDrillSize().x, pad.GetDrillSize().y)) / 2 + MARGIN:
+                if d < HOLE_TO_HOLE_PAD + VIA_DRILL / 2 + to_mm(max(pad.GetDrillSize().x, pad.GetDrillSize().y)) / 2 + MARGIN:
                     return "hole-hole pad"
             for l in self.layers:
                 if pad.IsOnLayer(l) and pad.GetEffectiveShape(l).Collide(circ, mm(self.need(pad))):
@@ -184,7 +185,7 @@ class Board:
                 continue
             if t.GetClass() == "PCB_VIA":
                 d = math.hypot(to_mm(t.GetPosition().x) - x, to_mm(t.GetPosition().y) - y)
-                if d < HOLE_TO_HOLE + VIA_DRILL / 2 + to_mm(t.GetDrillValue()) / 2 + MARGIN:
+                if d < HOLE_TO_HOLE_VIA + VIA_DRILL / 2 + to_mm(t.GetDrillValue()) / 2 + MARGIN:
                     return "hole-hole via"
                 if t.GetEffectiveShape(self.F).Collide(circ, mm(self.need(t))):
                     return "via"
@@ -201,7 +202,7 @@ class Board:
         for it, kind in self.added:
             if kind == "via":
                 d = math.hypot(to_mm(it.GetPosition().x) - x, to_mm(it.GetPosition().y) - y)
-                if d < HOLE_TO_HOLE + VIA_DRILL + MARGIN:
+                if d < HOLE_TO_HOLE_VIA + VIA_DRILL + MARGIN:
                     return "hole-hole own"
         return None
 
@@ -375,7 +376,7 @@ class Board:
             w, h = to_mm(bb.GetWidth()), to_mm(bb.GetHeight())
             ax = (1, 0) if w >= h else (0, 1)      # pad long axis for in-pad offsets
             inpad = [(cx, cy)] + [(cx + ax[0] * d, cy + ax[1] * d) for d in (0.12, -0.12, 0.2, -0.2)]
-            for via_d in (VIA_D, VIA_SMALL):
+            for via_d in sorted({VIA_D, VIA_SMALL}, reverse=True):
                 self.via_d = via_d
                 # adjacent via with a short link first, via-in-pad as fallback
                 for extra in RING:
