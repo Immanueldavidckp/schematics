@@ -32,7 +32,9 @@ tail_start = txt.rstrip().rfind(")")
 kept, nets, n = [], {}, 0
 for fo in _split_forms(txt[head_end:tail_start]):
     drop = False
-    if re.match(r"\(\s*segment\b", fo) and '(layer "GND_L2")' in fo and "(locked yes)" not in fo:
+    # the file stores the canonical name (In1.Cu); GND_L2 is the user name
+    if re.match(r"\(\s*segment\b", fo) and ('(layer "In1.Cu")' in fo or '(layer "GND_L2")' in fo) \
+            and "(locked yes)" not in fo:
         net = re.search(r'\(net "([^"]*)"\)', fo)
         net = net.group(1) if net else ""
         if net not in KEEP:
