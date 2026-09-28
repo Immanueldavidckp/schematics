@@ -221,16 +221,20 @@ def main():
     if E0:
         sys.exit("POCKET_BASELINE_NOT_CLEAN")
 
+    # POCKET_ONLY_NET=<net>: work on that one net and skip the GND phase
+    # (tools/pocket_par.py runs one such worker per net on its own board copy)
+    only = os.environ.get("POCKET_ONLY_NET")
     # ---- GND islands --------------------------------------------------------
     survey_backup = os.path.join(WORK, "before-survey.kicad_pcb")
     shutil.copyfile(PCB, survey_backup)
-    out = child("GND")
-    e, u, rpt = drc("survey")
-    if e <= E0 and u < U_CUR:
-        log(f"survey run itself helped: unconnected {U_CUR} -> {u}")
-        U_CUR = u
-    else:
-        shutil.copyfile(survey_backup, PCB)
+    out = "" if only else child("GND")
+    if not only:
+        e, u, rpt = drc("survey")
+        if e <= E0 and u < U_CUR:
+            log(f"survey run itself helped: unconnected {U_CUR} -> {u}")
+            U_CUR = u
+        else:
+            shutil.copyfile(survey_backup, PCB)
     pockets = island_pockets(out)
     log(f"{len(pockets)} sealed GND island(s)")
     for x0, y0, x1, y1, walls in pockets:
@@ -248,7 +252,7 @@ def main():
 
     # ---- signal nets --------------------------------------------------------
     e, u, rpt = drc("signals")
-    for net in signal_targets(rpt):
+    for net in ([only] if only else signal_targets(rpt)):
         if time.time() - T0 > DEADLINE:
             break
         backup = os.path.join(WORK, "before-survey.kicad_pcb")
