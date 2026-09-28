@@ -1267,6 +1267,81 @@ def main(single_net=None, rip=None):
             last_cl = len(cl)
         return fail("cluster count did not converge in 40 rounds")
 
+    # ---- gap mode ------------------------------------------------------------
+    # LV_GAP="x1,y1,LAYER1;x2,y2,LAYER2": join the two copper items of this
+    # net that the DRC report names as one unconnected edge (its two points
+    # lie on the items). route_net() works on KiCad's connectivity, where a
+    # pour is ONE item, so for a pour net it can believe the net is whole
+    # while DRC counts an island split (3V3 on E2: "orphan pour islands" and
+    # the real 2 mm gap never tried). An end on a layer that is not a routing
+    # layer is reached by a through via placed on that item's copper.
+    def route_gap(netname, spec):
+        cls = net_class(netname)
+        w, my_clr, vd, vdr = GEO[cls]
+        if cls == "PWR":
+            w = min(w, 0.30)          # a short neck into a pour or pad field
+        net = board.FindNet(netname)
+        tg = build(netname, my_clr, w / 2)
+        vg = build(netname, my_clr, vd / 2, via_mode=True)
+        open_pad_entries(netname, tg, w / 2)
+        nl = len(LAYERS)
+        ends = []
+        for part in spec.split(";"):
+            xs, ys, lname = part.split(",")
+            x, y = float(xs), float(ys)
+            lay = board.GetLayerID(lname)
+            p0 = pt(x, y)
+            owners = [t for t in board.GetTracks()
+                      if t.GetNetname() == netname and t.IsOnLayer(lay)
+                      and t.HitTest(p0, mm(0.05))]
+            for f in board.GetFootprints():
+                for pd in f.Pads():
+                    if pd.GetNetname() == netname and pd.IsOnLayer(lay) and pd.HitTest(p0):
+                        owners.append(pd)
+            if not owners:
+                return None, f"no copper of the net at ({x:.2f},{y:.2f}) on {lname}"
+            cells, vcells = set(), set()
+            ci, cj = cell(x, y)
+            R = int(1.2 / RES)
+            for j in range(max(0, cj - R), min(NY - 1, cj + R) + 1):
+                for i in range(max(0, ci - R), min(NX - 1, ci + R) + 1):
+                    q = pt(*pos(i, j))
+                    if not any(o.HitTest(q) for o in owners):
+                        continue
+                    if lay in LAYERS:
+                        cells.add((LAYERS.index(lay), i, j))
+                    elif not any(g_[j * NX + i] for g_ in vg):
+                        vcells.add((i, j))
+                        for k in range(nl):
+                            cells.add((k, i, j))
+            if not cells:
+                return None, f"no reachable cell on the copper at ({x:.2f},{y:.2f})"
+            ends.append((cells, vcells))
+        (s_cells, s_via), (g_cells, g_via) = ends
+        path = astar(tg, vg, sorted(s_cells), sorted(g_cells))
+        if path is None:
+            return None, "no path between the two items"
+        nv, tl = emit_path(path, net, w, vd, vdr)
+        for end_, vset in ((path[0], s_via), (path[-1], g_via)):
+            if (end_[1], end_[2]) in vset:
+                v = pcbnew.PCB_VIA(board)
+                v.SetPosition(pt(*pos(end_[1], end_[2])))
+                v.SetWidth(mm(vd)); v.SetDrill(mm(vdr))
+                v.SetNet(net); v.SetLayerPair(pcbnew.F_Cu, pcbnew.B_Cu)
+                board.Add(v)
+                nv += 1
+        return (nv, tl), ""
+
+    if os.environ.get("LV_GAP"):
+        r_, why_ = route_gap(single_net, os.environ["LV_GAP"])
+        if r_ is None:
+            print(f"CHILD_FAIL gap: {why_}")
+            sys.exit(3)
+        refill()
+        pcbnew.SaveBoard(PCB, board, True)
+        print(f"CHILD_OK vias={r_[0]} len={r_[1]:.2f} man=0.00")
+        return
+
     # child mode: route exactly one net. Full success saves and reports OK.
     # PARTIAL success also saves: a 42-pad net that closes 35 taps and then
     # hits one stubborn hop was previously discarded whole - 3V3 re-made and
