@@ -138,7 +138,7 @@ def main():
     if e0:
         sys.exit("PAR_BASELINE_NOT_CLEAN")
     nets = stuck_nets(rpt)
-    if re.search(r"^\[unconnected[^\n]*\n(?:[^\[][^\n]*\n)*?[^\n]*\[GND\]", rpt, re.M):
+    if any(b.startswith("[unconnected") and "[GND]" in b for b in re.split(r"\n(?=\[)", rpt)):
         nets.insert(0, "__GND__")             # sealed GND islands get a worker too
     log(f"{len(nets)} stuck net(s), {WORKERS} workers: {nets}")
     results = []
