@@ -14,6 +14,7 @@ re-run floorplan_check; review every autorouted HV path; count thermal vias.
 Run:  PYTHONPATH=tools python3 tools/pcbroute_auto.py <path-to-jar> [minutes]
 """
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -114,6 +115,18 @@ def inject_keepouts(dsn_path, board):
     txt = open(dsn_path).read()
     i = txt.index("(keepout")            # existing keepout block in structure
     txt = txt[:i] + "".join(out) + "    " + txt[i:]
+    # FR_NO_L2=1: declare GND_L2 a POWER (plane) layer so FreeRouting keeps
+    # it solid. On every routed board so far FreeRouting used L2 as a signal
+    # layer and the "solid" ground plane under the MCU fell apart into
+    # islands between its tracks; the GND pads there then had no plane to
+    # reach (2026-09-28: all six sealed GND islands around U2 sat over bare
+    # L2). Costs a routing layer, buys the reference plane back.
+    if os.environ.get("FR_NO_L2"):
+        new = re.sub(r"(\(layer GND_L2\s*\(type )signal\)", r"\1power)", txt, count=1)
+        if new == txt:
+            sys.exit("FR_NO_L2: GND_L2 layer entry not found in the DSN")
+        txt = new
+        print("GND_L2 declared a power plane for FreeRouting (FR_NO_L2)")
     open(dsn_path, "w").write(txt)
     print(f"injected keepouts: 8 edge strips, {n_hv} HV halos, "
           f"{n_mv} MV halos")
