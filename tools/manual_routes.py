@@ -84,6 +84,23 @@ ROUTES = {
         ("trk", "/modem_rf/USIM_VDD", "PWR_L3", 85.600, 50.045, 75.200, 50.045, 0.15),
         ("trk", "/modem_rf/USIM_VDD", "PWR_L3", 75.200, 50.045, 74.495, 49.400, 0.15),
     ],
+    # DO1_GATE: the stub from the via at (22.489, 43.339) ends between the two
+    # pads of R5 and the rest of the net ends 1.1 mm east at (23.623, 42.074),
+    # on the far side of R5.2. The only channel is the 0.44 mm strip between
+    # the NET_STATUS_LED track at y 41.778 and the top of R5, and that track's
+    # 45-degree drop into R5.1 closed its west end. Re-lay the drop square
+    # (west to x 22.05, 0.15 clear of the NSL_BASE bend, then down into R5.1)
+    # and DO1_GATE runs up the gap between the R5 pads and along the strip
+    # at y 42.074 (0.146 to NET_STATUS_LED and to R5.2).
+    "do1_gate": [
+        ("del", "/mcu/NET_STATUS_LED", "F.Cu", 22.7772, 41.7782, 21.5625, 42.9929),
+        ("del", "/mcu/NET_STATUS_LED", "F.Cu", 21.5625, 42.9929, 21.5625, 42.9950),
+        ("trk", "/mcu/NET_STATUS_LED", "F.Cu", 22.7772, 41.7782, 22.0500, 41.7782, 0.15),
+        ("trk", "/mcu/NET_STATUS_LED", "F.Cu", 22.0500, 41.7782, 22.0500, 42.5500, 0.15),
+        ("trk", "/mcu/NET_STATUS_LED", "F.Cu", 22.0500, 42.5500, 21.5625, 42.9950, 0.15),
+        ("trk", "DO1_GATE", "F.Cu", 22.4888, 42.7642, 22.4888, 42.0736, 0.15),
+        ("trk", "DO1_GATE", "F.Cu", 22.4888, 42.0736, 23.6232, 42.0736, 0.15),
+    ],
 }
 
 
@@ -102,23 +119,48 @@ def mm(v):
     return int(round(v * 1e6))
 
 
+SEG_RE = re.compile(r"\t\(segment\n(?:\t\t.*\n)*?\t\)\n")
+
+
+def drop_segments(dels):
+    """Delete ("del", ...) tracks by editing the file text, like the other
+    tools do: removing more than one item through pcbnew's Remove() in one
+    session corrupts the board object (it segfaults in Zones())."""
+    txt = open(PCB, encoding="utf-8").read()
+    for _, net, layer, x1, y1, x2, y2 in dels:
+        std = re.search(rf'\(\d+ "([^"]+)" \w+ "{re.escape(layer)}"\)', txt)
+        layers = {layer} | ({std.group(1)} if std else set())
+        want = [(x1, y1), (x2, y2)]
+        hits = []
+        for m in SEG_RE.finditer(txt):
+            blk = m.group(0)
+            ly = re.search(r'\(layer "([^"]+)"\)', blk)
+            if f'(net "{net}")' not in blk or not ly or ly.group(1) not in layers:
+                continue
+            s = re.search(r"\(start ([-\d.]+) ([-\d.]+)\)", blk)
+            e = re.search(r"\(end ([-\d.]+) ([-\d.]+)\)", blk)
+            pts = [(float(s.group(1)), float(s.group(2))), (float(e.group(1)), float(e.group(2)))]
+            if all(any(abs(p[0] - w[0]) < 6e-4 and abs(p[1] - w[1]) < 6e-4 for w in want) for p in pts):
+                hits.append(m.span())
+        if len(hits) != 1:
+            sys.exit(f"del: {len(hits)} segments match {net} {layer} {want}")
+        a, z = hits[0]
+        txt = txt[:a] + txt[z:]
+    with open(PCB, "w", encoding="utf-8") as f:
+        f.write(txt)
+
+
 def apply(items):
+    dels = [it for it in items if it[0] == "del"]
+    if dels:
+        drop_segments(dels)
     b = pcbnew.LoadBoard(PCB)
     for it in items:
         net = b.FindNet(it[1])
         if net is None:
             sys.exit(f"no net {it[1]}")
         if it[0] == "del":
-            _, _, layer, x1, y1, x2, y2 = it
-            ends = {(mm(x1), mm(y1)), (mm(x2), mm(y2))}
-            near = lambda p, q: abs(p[0] - q[0]) <= 2000 and abs(p[1] - q[1]) <= 2000
-            hit = [t for t in b.GetTracks()
-                   if t.GetClass() != "PCB_VIA" and t.GetNetname() == it[1]
-                   and t.GetLayer() == b.GetLayerID(layer)
-                   and all(any(near((p.x, p.y), e) for e in ends) for p in (t.GetStart(), t.GetEnd()))]
-            if len(hit) != 1:
-                sys.exit(f"del: {len(hit)} tracks match {it}")
-            b.Remove(hit[0])
+            continue
         elif it[0] == "via":
             _, _, x, y, d, dr = it
             v = pcbnew.PCB_VIA(b)
