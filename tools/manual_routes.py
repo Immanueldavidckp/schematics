@@ -150,6 +150,32 @@ ROUTES = {
     # pad's own 0.28 mm (0.183 to the via); the 0.05 mm stub from the pad
     # centre to that track is dropped (its cap reached the pad's top edge,
     # and the track now starts inside the pad).
+    # C42.2 and C43.2, the GND pads of the two VBAT_MODEM bulk caps on the top
+    # edge, sit in F.Cu pockets sealed by 3V3, Q13_B, VDD_EXT_1V8 and the
+    # caps' own VBAT pads, and every through via there lands in the 2 mm
+    # VBAT_MODEM copper on B.Cu that feeds the caps. That B.Cu branch only
+    # serves these two caps, so it is re-laid to leave room for a GND via
+    # into the L2 plane under each: the 3.5 mm C42.1-C43.1 link becomes
+    # 1.4 mm wide and 0.31 mm higher (above the 0.5 mm VBAT_MODEM floor,
+    # 0.235 to the new via, 0.24 to VDD_EXT_1V8), the parallel upper path
+    # to (71.65, 2.85) goes (the lower 2 mm path carries the feed), and the
+    # link from C43.1's via dips under C43.2 at full 2 mm width, >= 0.2
+    # from the GND, Q14_B and VDD_EXT_1V8 vias around it.
+    "c42_c43": [
+        ("del", "/modem_rf/VBAT_MODEM", "B.Cu", 63.15, 2.75, 66.65, 2.75),
+        ("del", "/modem_rf/VBAT_MODEM", "B.Cu", 66.65, 2.75, 66.75, 2.85),
+        ("del", "/modem_rf/VBAT_MODEM", "B.Cu", 66.75, 2.85, 68.15, 2.85),
+        ("del", "/modem_rf/VBAT_MODEM", "B.Cu", 68.15, 2.85, 69.35, 4.05),
+        ("del", "/modem_rf/VBAT_MODEM", "B.Cu", 66.75, 2.85, 71.65, 2.85),
+        ("del", "/modem_rf/VBAT_MODEM", "B.Cu", 71.65, 2.85, 73.15, 4.35),
+        ("trk", "/modem_rf/VBAT_MODEM", "B.Cu", 63.15, 2.44, 66.65, 2.44, 1.4),
+        ("trk", "/modem_rf/VBAT_MODEM", "B.Cu", 66.65, 2.75, 67.25, 2.75, 2.0),
+        ("trk", "/modem_rf/VBAT_MODEM", "B.Cu", 67.25, 2.75, 68.05, 3.55, 2.0),
+        ("trk", "/modem_rf/VBAT_MODEM", "B.Cu", 68.05, 3.55, 68.85, 3.55, 2.0),
+        ("trk", "/modem_rf/VBAT_MODEM", "B.Cu", 68.85, 3.55, 69.35, 4.05, 2.0),
+        ("via", "GND", 63.90, 3.60, 0.45, 0.20),
+        ("via", "GND", 68.70, 2.00, 0.45, 0.20),
+    ],
     "u2_47": [
         ("del", "3V3", "F.Cu", 31.2800, 31.2880, 31.2800, 31.2400),
         ("del", "3V3", "F.Cu", 31.2800, 31.2880, 30.8740, 31.6940),
