@@ -12,7 +12,12 @@ otherwise the board is restored exactly.
   ("del", net, layer, x1, y1, x2, y2)      remove that track (to re-lay it)
 
 Run:  python3 tools/manual_routes.py [route-name ...]   (default: all)
+
+MANUAL_JSON=file adds routes from a JSON file (island_via.py writes one);
+routes named <group>_<k> are alternatives: once one of a group is kept the
+rest are skipped. MANUAL_NO_SETTLE=1 skips the GND stitch after a near miss.
 """
+import json
 import os
 import re
 import shutil
@@ -104,6 +109,16 @@ ROUTES = {
 }
 
 
+if os.environ.get("MANUAL_JSON"):
+    with open(os.environ["MANUAL_JSON"]) as _f:
+        ROUTES.update(json.load(_f))
+
+
+def group(name):
+    head, _, k = name.rpartition("_")
+    return head if head and k.isdigit() else name
+
+
 def drc(tag):
     netclasses.ensure()
     rpt = os.path.join(PROJ, f".manual-{tag}.rpt")
@@ -188,12 +203,15 @@ def main():
     names = sys.argv[1:] or list(ROUTES)
     e0, u0, _ = drc("before")
     print(f"before: errors {e0}, unconnected {u0}")
+    done = set()
     for name in names:
+        if group(name) in done:
+            continue
         backup = PCB + ".manual-backup"
         shutil.copyfile(PCB, backup)
         apply(ROUTES[name])
         e, u, txt = drc(name)
-        if e <= e0 and u0 <= u <= u0 + 1:
+        if e <= e0 and u0 <= u <= u0 + 1 and not os.environ.get("MANUAL_NO_SETTLE"):
             # the new copper may have split a GND pour: stitch, measure again
             subprocess.run([sys.executable, os.path.join(TOOLS, "stitch_gnd.py")],
                            capture_output=True, text=True, timeout=1500,
@@ -202,6 +220,7 @@ def main():
         if e <= e0 and u < u0:
             print(f"KEPT {name}: unconnected {u0} -> {u}, errors {e}")
             u0 = u
+            done.add(group(name))
         else:
             shutil.copyfile(backup, PCB)
             new = [l for l in txt.splitlines() if l.startswith("[") and "unconnected" not in l][:6]
