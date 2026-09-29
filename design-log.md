@@ -3661,3 +3661,28 @@ assembly; a local assembler buying from LCSC should take the MPN from
 C2916205 (EC200U); the audit judges those on JLCPCB's record.
 Still open: R80 (1 R 2512 anti-surge) pulse rating vs the clamp event (F-5 note);
 the battery NTC re-check above.
+
+## 2026-09-29 — manufacturing package, size checks, enclosure fit
+
+One zip for a local fab / assembler / enclosure maker:
+`out/telematics-tracker-mfg-2026-09-29-<rev>.zip`, built by `tools/fab_package.py`
+(refuses unless the release gate and the BOM audit are clean). Contents: gerbers +
+drill (+ zip), fabrication drawing PDF, IPC-D-356, ODB++, BOM (JLCPCB and with
+manufacturer part numbers), pick-and-place, assembly drawings, 3D renders,
+schematic PDF, assembled-board STEP, enclosure STL / STEP / Blender, README.
+
+Size checks that changed something:
+
+- **Stackup was undeclared**: every export described KiCad's default 3 x 0.48 mm
+  dielectrics; the GNSS CPWG (W 0.40 / G 0.30) is sized for 0.2104 mm. The board now
+  declares JLC04161H-7628 (and ENIG), so the job file / ODB++ carry it.
+- **Enclosure gland**: the M16 gland's inner locknut (AF19 x 5, centre 9.4 mm above
+  the board) reached 1.6 mm below the board surface over R30-R35 with the 1.5 mm
+  cavity margin. The gland side of the cavity is 5.5 mm (base 108 -> 112 mm);
+  everything else measured clear against the board's STEP (12.1 mm over J1's
+  header, 2.4 mm under the deepest bottom part, no part on a boss).
+- **Footprint attributes**: AF1, AF2, U1, U3, X1 were imported as through-hole
+  with no plated hole; now SMD, so an assembler's tools do not plan them as
+  hand-inserted parts. Through-hole parts: J1, J2. X1's 0.80 mm and J1's 1.10 mm
+  peg holes are non-plated (NPTH), as the drill file already said.
+- Housing meshes: all four STLs are closed manifold solids; lids also ship as STEP.

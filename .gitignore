@@ -20,3 +20,4 @@ telematics-tracker.kicad_pcb.lastgood
 .cycles.sh
 *.blend1
 .release-tmp/
+out/package/

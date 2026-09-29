@@ -5,7 +5,7 @@
       "Application": "Pcbnew",
       "Version": "10.0.6"
     },
-    "CreationDate": "2026-09-29T02:33:50+05:30"
+    "CreationDate": "2026-09-29T09:54:03+05:30"
   },
   "GeneralSpecs": {
     "ProjectId": {
@@ -19,7 +19,8 @@
     },
     "LayerNumber": 4,
     "BoardThickness": 1.6,
-    "Finish": "None"
+    "Finish": "ENIG",
+    "ImpedanceControlled": true
   },
   "DesignRules": [
     {
@@ -119,32 +120,38 @@
     },
     {
       "Type": "Dielectric",
-      "Thickness": 0.48,
-      "Material": "FR4",
+      "Thickness": 0.2104,
+      "Material": "7628",
+      "DielectricConstant": "4.4",
+      "LossTangent": "0.02",
       "Name": "F.Cu/GND_L2",
       "Notes": "Type: dielectric layer 1 (from F.Cu to GND_L2)"
     },
     {
       "Type": "Copper",
-      "Thickness": 0.035,
+      "Thickness": 0.0152,
       "Name": "GND_L2"
     },
     {
       "Type": "Dielectric",
-      "Thickness": 0.48,
+      "Thickness": 1.065,
       "Material": "FR4",
+      "DielectricConstant": "4.6",
+      "LossTangent": "0.02",
       "Name": "GND_L2/PWR_L3",
       "Notes": "Type: dielectric layer 2 (from GND_L2 to PWR_L3)"
     },
     {
       "Type": "Copper",
-      "Thickness": 0.035,
+      "Thickness": 0.0152,
       "Name": "PWR_L3"
     },
     {
       "Type": "Dielectric",
-      "Thickness": 0.48,
-      "Material": "FR4",
+      "Thickness": 0.2104,
+      "Material": "7628",
+      "DielectricConstant": "4.4",
+      "LossTangent": "0.02",
       "Name": "PWR_L3/B.Cu",
       "Notes": "Type: dielectric layer 3 (from PWR_L3 to B.Cu)"
     },
