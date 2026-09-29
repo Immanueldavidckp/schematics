@@ -15,11 +15,13 @@ Common (both variants): sealed body to IP67 intent -
   for pressure equalisation over -20..+70 C; 5 M3 bosses (F-18 H5 boss);
   M5-slotted chassis flanges; light-coloured ASA.
 
-Driven by the BOARD's measured facts:
-  board 82 x 62 x 1.6, M3 holes H1(3.5,3.5) H2(78.5,3.5) H3(3.5,58.5)
-  H4(78.5,58.5) H5(23.5,55); J1 vertical Micro-Fit at (7.5,30) rot 90;
-  U.FL AF1 (LTE) at (79.3,10.2), AF2 (GNSS) at (79.3,48.5); SIM X1 at
-  (53.7,52.4) faces up (lid-off service).
+Driven by the BOARD's measured facts (final board, 2026-09-29):
+  board 100 x 68 x 1.6 (R2 corners), M3 plated holes H1(3.5,3.5)
+  H2(96.5,3.5) H3(3.5,64.5) H4(96.5,64.5) H5(25.63,60.58); J1 vertical
+  Micro-Fit at (7.5,30) rot 90 (header 9.91 mm tall); U.FL AF1 (LTE) at
+  (97.3,10.2), AF2 (GNSS) at (97.3,48.5); SIM X1 at (70.9,52.4) faces up
+  (lid-off service). Tallest parts J1 9.9 / L1 8.2 mm above the board,
+  deepest bottom part 2.6 mm (C81/C82) - from the board's STEP export.
 Antenna clearances (docs/installation-sheet.md 5a, MANDATORY):
   LTE FPC > 5 mm from the main PCB; GNSS patch >= 3 mm from the enclosure
   wall, >= 10 mm from tall metal; > 40 dB isolation (kept far apart); no metal
@@ -50,6 +52,12 @@ os.makedirs(OUT, exist_ok=True)
 # ---------------- parameters (mm) ------------------------------------------
 BW, BH = 100.0, 68.0                # board (relief round 6)
 MARGIN = 1.5                        # cavity margin around the board
+# -X side (the gland wall) gets more: the M16 gland's inner locknut (AF19,
+# corner radius 11, 5 mm thick) sits centred 9.4 mm above the board, so with
+# 1.5 mm it reached 1.6 mm below the board surface over the first 3.5 mm of
+# the board edge - through the board and R30-R35. 5.5 mm puts the whole nut
+# between the wall and the board edge (0.5 mm clear).
+MARGIN_GLAND = 5.5
 WALL = 2.5
 FLOOR = 2.5
 STANDOFF = 5.0                      # board sits this high above the floor
@@ -63,7 +71,7 @@ _H5 = ((round(20.75 + 2.75 * (23.25 + _RS) / 23.25, 2), round(21.0 + 37.0 * (BH 
        if (_RS or BH != 62.0) else (23.5, 55.0))     # same stretch as pcbgen.FIFTH_HOLE
 HOLES = [(3.5, 3.5), (BW - 3.5, 3.5), (3.5, BH - 3.5), (BW - 3.5, BH - 3.5), _H5]
 
-IX0, IY0 = -MARGIN, -MARGIN                     # cavity inner rect
+IX0, IY0 = -MARGIN_GLAND, -MARGIN               # cavity inner rect
 IX1, IY1 = BW + MARGIN, BH + MARGIN
 OX0, OY0 = IX0 - WALL, IY0 - WALL               # outer rect
 OX1, OY1 = IX1 + WALL, IY1 + WALL
@@ -137,6 +145,8 @@ def boolop(target, tool, op):
     m = target.modifiers.new(name=op, type='BOOLEAN')
     m.operation = op
     m.object = tool
+    m.solver = 'EXACT'
+    m.use_hole_tolerant = True     # flush unions (lid ears, stake posts) stay manifold
     bpy.context.view_layer.objects.active = target
     bpy.ops.object.modifier_apply(modifier=m.name)
     bpy.data.objects.remove(tool, do_unlink=True)
@@ -171,7 +181,11 @@ boolop(base, tongue, 'UNION')
 # J1 is TOP-ENTRY: harness plugs in from above and leaves through an M16
 # IP68 gland in the -X wall; external ring boss gives the gland nut a flat seat
 gz = BOARD_TOP + 9.4
-gboss = cyl("gland_boss", GLAND_Y, gz, OX0 - 2.0, OX0 + WALL, 12.0, axis='X')
+GLAND_NUT_R, GLAND_NUT_T = 10.97, 5.0      # M16x1.5 locknut AF19 (corner radius), thickness
+assert IX0 + GLAND_NUT_T + 0.5 <= 0.0, "gland locknut reaches over the board edge"
+# seat boss d22 (the M16 gland's sealing washer is ~d20): d24 came within
+# 0.6 mm of the wall top and left boolean slivers under the rim
+gboss = cyl("gland_boss", GLAND_Y, gz, OX0 - 2.0, OX0 + WALL, 11.0, axis='X')
 boolop(base, gboss, 'UNION')
 gh = cyl("gland_hole", GLAND_Y, gz, OX0 - 3.0, IX0 + 1, GLAND_HOLE_R, axis='X')
 boolop(base, gh, 'DIFFERENCE')
@@ -205,7 +219,7 @@ for sy in SMA_YS:
         boolop(base, rec, 'DIFFERENCE')
 
 # lid screw posts OUTSIDE the seal line: 4 corners + 2 long-side midpoints
-# (90 mm long sides - corners alone leave the gasket under-compressed mid-span)
+# (112 mm long sides - corners alone leave the gasket under-compressed mid-span)
 XM = (OX0 + OX1) / 2
 POSTS = [(OX0 - 3.0, OY0 - 3.0), (OX1 + 3.0, OY0 - 3.0),
          (OX0 - 3.0, OY1 + 3.0), (OX1 + 3.0, OY1 + 3.0),
@@ -234,6 +248,17 @@ boolop(lid, pocket, 'DIFFERENCE')
 # O-ring cord groove in the lid rim, on the seal line, facing the tongue
 groove = ring("groove", SX0, SY0, SX1, SY1, LZ0 - 1, LZ0 + GROOVE_D, GROOVE_W)
 boolop(lid, groove, 'DIFFERENCE')
+
+# lid screw holes into the base posts (countersunk M3 self-tap). Done
+# before the antenna features: unioned after ~40 more booleans the
+# ear/face seams came out non-manifold on the internal lid.
+for px, py in POSTS:
+    ear = cyl("lid_ear", px, py, LZ0, LTOP, 4.5)
+    boolop(lid, ear, 'UNION')
+    h = cyl("lid_hole", px, py, LZ0 - 1, LTOP + 1, 1.7)
+    boolop(lid, h, 'DIFFERENCE')
+    cs = cyl("lid_csink", px, py, LTOP - 1.6, LTOP + 0.1, 3.2)
+    boolop(lid, cs, 'DIFFERENCE')
 
 CEIL = LZ0 + LID_POCKET          # lid interior ceiling (antenna mount face)
 
@@ -280,9 +305,13 @@ if INTERNAL:
             arm = cube("patch_tab", bx[0], by[0], CEIL - TH, bx[1], by[1],
                        CEIL)
             boolop(lid, arm, 'UNION')
-            lx = span(cx_, -sx, 0.0, 1.5)        # lip tucks UNDER the corner
-            ly = span(cy_, -sy, 0.0, 1.5)
-            lip = cube("patch_lip", lx[0], ly[0], CEIL - TH, lx[1], ly[1],
+            # lip tucks UNDER the corner; it reaches 0.5 mm back into the
+            # corner block and arms so it is joined by a face, not an edge
+            lx = span(cx_, -sx, -0.5, 1.5)
+            ly = span(cy_, -sy, -0.5, 1.5)
+            # underside 0.05 mm below the tab: flush with the arms' bottoms
+            # the union came out non-manifold at one corner
+            lip = cube("patch_lip", lx[0], ly[0], CEIL - TH - 0.05, lx[1], ly[1],
                        CEIL - TH + 0.6)
             boolop(lid, lip, 'UNION')
             # corner block joining lip and both arms
@@ -297,14 +326,6 @@ if INTERNAL:
                 px1 - 2.0, py0 - 3.0, CEIL)
     boolop(lid, clip, 'UNION')
 
-# lid screw holes into the base posts (countersunk M3 self-tap)
-for px, py in POSTS:
-    ear = cyl("lid_ear", px, py, LZ0, LTOP, 4.5)
-    boolop(lid, ear, 'UNION')
-    h = cyl("lid_hole", px, py, LZ0 - 1, LTOP + 1, 1.7)
-    boolop(lid, h, 'DIFFERENCE')
-    cs = cyl("lid_csink", px, py, LTOP - 1.6, LTOP + 0.1, 3.2)
-    boolop(lid, cs, 'DIFFERENCE')
 
 # ---------------- reference parts (not exported, shown in renders) -----------
 ref, lid_parts = [], []
@@ -325,6 +346,8 @@ else:
                   axis='X')
         ref += [jack, nut]
 gland = cyl("REF_gland", GLAND_Y, gz, OX0 - 22.0, OX0 - 2.0, 9.5, axis='X')
+gland_nut = cyl("REF_gland_nut", GLAND_Y, gz, IX0, IX0 + GLAND_NUT_T, GLAND_NUT_R, axis='X')
+ref.append(gland_nut)
 vent = cyl("REF_vent", VENT_X, vz, OY0 - 6.0, OY0 - 1.5, 7.0, axis='Y')
 board = cube("REF_board", 0, 0, FLOOR + STANDOFF, BW, BH, BOARD_TOP)
 ref += [gland, vent, board]
@@ -350,7 +373,36 @@ for o in ref:
                             m_cer if "patch" in n else
                             m_ant if "fpc" in n else m_metal)
 
+def clean(o, weld):
+    """weld=True (lids): merge the coincident vertices the flush unions leave
+    (lid ears, stake posts) so the lid STL closes. The base is exported as
+    is - it comes out closed, and welding it broke it. Returns the
+    non-manifold edge count of a triangulated copy, with one location; the
+    STLs are then checked for closure in FreeCAD by tools/housing_step.py."""
+    import bmesh
+    bm = bmesh.new()
+    bm.from_mesh(o.data)
+    if weld:
+        # 2 um: the ear/face intersections land up to ~1 um apart; the
+        # smallest real feature in the model is 0.2 mm
+        bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=2e-3)
+        bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    # triangulate here, ear-clipping the concave n-gons (a wall face with a
+    # round hole in it): the STL writer's own split overlapped triangles
+    # around every boss and bore (self-intersections in the base)
+    bmesh.ops.triangulate(bm, faces=bm.faces[:], quad_method='BEAUTY', ngon_method='EAR_CLIP')
+    bm.to_mesh(o.data)
+    o.data.update()
+    bad = [e for e in bm.edges if not e.is_manifold]
+    spots = sorted({(round(e.verts[0].co.x), round(e.verts[0].co.y), round(e.verts[0].co.z, 1))
+                    for e in bad})
+    bm.free()
+    return len(bad), (spots[:10] if spots else None)
+
+
 for o, nm in ((base, "base"), (lid, "lid")):
+    n_bad, where = clean(o, weld=(nm == "lid"))
+    print(f"HOUSING_MESH {VARIANT}/{nm}: non-manifold edges {n_bad}" + (f" e.g. at {where}" if where else ""))
     bpy.ops.object.select_all(action='DESELECT')
     o.select_set(True)
     bpy.context.view_layer.objects.active = o
@@ -405,6 +457,13 @@ for o in hidden:
     o.hide_render = False
 for o in [lid] + lid_parts:
     o.location.z -= 35.0
+# 5) base interior from above, lid off: board on its bosses, the gland
+#    locknut in the gap between the -X wall and the board edge
+for o in [lid] + lid_parts:
+    o.hide_render = True
+shot("base-inside", (cx + 40, cy - 110, 190), (cx, cy, BOARD_TOP), lens=45)
+for o in [lid] + lid_parts:
+    o.hide_render = False
 
 bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, "housing.blend"))
 print(f"HOUSING_DONE variant={VARIANT} lid_pocket={LID_POCKET} "
