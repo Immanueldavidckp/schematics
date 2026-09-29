@@ -3686,3 +3686,20 @@ Size checks that changed something:
   hand-inserted parts. Through-hole parts: J1, J2. X1's 0.80 mm and J1's 1.10 mm
   peg holes are non-plated (NPTH), as the drill file already said.
 - Housing meshes: all four STLs are closed manifold solids; lids also ship as STEP.
+
+## 2026-09-29 — staircase tracks straightened (package rebuilt as 572f747)
+
+The owner saw the grid router's zigzag ("staircase") tracks in KiCad and asked for
+them straight. `tools/straighten.py` string-pulls each run of track between
+anchors (pads, vias, branches, width changes, locked copper) into the fewest
+straight segments that clear all foreign copper, holes, the board edge and
+keep-outs by the class clearances and the .kicad_dru HV creepage rules (1.5 mm to
+signals inside HV_ZONE outside BUCK_HV, 1.0 mm to the edge); RF nets untouched; a
+segment with copper attached mid-run keeps its end points. Three DRC-gated passes
+(143 + 12 + 4 runs; runs named in a new violation excluded and re-planned), then
+tidy (12 leftovers). **4015 -> 2407 track segments; staircase runs 88 -> 28**; the
+28 left sit at a clearance limit (a straight line would come closer than the
+router's path) or are locked MV tracks. DRC 0 / unconnected 0, ERC 0, BOM audit 0.
+Package: `out/telematics-tracker-mfg-2026-09-29-572f747.zip`, tag
+`v1.0.1-mfg-2026-09-29` (the earlier `v1.0-mfg-2026-09-29` tag keeps the
+unstraightened version).
