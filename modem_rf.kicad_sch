@@ -11790,7 +11790,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C17414"
+		(property "LCSC" "C17713"
 			(at 38.1 165.1 0)
 			(hide yes)
 			(effects
@@ -12075,7 +12075,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C17414"
+		(property "LCSC" "C17713"
 			(at 73.66 165.1 0)
 			(hide yes)
 			(effects
@@ -13488,7 +13488,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C17408"
+		(property "LCSC" "C17634"
 			(at 294.64 76.2 0)
 			(hide yes)
 			(effects
@@ -13556,7 +13556,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C17408"
+		(property "LCSC" "C17634"
 			(at 307.34 76.2 0)
 			(hide yes)
 			(effects
@@ -13624,7 +13624,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C17408"
+		(property "LCSC" "C17634"
 			(at 320.04 76.2 0)
 			(hide yes)
 			(effects
@@ -14851,7 +14851,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C17477"
+		(property "LCSC" "C17168"
 			(at 241.3 203.2 0)
 			(hide yes)
 			(effects
@@ -15267,7 +15267,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C17477"
+		(property "LCSC" "C17168"
 			(at 292.1 203.2 0)
 			(hide yes)
 			(effects
@@ -15667,7 +15667,7 @@
 				)
 			)
 		)
-		(property "LCSC" "TBD-F22"
+		(property "LCSC" "C137091"
 			(at 365.76 190.5 0)
 			(hide yes)
 			(effects
@@ -15735,7 +15735,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C14663"
+		(property "LCSC" "C1525"
 			(at 350.52 185.42 0)
 			(hide yes)
 			(effects
@@ -15842,7 +15842,7 @@
 				)
 			)
 		)
-		(property "LCSC" "TBD-F22"
+		(property "LCSC" "C15195"
 			(at 358.14 185.42 0)
 			(hide yes)
 			(effects

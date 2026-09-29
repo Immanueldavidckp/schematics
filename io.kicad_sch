@@ -8569,7 +8569,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C4356"
+		(property "LCSC" "C17520"
 			(at 121.92 259.08 0)
 			(hide yes)
 			(effects
@@ -9453,7 +9453,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C4356"
+		(property "LCSC" "C17520"
 			(at 121.92 304.8 0)
 			(hide yes)
 			(effects

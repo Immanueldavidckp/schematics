@@ -17345,7 +17345,7 @@
 				)
 			)
 		)
-		(property "Value" "1k"
+		(property "Value" "330R"
 			(at 0 1.65 0)
 			(layer "F.Fab")
 			(uuid "36b953f0-d070-56fa-af25-a9dfaf71ece8")
@@ -21692,7 +21692,7 @@
 				)
 			)
 		)
-		(property "Value" "1k"
+		(property "Value" "330R"
 			(at 0 1.65 0)
 			(layer "F.Fab")
 			(uuid "955ae3af-2119-5f95-8115-22c1fe976f96")

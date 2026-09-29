@@ -31,16 +31,25 @@ SJ_OPEN = "Jumper:SolderJumper-2_P1.3mm_Open_Pad1.0x1.5mm"
 # JLCPCB Basic-part C-numbers for generic passives (assembly BOM)
 LCSC_R10K = "C17414"
 LCSC_R4K7 = "C17673"
-LCSC_R2K2 = "C4356"
+LCSC_R2K2 = "C17520"   # UNI-ROYAL 0805W8F2201T5E 2.2k 1% (C4356 does not exist)
 LCSC_R1K = "C17513"
 LCSC_R100 = "C17408"
 LCSC_R0 = "C17477"
 LCSC_C100N = "C14663"
 LCSC_C1U = "C15849"
-LCSC_C4U7 = "C23733"
-LCSC_C18P = "C1653"
-LCSC_C6P8 = "C1555"
-LCSC_LED_G = "C2286"
+LCSC_C4U7 = "C1779"    # Samsung CL21A475KAQNNNE 4.7uF 25V X5R 0805 (C23733 is 0402)
+LCSC_C18P = "C1647"    # Samsung CL10C180JB8NNNC 18pF C0G 0603 (C1653 is 22pF)
+LCSC_C6P8 = "C318672"  # Samsung CL10C6R8CB8NNNC 6.8pF C0G 0603 (C1555 is 22pF 0402)
+LCSC_LED_G = "C2286"   # KENTO KT-0603R red (NET LED D13)
+# F-5 closed 2026-09-29: every C-number in this file was checked against
+# JLCPCB/LCSC part data (tools/bom_audit.py, docs/bom-audit.md).
+LCSC_LED_GRN = "C12624"      # KENTO KT-0603G green 525 nm, Vf ~2.8 V at 1.5 mA
+LCSC_LED_BLU = "C2288"       # KENTO KT-0603B blue 469 nm, Vf ~2.8 V at 1.5 mA
+LCSC_R330 = "C17630"         # UNI-ROYAL 0805W8F3300T5E 330R 1% (green/blue LED feed)
+LCSC_R33 = "C17634"          # UNI-ROYAL 0805W8F330JT5E 33R 0805 (SIM series)
+LCSC_R0_0402 = "C17168"      # UNI-ROYAL 0402WGF0000TCE 0R 0402
+LCSC_C100N_0402 = "C1525"    # Samsung CL05B104KO5NNNC 100nF 16V X7R 0402
+LCSC_C10N_0402 = "C15195"    # Samsung CL05B103KB5NNNC 10nF 50V X7R 0402
 LCSC_MMBT3904 = "C20526"
 LCSC_FB = "C1017"
 
@@ -121,7 +130,7 @@ def build_mcu():
     # --- 8 MHz HSE crystal (Crystal_GND24: pins 1/3 = terminals, 2/4 = case)
     y1 = sh.place("Device:Crystal_GND24", "Y1", "8MHz",
                   (g(88), g(104)), "Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm",
-                  "C115962")
+                  "C2682775")   # YXC X32258MOB4SI 8MHz 12pF 3225-4P (C115962 is 5032 2-pin)
     sh.net(y1, "1", "OSC_IN", length=g(3))
     sh.net(y1, "3", "OSC_OUT", length=g(3))
     sh.gnd(y1, "2", length=g(3))                 # pin 4 shares pin 2's coordinate
@@ -133,7 +142,7 @@ def build_mcu():
     # --- 32.768 kHz LSE crystal
     y2 = sh.place("Device:Crystal", "Y2", "32.768kHz",
                   (g(88), g(84)), "Crystal:Crystal_SMD_3215-2Pin_3.2x1.5mm",
-                  "C32346")
+                  "C48615")     # Seiko Epson Q13FC13500002 FC-135 7pF (C32346 is 12.5pF)
     sh.net(y2, "1", "OSC32_IN", length=g(3))
     sh.net(y2, "2", "OSC32_OUT", length=g(3))
     sh.series("Device:C", "C3", "6.8pF", (g(84), g(92)), "OSC32_IN", None,
@@ -182,9 +191,9 @@ def build_mcu():
     sh.gnd(bulk, "2", length=g(3))
 
     # --- heartbeat LED on PC13 (sinks current: 3V3 -> R -> LED -> PC13)
-    sh.series("Device:R", "R4", "1k", (g(252), g(150)), "3V3", "SYS_LED_A",
-              R0805, LCSC_R1K)
-    d1 = sh.place("Device:LED", "D20", "GRN", (g(252), g(158)), LED0603, LCSC_LED_G)
+    sh.series("Device:R", "R4", "330R", (g(252), g(150)), "3V3", "SYS_LED_A",
+              R0805, LCSC_R330)   # green LED Vf ~2.8 V: 330R -> ~1.5 mA (PC13 sinks <= 3 mA)
+    d1 = sh.place("Device:LED", "D20", "GRN", (g(252), g(158)), LED0603, LCSC_LED_GRN)
     sh.net(d1, "2", "SYS_LED_A", length=g(3))
     sh.net(d1, "1", "SYS_LED", length=g(3))
 
@@ -196,11 +205,11 @@ def build_mcu():
     sh.net(q1, "1", "NSL_BASE", length=g(3))
     sh.gnd(q1, "2", length=g(3))
     sh.net(q1, "3", "NSL_K", length=g(3))
-    d2 = sh.place("Device:LED", "D21", "BLU", (g(280), g(142)), LED0603, LCSC_LED_G)
+    d2 = sh.place("Device:LED", "D21", "BLU", (g(280), g(142)), LED0603, LCSC_LED_BLU)
     sh.net(d2, "1", "NSL_K", length=g(3))
     sh.net(d2, "2", "NSL_A", length=g(3))
-    sh.series("Device:R", "R6", "1k", (g(280), g(130)), "3V3", "NSL_A",
-              R0805, LCSC_R1K)
+    sh.series("Device:R", "R6", "330R", (g(280), g(130)), "3V3", "NSL_A",
+              R0805, LCSC_R330)   # blue LED Vf ~2.8 V: 330R -> ~1.4 mA
 
     # --- IMU U3 (QMI8658B).  Wiring per QST QMI8658B datasheet Rev D sec 1.4:
     #     CS high selects I2C; SDO/SA0 high -> slave address 0x6A;
@@ -568,7 +577,7 @@ LCSC_R10_RF = "C25077"         # 10R 0402 1%, JLC Basic (unused - see R90)
 # 1.8 V minimum. Bonus: 68R with C83 0.1uF puts the LNA supply corner at 23 kHz.
 GNSS_FEED_R = "68R"
 GNSS_FEED_R_FP = "Resistor_SMD:R_1210_3225Metric"
-LCSC_R_GNSS_FEED = "TBD-F22"   # C-number at BOM stage, like the other TBD-F5
+LCSC_R_GNSS_FEED = "C137091"  # YAGEO RC1210FR-0768RL 68R 1% 500mW 1210 (F-22)
 LCSC_UFL = "C53133524"         # XYECONN XY-IPEX1 (IPEX gen-1 / U.FL, 6 GHz 50R)
 LCSC_USBLC6 = "C7519"          # ST USBLC6-2SC6 (genuine)
 LCSC_SMF05C = "C15879"         # onsemi SMF05CT1G SOT-363
@@ -734,7 +743,7 @@ def build_modem_rf():
         sh.net(qq, "3", mod, length=g(3))
         sh.series("Device:R", f"R{rref + 1}", "47k",
                   (g(30 + (0 if ref == "Q9" else 28)), g(130)),
-                  f"{ref}_B", None, R0805, LCSC_R10K, gnd_b=True)
+                  f"{ref}_B", None, R0805, LCSC_R47K, gnd_b=True)   # 47k (was the 10k C-number)
 
     # ---- STATUS: Quectel Fig 28 NPN stage (MODEM_STATUS is INVERTED) -------
     sh.series("Device:R", "R59", "4.7k", (g(96), g(112)), "STATUS_MOD",
@@ -807,7 +816,7 @@ def build_modem_rf():
     for sig, xoff in (("DATA", 0), ("CLK", 10), ("RST", 20)):
         sh.series("Device:R", f"R{66 + xoff // 10}", "33R",
                   (g(232 + xoff), g(60)), f"USIM_{sig}_M", f"SIM_{sig}",
-                  R0805, LCSC_R100)   # F-5 provisional: 33R 0805 to verify
+                  R0805, LCSC_R33)    # 33R 0805, verified 2026-09-29
     sh.series("Device:C", "C47", "100nF", (g(262), g(60)), "USIM_VDD", None,
               C0603, LCSC_C100N, gnd_b=True)
     x1 = sh.place("jlc:NANOSIM7P1.37HPUSH", "X1", "NANO-SIM",
@@ -878,7 +887,7 @@ def build_modem_rf():
         yb = 160
         rs = sh.place("Device:R", f"R{71 + ref}", "0R",
                       (g(base), g(yb)), "Resistor_SMD:R_0402_1005Metric",
-                      LCSC_R0)
+                      LCSC_R0_0402)
         sh.net(rs, "1", f"ANT_{tag}_M", length=g(4))
         sh.net(rs, "2", f"ANT_{tag}_C", length=g(4))
         c1 = sh.place("Device:C", f"C{48 + 2 * ref}", "DNP",
@@ -937,13 +946,13 @@ def build_modem_rf():
                       GNSS_FEED_R_FP, LCSC_R_GNSS_FEED)
             sh.series("Device:C", "C83", "100nF", (g(base + 46), g(yb - 14)),
                       "GNSS_BIAS", None,
-                      "Capacitor_SMD:C_0402_1005Metric", LCSC_C100N,
+                      "Capacitor_SMD:C_0402_1005Metric", LCSC_C100N_0402,
                       gnd_b=True)
             # 68R (vs Quectel's 10R) raises supply-noise coupling into the LNA,
             # so a second, faster bypass sits at the injection node.
             sh.series("Device:C", "C85", "10nF", (g(base + 52), g(yb - 14)),
                       "GNSS_BIAS", None,
-                      "Capacitor_SMD:C_0402_1005Metric", "TBD-F22",
+                      "Capacitor_SMD:C_0402_1005Metric", LCSC_C10N_0402,
                       gnd_b=True)
             sh.text("GNSS bias-T POPULATED ON ALL BUILDS - antenna C784386 is "
                     "ACTIVE (LNA 21.5dB, 1.8-3.6V). C84 100pF is the SERIES DC "
@@ -1071,9 +1080,9 @@ def build_power():
     sh.net(l1, "2", "5V0", length=g(4))
     # FB divider: 4.3k / 1.5k -> 5.03 V (datasheet 8.5 worked example)
     sh.series("Device:R", "R83", "4.3k", (g(196), g(76)), "5V0", "U5_FB",
-              R0805, "TBD-F5")
+              R0805, "C17667")   # UNI-ROYAL 0805W8F4301T5E 1%
     sh.series("Device:R", "R84", "1.5k", (g(206), g(84)), "U5_FB", None,
-              R0805, "TBD-F5", gnd_b=True)
+              R0805, "C4310", gnd_b=True)   # UNI-ROYAL 0805W8F1501T5E 1%
     for i, x in enumerate((226, 236, 246)):
         sh.series("Device:C", f"C{77 + i}", "10uF", (g(x), g(74)), "5V0", None,
                   C0805, LCSC_C10U, gnd_b=True)
@@ -1102,7 +1111,7 @@ def build_power():
               C0805, LCSC_C4U7, gnd_b=True)
     sh.net(u6, "21", "U6_BTST", length=g(4))
     cbt = sh.place("Device:C", "C64", "47nF", (g(120), g(128)), C0603,
-                   "TBD-F5")
+                   "C1622")   # Samsung CL10B473KB8NNNC 47nF 50V X7R
     sh.net(cbt, "1", "U6_BTST", length=g(3))
     sh.net(cbt, "2", "SW_CHG", length=g(3))
     sh.net(u6, "19", "SW_CHG", length=g(4))
@@ -1128,10 +1137,10 @@ def build_power():
         sh.gnd(u6, pin, length=g(3))
     # programming pins
     sh.series("Device:R", "R85", "976R", (g(44), g(160)), "U6_ICHG", None,
-              R0805, "TBD-F5", gnd_b=True)
+              R0805, "C17880", gnd_b=True)   # UNI-ROYAL 0805W8F9760T5E 1%
     sh.net(u6, "10", "U6_ICHG", length=g(4))
     sh.series("Device:R", "R86", "536R", (g(54), g(168)), "U6_ILIM", None,
-              R0805, "TBD-F5", gnd_b=True)
+              R0805, "C5713309", gnd_b=True)   # FOJAN FRC0805F5360TS 1%
     sh.net(u6, "8", "U6_ILIM", length=g(4))
     sh.gnd(u6, "9", length=g(3))                 # /CE low = charge enabled
     sh.series("Device:R", "R87", "10k", (g(64), g(176)), "U6_OTG", None,
@@ -1144,9 +1153,9 @@ def build_power():
         sh.net(u6, pin, net, length=g(4))
     # TS network: REGN -> 5.23k -> TS -> 30.1k -> GND, NTC (in battery) on TS
     sh.series("Device:R", "R88", "5.23k", (g(90), g(186)), "REGN", "U6_TS",
-              R0805, "TBD-F5")
+              R0805, "C2933464")   # FOJAN FRC0805F5231TS 1%
     sh.series("Device:R", "R89", "30.1k", (g(100), g(194)), "U6_TS", None,
-              R0805, "TBD-F5", gnd_b=True)
+              R0805, "C21841", gnd_b=True)   # UNI-ROYAL 0805W8F3012T5E 1%
     sh.net(u6, "11", "U6_TS", length=g(4))
     # battery connector
     j2 = sh.place("Connector_Generic:Conn_01x03", "J2", "B3B-XH-A",

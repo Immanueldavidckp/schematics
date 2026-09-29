@@ -5888,7 +5888,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C115962"
+		(property "LCSC" "C2682775"
 			(at 111.76 132.08 0)
 			(hide yes)
 			(effects
@@ -6001,7 +6001,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C1653"
+		(property "LCSC" "C1647"
 			(at 106.68 144.78 0)
 			(hide yes)
 			(effects
@@ -6108,7 +6108,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C1653"
+		(property "LCSC" "C1647"
 			(at 119.38 144.78 0)
 			(hide yes)
 			(effects
@@ -6215,7 +6215,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C32346"
+		(property "LCSC" "C48615"
 			(at 111.76 106.68 0)
 			(hide yes)
 			(effects
@@ -6283,7 +6283,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C1555"
+		(property "LCSC" "C318672"
 			(at 106.68 116.84 0)
 			(hide yes)
 			(effects
@@ -6390,7 +6390,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C1555"
+		(property "LCSC" "C318672"
 			(at 119.38 116.84 0)
 			(hide yes)
 			(effects
@@ -7655,7 +7655,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C23733"
+		(property "LCSC" "C1779"
 			(at 350.52 81.28 0)
 			(hide yes)
 			(effects
@@ -7736,7 +7736,7 @@
 				)
 			)
 		)
-		(property "Value" "1k"
+		(property "Value" "330R"
 			(at 320.04 185.42 0)
 			(effects
 				(font
@@ -7762,7 +7762,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C17513"
+		(property "LCSC" "C17630"
 			(at 320.04 190.5 0)
 			(hide yes)
 			(effects
@@ -7830,7 +7830,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C2286"
+		(property "LCSC" "C12624"
 			(at 320.04 200.66 0)
 			(hide yes)
 			(effects
@@ -8076,7 +8076,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C2286"
+		(property "LCSC" "C2288"
 			(at 355.6 180.34 0)
 			(hide yes)
 			(effects
@@ -8118,7 +8118,7 @@
 				)
 			)
 		)
-		(property "Value" "1k"
+		(property "Value" "330R"
 			(at 355.6 160.02 0)
 			(effects
 				(font
@@ -8144,7 +8144,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C17513"
+		(property "LCSC" "C17630"
 			(at 355.6 165.1 0)
 			(hide yes)
 			(effects
@@ -8608,7 +8608,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C4356"
+		(property "LCSC" "C17520"
 			(at 269.24 83.82 0)
 			(hide yes)
 			(effects
@@ -8676,7 +8676,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C4356"
+		(property "LCSC" "C17520"
 			(at 279.4 83.82 0)
 			(hide yes)
 			(effects

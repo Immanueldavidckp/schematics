@@ -3623,3 +3623,41 @@ Tool lessons:
 - `hole_to_hole` is a warning in this board's setup, so the error-only gate never
   saw four same-net via pairs drilled on top of each other. `release.py` now
   refuses any hole-to-hole item at any severity.
+
+## 2026-09-29 — milestone-5 BOM verification: F-5 and F-22 closed (28 lines fixed)
+
+`tools/bom_audit.py` checks every BOM line against LCSC's part data and JLCPCB's
+library: value, voltage rating, package vs footprint, LED colour, crystal load vs
+its caps, stock (JLCPCB for JLCPCB assembly, LCSC for a local buyer). First run:
+**28 of 76 lines wrong or unverifiable**; now 0. Report: `docs/bom-audit.md`;
+`out/bom-mpn.csv` adds manufacturer + MPN for assemblers who buy by part number.
+Netlist unchanged (239 nets, 725 nodes); ERC 0; checkpins 47/47.
+
+| refs | was | now | why |
+|---|---|---|---|
+| C1,C2 18pF | C1653 | **C1647** CL10C180JB8NNNC (basic) | C1653 is 22 pF |
+| C3,C4 6.8pF | C1555 | **C318672** CL10C6R8CB8NNNC | C1555 is 22 pF 0402 |
+| Y1 8MHz | C115962 | **C2682775** YXC X32258MOB4SI, CL 12 pF | C115962 is a 5032 2-pin part on a 3225 4-pin footprint; 18 pF caps give CL 13 pF |
+| Y2 32.768kHz | C32346 | **C48615** Epson Q13FC13500002 (FC-135), CL 7 pF | C32346 is the 12.5 pF FC-135: 6.8 pF caps give 7.4 pF, and 12.5 pF would leave the LSE only ~2.3x gain margin (7 pF: ~6.6x) |
+| C12,C63 4.7uF | C23733 | **C1779** CL21A475KAQNNNE 25 V (basic) | C23733 is an 0402 |
+| C83 100nF | C14663 | **C1525** (basic, 0402) | C14663 is an 0603 on 0402 pads |
+| R71,R72 0R | C17477 | **C17168** (basic, 0402) | C17477 is an 0805 on 0402 pads |
+| R56,R58 47k | C17414 | **C17713** (basic) | C17414 is 10 k |
+| R66-R68 33R | C17408 | **C17634** (basic) | C17408 is 100 R |
+| R7,R8,R45,R49 2.2k | C4356 | **C17520** (basic) | C4356 does not exist |
+| D20 GRN / D21 BLU | C2286 | **C12624** KT-0603G / **C2288** KT-0603B | C2286 is the red KT-0603R (D13 NET stays red) |
+| R4,R6 | 1k C17513 | **330R C17630** (basic) | green/blue Vf ~2.8 V: 1 k gave ~0.4 mA; 330 R gives ~1.5 mA, inside PC13's 3 mA sink |
+| C64 47nF (BTST) | TBD-F5 | **C1622** (basic) | |
+| R83 4.3k / R84 1.5k (U5 FB) | TBD-F5 | **C17667** / **C4310** 1 % | |
+| R85 976R / R86 536R (ICHG / ILIM) | TBD-F5 | **C17880** / **C5713309** 1 % | |
+| R88 5.23k / R89 30.1k (TS) | TBD-F5 | **C2933464** / **C21841** 1 % | TI's 103AT example values stand; re-check against the chosen battery's NTC |
+| R90 68R 1210 | TBD-F22 | **C137091** YAGEO RC1210FR-0768RL 1 % 500 mW | F-22's 0.171 W fault power at 34 % of rating |
+| C85 10nF 0402 | TBD-F22 | **C15195** (basic) | |
+
+Stock notes: C15849 (1 uF), C20526 (MMBT3904), C1017 (ferrite) and C1647 show 0 in
+LCSC *retail* but hundreds of thousands at JLCPCB (basic parts) - fine for JLCPCB
+assembly; a local assembler buying from LCSC should take the MPN from
+`out/bom-mpn.csv` to any distributor. LCSC refuses detail lookups for C1017 and
+C2916205 (EC200U); the audit judges those on JLCPCB's record.
+Still open: R80 (1 R 2512 anti-surge) pulse rating vs the clamp event (F-5 note);
+the battery NTC re-check above.
