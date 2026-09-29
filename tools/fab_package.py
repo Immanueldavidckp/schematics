@@ -87,14 +87,27 @@ def board_facts():
         if attrs & pcbnew.FP_EXCLUDE_FROM_POS_FILES:
             continue
         fps["B" if f.IsFlipped() else "F"] += 1
-        if attrs & pcbnew.FP_THROUGH_HOLE:
+        # through-hole = has a plated drilled pad. Not the footprint's THT
+        # attribute: the imported U.FL / modem / IMU / SIM footprints carry it
+        # although they are surface-mount.
+        if any(pd.GetDrillSize().x > 0 and pd.GetAttribute() == pcbnew.PAD_ATTRIB_PTH
+               for pd in f.Pads()):
             tht.append(ref)
     return dict(w=w, h=h, holes=sorted(holes), sides=fps, tht=sorted(tht))
 
 
 def drill_table(drl):
+    """[(diameter, hits, 'PTH' | 'NPTH')] from the Excellon file; plating from
+    the aperture-function comment KiCad writes before each tool."""
     t = open(drl).read()
-    tools = dict(re.findall(r"^T(\d+)C([\d.]+)", t, re.M))
+    tools, plating, func = {}, {}, "PTH"
+    for line in t.splitlines():
+        m = re.search(r"TA\.AperFunction,(NonPlated|Plated)", line)
+        if m:
+            func = "NPTH" if m.group(1) == "NonPlated" else "PTH"
+        m = re.match(r"^T(\d+)C([\d.]+)", line)
+        if m:
+            tools[m.group(1)], plating[m.group(1)] = float(m.group(2)), func
     hits, cur = {}, None
     for line in t.splitlines():
         m = re.match(r"^T(\d+)$", line)
@@ -103,7 +116,7 @@ def drill_table(drl):
             continue
         if cur and line[:1] in "XY":
             hits[cur] = hits.get(cur, 0) + 1
-    return sorted(((float(tools[k]), hits.get(k, 0)) for k in tools), key=lambda r: r[0])
+    return sorted(((tools[k], hits.get(k, 0), plating[k]) for k in tools), key=lambda r: (r[2], r[0]))
 
 
 def stackup(job):
@@ -173,10 +186,10 @@ def fab_drawing(path, facts, drills, specs, stack, rev, date):
         text(rx, yy, f"{s.get('Name', s.get('Type')):22s} {s.get('Type'):12s} {th if th else '':>7} mm{extra}", 2.5)
         yy += 3.4
     yy += 3
-    text(rx, yy, "Drill table (all plated through)", 3.0, weight="bold")
+    text(rx, yy, "Drill table (PTH = plated, NPTH = non-plated)", 3.0, weight="bold")
     yy += 4.5
-    for d, n in drills:
-        text(rx, yy, f"drill {d:5.2f} mm   x {n}", 2.5)
+    for d, n, pl in drills:
+        text(rx, yy, f"drill {d:5.2f} mm   x {n}   {pl}", 2.5)
         yy += 3.4
     yy += 3
     text(rx, yy, "Fabrication requirements", 3.0, weight="bold")
@@ -253,7 +266,9 @@ Solder mask ........ both sides (green, or any colour)
 Silkscreen ......... both sides, white
 Min track/space .... 0.127 / 0.127 mm (5 mil)
 Min via ............ 0.45 mm pad, 0.20 mm drill; smallest hole 0.20 mm
-Drill sizes ........ {', '.join(f'{d:.2f} mm x{n}' for d, n in drills)} (all plated)
+Drill sizes ........ plated: {', '.join(f'{d:.2f} mm x{n}' for d, n, pl in drills if pl == 'PTH')}
+                     NON-plated: {', '.join(f'{d:.2f} mm x{n}' for d, n, pl in drills if pl == 'NPTH') or 'none'}
+                     (connector / SIM-holder locating pegs; marked NPTH in the drill file)
 Vias ............... tented both sides. One via is in a pad (U2 pin 47, ground): plugged /
                      epoxy filled and capped if offered, otherwise acceptable as is.
 Impedance control .. YES: 50 ohm coplanar waveguide on layer 1 (GNSS antenna feed):
