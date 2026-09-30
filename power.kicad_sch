@@ -5175,7 +5175,7 @@
 				)
 			)
 		)
-		(property "Value" "1uF 25V"
+		(property "Value" "1uF"
 			(at 254 30.48 0)
 			(effects
 				(font
@@ -5350,7 +5350,7 @@
 				)
 			)
 		)
-		(property "Value" "100nF 25V"
+		(property "Value" "100nF"
 			(at 200.66 38.1 0)
 			(effects
 				(font

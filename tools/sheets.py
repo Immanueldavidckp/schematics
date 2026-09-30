@@ -1087,14 +1087,17 @@ def build_power():
     sh.net(u5, "9", "VIN_B", length=g(4))       # EP = VIN per datasheet
     sh.gnd(u5, "3", length=g(3))
     sh.net(u5, "1", "U5_VCC", length=g(4))
-    sh.series("Device:C", "C75", "1uF 25V", (g(200), g(28)), "U5_VCC", None,
+    # Value "1uF", not "1uF 25V": it is the same LCSC part as the other 1 uF
+    # caps, and JLCPCB's assembly upload rejects one part number appearing on
+    # two BOM lines (2026-09-30). The rating lives in the part, not the label.
+    sh.series("Device:C", "C75", "1uF", (g(200), g(28)), "U5_VCC", None,
               C0603, LCSC_C1U, gnd_b=True)
     sh.series("Device:R", "R81", "100k", (g(190), g(28)), "U5_VCC", "U5_EN",
               R0805, LCSC_R100K)
     sh.net(u5, "2", "U5_EN", length=g(4))
     sh.net(u5, "5", "U5_VB", length=g(4))
     sh.net(u5, "6", "SW_BUCK", length=g(4))
-    cb = sh.place("Device:C", "C76", "100nF 25V", (g(158), g(34)),
+    cb = sh.place("Device:C", "C76", "100nF", (g(158), g(34)),
                   C0603, LCSC_C100N)
     sh.net(cb, "1", "U5_VB", length=g(3))
     sh.net(cb, "2", "SW_BUCK", length=g(3))

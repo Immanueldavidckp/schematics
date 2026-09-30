@@ -157,6 +157,18 @@ def export(outdir):
             wr.writeheader()
             wr.writerows(keep)
         rows = keep
+    # One part number may appear on one line only: JLCPCB's assembly upload
+    # refuses duplicates (it cannot tell which line to buy for), and leaves
+    # both unselected. Two lines get the same LCSC when their Value strings
+    # differ - e.g. "1uF" and "1uF 25V" (2026-09-30).
+    seen = {}
+    for row in rows:
+        seen.setdefault(row["LCSC"], []).append(f'"{row["Comment"]}" ({row["Designator"]})')
+    dupes = {k: v for k, v in seen.items() if k and len(v) > 1}
+    if dupes:
+        sys.exit("BOM has one part number on several lines - JLCPCB will "
+                 "reject them; give the parts the same Value:\n"
+                 + "\n".join(f"  {k}: {' + '.join(v)}" for k, v in dupes.items()))
     missing = [row["Designator"] for row in rows if not row.get("LCSC")]
     print(f"BOM: {len(rows)} lines -> {bom}"
           + (f"  ({len(missing)} line(s) WITHOUT an LCSC number: "
