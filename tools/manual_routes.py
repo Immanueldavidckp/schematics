@@ -10,6 +10,15 @@ otherwise the board is restored exactly.
   ("via", net, x, y, diameter, drill)
   ("trk", net, layer, x1, y1, x2, y2, width)
   ("del", net, layer, x1, y1, x2, y2)      remove that track (to re-lay it)
+  ("delvia", net, x, y)                    remove that via
+  ("padnet", ref, pad, net)                put a footprint pad on another net
+                                           (after the same change in the schematic)
+  ("rotate", ref, degrees)                 set a footprint's orientation
+  ("value", ref, text)                     set a footprint's Value field
+  ("move", ref, x, y)                      set a footprint's position
+
+MANUAL_ACCEPT_EQUAL=1 keeps a route that leaves the unconnected count where it
+was (for re-routes and pin swaps, where nothing new gets connected).
 
 Run:  python3 tools/manual_routes.py [route-name ...]   (default: all)
 
@@ -211,14 +220,28 @@ def mm(v):
 
 
 SEG_RE = re.compile(r"\t\(segment\n(?:\t\t.*\n)*?\t\)\n")
+VIA_RE = re.compile(r"\t\(via\n(?:\t\t.*\n)*?\t\)\n")
 
 
 def drop_segments(dels):
-    """Delete ("del", ...) tracks by editing the file text, like the other
-    tools do: removing more than one item through pcbnew's Remove() in one
-    session corrupts the board object (it segfaults in Zones())."""
+    """Delete ("del", ...) tracks and ("delvia", ...) vias by editing the file
+    text, like the other tools do: removing more than one item through
+    pcbnew's Remove() in one session corrupts the board object (it segfaults
+    in Zones())."""
     txt = open(PCB, encoding="utf-8").read()
-    for _, net, layer, x1, y1, x2, y2 in dels:
+    for it in [d for d in dels if d[0] == "delvia"]:
+        _, net, x, y = it
+        hits = []
+        for m in VIA_RE.finditer(txt):
+            blk = m.group(0)
+            at = re.search(r"\(at ([-\d.]+) ([-\d.]+)\)", blk)
+            if f'(net "{net}")' in blk and at and abs(float(at.group(1)) - x) < 6e-4 and abs(float(at.group(2)) - y) < 6e-4:
+                hits.append(m.span())
+        if len(hits) != 1:
+            sys.exit(f"delvia: {len(hits)} vias match {net} ({x}, {y})")
+        a, z = hits[0]
+        txt = txt[:a] + txt[z:]
+    for _, net, layer, x1, y1, x2, y2 in [d for d in dels if d[0] == "del"]:
         std = re.search(rf'\(\d+ "([^"]+)" \w+ "{re.escape(layer)}"\)', txt)
         layers = {layer} | ({std.group(1)} if std else set())
         want = [(x1, y1), (x2, y2)]
@@ -242,17 +265,41 @@ def drop_segments(dels):
 
 
 def apply(items):
-    dels = [it for it in items if it[0] == "del"]
+    dels = [it for it in items if it[0] in ("del", "delvia")]
     if dels:
         drop_segments(dels)
     b = pcbnew.LoadBoard(PCB)
     for it in items:
+        if it[0] in ("del", "delvia"):
+            continue
+        if it[0] == "padnet":
+            _, ref, pad, netname = it
+            f = [x for x in b.GetFootprints() if x.GetReference() == ref][0]
+            p = [x for x in f.Pads() if x.GetNumber() == pad][0]
+            n = b.FindNet(netname)
+            if n is None:
+                sys.exit(f"no net {netname}")
+            p.SetNet(n)
+            continue
+        if it[0] == "rotate":
+            _, ref, deg = it
+            f = [x for x in b.GetFootprints() if x.GetReference() == ref][0]
+            f.SetOrientationDegrees(deg)
+            continue
+        if it[0] == "value":
+            _, ref, text = it
+            f = [x for x in b.GetFootprints() if x.GetReference() == ref][0]
+            f.SetValue(text)
+            continue
+        if it[0] == "move":
+            _, ref, x, y = it
+            f = [x for x in b.GetFootprints() if x.GetReference() == ref][0]
+            f.SetPosition(pcbnew.VECTOR2I(mm(x), mm(y)))
+            continue
         net = b.FindNet(it[1])
         if net is None:
             sys.exit(f"no net {it[1]}")
-        if it[0] == "del":
-            continue
-        elif it[0] == "via":
+        if it[0] == "via":
             _, _, x, y, d, dr = it
             v = pcbnew.PCB_VIA(b)
             v.SetPosition(pcbnew.VECTOR2I(mm(x), mm(y)))
@@ -293,7 +340,8 @@ def main():
                            capture_output=True, text=True, timeout=1500,
                            env=dict(os.environ, PYTHONPATH=TOOLS), cwd=PROJ)
             e, u, txt = drc(name + "-settle")
-        if e <= e0 and u < u0:
+        ok = e <= e0 and (u < u0 or (u == u0 and os.environ.get("MANUAL_ACCEPT_EQUAL")))
+        if ok:
             print(f"KEPT {name}: unconnected {u0} -> {u}, errors {e}")
             u0 = u
             done.add(group(name))

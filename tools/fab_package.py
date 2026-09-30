@@ -16,7 +16,8 @@ telematics-tracker-mfg-<date>-<git short hash>. Layout:
                               IPC-D-356 test netlist, ODB++ archive
   2_PCB_assembly/             BOM (JLCPCB + with manufacturer part numbers),
                               pick-and-place, assembly drawings, 3D renders
-  3_documentation/            schematic PDF, assembled-board STEP, BOM audit
+  3_documentation/            schematic PDF, assembled-board STEP, BOM audit,
+                              design verification report (OK / NOT OK per item)
   4_enclosure/                STL / STEP / Blender source + renders, notes
 """
 import csv
@@ -360,6 +361,7 @@ def main():
     run(["kicad-cli", "pcb", "export", "step", "--subst-models", "--no-dnp", "-f",
          "-o", os.path.join(d3, "assembled-board.step"), PCB], timeout=2400)
     shutil.copy(os.path.join(PROJ, "docs", "bom-audit.md"), d3)
+    shutil.copy(os.path.join(PROJ, "docs", "verification-report.pdf"), d3)
 
     # 4 - enclosure
     shutil.copy(os.path.join(PROJ, "docs", "housing-notes.md"), d4)

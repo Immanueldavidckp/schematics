@@ -19,6 +19,7 @@ PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # footprints
 R0805 = "Resistor_SMD:R_0805_2012Metric"
 R1206 = "Resistor_SMD:R_1206_3216Metric"
+R0603 = "Resistor_SMD:R_0603_1608Metric"
 C0603 = "Capacitor_SMD:C_0603_1608Metric"
 C0805 = "Capacitor_SMD:C_0805_2012Metric"
 C1210 = "Capacitor_SMD:C_1210_3225Metric"
@@ -36,8 +37,8 @@ LCSC_R1K = "C17513"
 LCSC_R100 = "C17408"
 LCSC_R0 = "C17477"
 LCSC_C100N = "C14663"
-LCSC_C1U = "C15849"
-LCSC_C4U7 = "C1779"    # Samsung CL21A475KAQNNNE 4.7uF 25V X5R 0805 (C23733 is 0402)
+LCSC_C1U = "C106858"   # YAGEO CC0603KRX7R8BB105 1uF 25V X7R 0603 (C15849 was X5R: rule 1)
+LCSC_C4U7 = "C354262"  # YAGEO CC0805KKX7R8BB475 4.7uF 25V X7R 0805 (C1779 was X5R: rule 1)
 LCSC_C18P = "C1647"    # Samsung CL10C180JB8NNNC 18pF C0G 0603 (C1653 is 22pF)
 LCSC_C6P8 = "C318672"  # Samsung CL10C6R8CB8NNNC 6.8pF C0G 0603 (C1555 is 22pF 0402)
 LCSC_LED_G = "C2286"   # KENTO KT-0603R red (NET LED D13)
@@ -311,12 +312,15 @@ LCSC_NMOS_150V = "C51886143"   # AM2390N-TP 150V 4A SOT-23-3L (see F-10 gate dri
 LCSC_PESD1CAN = "C15771"       # Nexperia PESD1CAN,215
 LCSC_ACT45B = "C76584"         # TDK ACT45B-510-2P-TL003 (alt clone C48928226)
 LCSC_J1_MX3 = "C7588012"       # XUNPU WAFER-MX3.0-12PZZ (Micro-Fit 3.0 ref series)
-LCSC_BAV99 = "C2500"           # Nexperia BAV99,215
+LCSC_BAV99 = "C2500"           # Nexperia BAV99,215: pin 1 A1, pin 2 K2, pin 3 K1/A2 (KiCad's hidden
+                               # pin names say K/A/K - wrong; its drawing and Nexperia agree)
+LCSC_BAV70 = "C2501"           # Nexperia BAV70,215: pin 1 A1, pin 2 A2, pin 3 common K
 LCSC_SS3200 = "C65001"         # MDD SS3200 200V 3A SMA (F-11 approved swap from SS310)
 LCSC_R60R4 = "C228935"         # YAGEO AC0805FR-0760R4L 60.4R 1%
 LCSC_R12K_1206 = "C17912"      # UNI-ROYAL 1206W4F1202T5E 12k 1% 250mW
 LCSC_R47K = "C17713"           # UNI-ROYAL 0805W8F4702T5E 47k 1%
-LCSC_R100K = "C17407"          # UNI-ROYAL 0805W8F1003T5E 100k 1%
+LCSC_R100K = "C149504"         # UNI-ROYAL 0805W8F1003T5E 100k 1% (basic; C17407 = same MPN, no JLC stock)
+LCSC_R220K = "C17556"          # UNI-ROYAL 0805W8F2203T5E 220k 1%
 LCSC_R9K1 = "C17855"           # UNI-ROYAL 0805W8F9101T5E 9.1k 1%
 LCSC_R1M = "C17514"            # UNI-ROYAL 0805W8F1004T5E 1M 1%
 LCSC_C4N7 = "C1621"            # Samsung CL10B472KB8NNNC 4.7nF 50V X7R 0603
@@ -325,10 +329,10 @@ LCSC_MMBT3904V = "C20526"      # MMBT3904 NPN 40V SOT-23 (API-verified, 21,350 s
 
 def build_io():
     sh = Sheet("io", paper="A3")
-    sh.text("MACHINE I/O - CAN, isolated digital inputs, low-side outputs, "
+    sh.text("MACHINE I/O - CAN, ground-referenced digital inputs, low-side outputs, "
             "supply sensing.  HV zone: J1 / dividers / DI series R / DO drains.",
             (g(20), g(16)), 2.0)
-    sh.text("Valid DI input range 9-100 V.  DO loads: relay coils / buzzers "
+    sh.text("Valid DI input range 10.5-100 V.  DO loads: relay coils / buzzers "
             "<= 0.5 A at 12/24 V.", (g(20), g(20)))
 
     # ---------------- J1 machine harness, 12-pin Micro-Fit 3.0 class --------
@@ -434,19 +438,23 @@ def build_io():
         sh.gnd(ok, "2", length=g(3))
         sh.gnd(ok, "3", length=g(3))
         sh.hier(ok, "4", f"DI{n}", "output", length=g(6))
-        # BAV99 as the antiparallel (reverse) diode across the opto LED.
-        # Series pair: D2 conducts GND->LED anode on reverse input; pin 1 is
-        # tied to pin 3 so the unused half carries no current.
-        bav = sh.place("Diode:BAV99", f"D{4 + n}", "BAV99",
-                       (g(96), g(ybase + 20)), SOT23, LCSC_BAV99)
+        # BAV70 (common cathode, pin 3) as the antiparallel (reverse) diode
+        # across the opto LED: diode 2 conducts GND (pin 2, anode) -> LED node
+        # (pin 3) on a reverse input; pin 1 is tied to pin 3 so diode 1 is
+        # shorted. (Was a BAV99 wired for the mirror of its real pinout: it
+        # bypassed the opto LED on every positive input - review 2026-09-29.)
+        bav = sh.place("Diode:BAV70", f"D{4 + n}", "BAV70",
+                       (g(96), g(ybase + 20)), SOT23, LCSC_BAV70)
         sh.net(bav, "3", f"DI{n}_LED", length=g(4))
         sh.net(bav, "1", f"DI{n}_LED", length=g(4))
         sh.gnd(bav, "2", length=g(3))
-        sh.series("Device:R", f"R{20 + n}", "47k", (g(134), g(ybase)),
-                  "3V3", f"DI{n}", R0805, LCSC_R47K)
+        # 220k (was 47k): the EL357N(D) CTR at 0.22 mA / 70 C leaves ~1x margin
+        # against a 47k pull-up at the 9-10.5 V input floor; 220k needs 15 uA
+        sh.series("Device:R", f"R{20 + n}", "220k", (g(134), g(ybase)),
+                  "3V3", f"DI{n}", R0805, LCSC_R220K)
         sh.series("Device:C", f"C{24 + n}", "100nF", (g(146), g(ybase + 6)),
                   f"DI{n}", None, C0603, LCSC_C100N, gnd_b=True)
-    sh.text("DI1/DI2: 36k series (3x12k 1206, F-7) -> EL357N(D) opto, 47k pull-up "
+    sh.text("DI1/DI2: 36k series (3x12k 1206, F-7) -> EL357N(D) opto, 220k pull-up "
             "+ 100nF at the MCU side.  Valid input 10.5-100 V.", (g(64), g(124)))
 
     # ---------------- low-side digital outputs DO1/DO2 ----------------------
@@ -487,23 +495,31 @@ def build_io():
                       R0805, LCSC_R100)
         sh.net(rg, "1", f"DO{n}_DRV", length=g(4))
         sh.net(rg, "2", f"Q{n}_G", length=g(4))
-        sh.series("Device:R", f"R{24 + n}", "10k", (g(82 + 36), g(ybase + 6)),
-                  f"Q{n}_G", None, R0805, LCSC_R10K, gnd_b=True)
+        # 100k gate pulldown (was 10k): with 2.2k + 100R the gate reached only
+        # 4.07 V; the AM2390N-TP is specified at 4.5 V (VGS(th) up to 3.5 V).
+        # 100k -> 4.89 V, still discharges the gate in ~25 us.
+        sh.series("Device:R", f"R{24 + n}", "100k", (g(82 + 36), g(ybase + 6)),
+                  f"Q{n}_G", None, R0805, LCSC_R100K, gnd_b=True)
         q = sh.place("Transistor_FET:Q_NMOS_GSD", f"Q{n}", "AM2390N-TP",
                      (g(104 + 36), g(ybase)),
                      "jlc:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR", LCSC_NMOS_150V)
         sh.net(q, "1", f"Q{n}_G", length=g(4))
         sh.gnd(q, "2", length=g(3))
         sh.net(q, "3", f"DO{n}_OUT", length=g(4))
-        # flyback: anode on the drain, cathode to VIN (SS3200 200V per F-11)
+        # flyback: anode on the drain, cathode to VIN_P (SS3200 200V per
+        # F-11). VIN_P, not raw VIN: with the cathode on VIN a reversed
+        # supply flowed GND -> Q1/Q2 body diode -> D7/D8 -> VIN around the
+        # D1 blocking diode, limited by nothing (review 2026-09-30). Behind
+        # D1 the path is blocked; the flyback energy lands in C70-C72.
         d = sh.place("Device:D_Schottky", f"D{6 + n}", "SS3200",
                      (g(164), g(ybase - 8)), "Diode_SMD:D_SMA", LCSC_SS3200)
         sh.net(d, "2", f"DO{n}_OUT", length=g(4))
-        sh.net(d, "1", "VIN", length=g(4))
+        sh.hier(d, "1", "VIN_P", "input", length=g(4))
     sh.text("DO1/DO2 (F-10): two-stage NPN driver from 5V0, non-inverting, "
-            "default OFF (base pulldown + QnB clamps gate; 10k gate pulldown "
-            "retained).  SS3200 200V flyback to VIN (F-11).  DO1/DO2 inactive "
-            "on battery backup (5V0 absent).", (g(44), g(204)))
+            "default OFF (base pulldown + QnB clamps gate; 100k gate pulldown "
+            "-> 4.9 V VGS).  SS3200 200V flyback to VIN_P, behind D1 (F-11, "
+            "reverse-polarity review 2026-09-30).  DO1/DO2 inactive on battery "
+            "backup (5V0 absent).", (g(44), g(204)))
 
     # ---------------- supply / ignition / battery sensing -------------------
     for tag, src, ysense in (("VIN", "VIN", 40), ("IGN", "IGN", 74)):
@@ -520,12 +536,15 @@ def build_io():
         sh.series("Device:C", f"C{27 + (0 if tag == 'VIN' else 1)}", "100nF",
                   (g(278), g(ysense)), f"{tag}_SENSE", None, C0603,
                   LCSC_C100N, gnd_b=True)
-        # BAV99 rail clamp: signal on pin 3, pin 1 to 3V3, pin 2 to GND
+        # BAV99 rail clamp with the REAL pinout (Nexperia: 1 = A1, 2 = K2,
+        # 3 = K1/A2): signal on pin 3, pin 1 (anode) to GND, pin 2 (cathode)
+        # to 3V3 -> clamps at 3V3+0.6 and GND-0.6. (Was 1 = 3V3, 2 = GND: two
+        # forward diodes across the 3V3 rail - review 2026-09-29.)
         bav = sh.place("Diode:BAV99", f"D{10 if tag == 'VIN' else 11}", "BAV99",
                        (g(292), g(ysense + 10)), SOT23, LCSC_BAV99)
         sh.net(bav, "3", f"{tag}_SENSE", length=g(4))
-        sh.net(bav, "1", "3V3", length=g(4))
-        sh.gnd(bav, "2", length=g(3))
+        sh.gnd(bav, "1", length=g(3))
+        sh.net(bav, "2", "3V3", length=g(4))
     sh.text("VIN and IGN sensing: 300k (3x100k 0805) : 9.1k, 100nF, BAV99 "
             "clamp to 3V3/GND.  IGN also serves as the EXTI wake input.",
             (g(224), g(30)))
@@ -580,7 +599,10 @@ GNSS_FEED_R_FP = "Resistor_SMD:R_1210_3225Metric"
 LCSC_R_GNSS_FEED = "C137091"  # YAGEO RC1210FR-0768RL 68R 1% 500mW 1210 (F-22)
 LCSC_UFL = "C53133524"         # XYECONN XY-IPEX1 (IPEX gen-1 / U.FL, 6 GHz 50R)
 LCSC_USBLC6 = "C7519"          # ST USBLC6-2SC6 (genuine)
-LCSC_SMF05C = "C15879"         # onsemi SMF05CT1G SOT-363
+LCSC_SIM_ESD = "C179747"       # Nexperia PESD5V0L5UY,115 SOT-363: pin 2 common anode, <= 19 pF per
+                               # line. Quectel's guideline is <= 15 pF; this is the nearest SOT-363
+                               # array in stock and is accepted (SIM clock <= 5 MHz). The SMF05CT1G
+                               # C15879 it replaces is 80-130 pF.
 LCSC_AO3401A = "C15127"        # AOS AO3401A -30V 4A SOT-23
 LCSC_MMBT3906 = "C75549"       # Nexperia MMBT3906,215
 LCSC_SMF50A = "C193402"        # MDD SMF5.0A (modem VBAT clamp)
@@ -685,8 +707,8 @@ def build_modem_rf():
                   LCSC_SMF50A)
     sh.net(dv, "1", "VBAT_MODEM", length=g(3))     # cathode to rail
     sh.gnd(dv, "2", length=g(3))
-    sh.text("VBAT_MODEM: 2x100uF + 1uF + 100nF + SMF5.0A, place <=5mm from "
-            "U1 VBAT pads (57-60).", (g(50), g(32)))
+    sh.text("VBAT_MODEM: 4x47uF X7R (F-13) + 1uF + 100nF + SMF5.0A, place <=5mm "
+            "from U1 VBAT pads (57-60).", (g(50), g(32)))
 
     # --- F-14 (approved 2026-09-04): VBAT_MODEM test point. This is the rail
     # whose sag during a 2 A LTE transmit burst is the thing worth measuring.
@@ -769,12 +791,15 @@ def build_modem_rf():
     sh.net(u8, "14", "3V3", length=g(4))
     sh.gnd(u8, "7", length=g(3))
     sh.nc(u8, "6"); sh.nc(u8, "9")
-    # OE pulldown: outputs Hi-Z until modem's 1.8 V rail is up
+    # OE: 10k up to VDD_EXT / 100k down -> 1.64 V (TXB0104 VIH(OE) >= 0.65 x
+    # VCCA = 1.17 V), 0 V while the modem rail is down (outputs Hi-Z). The
+    # original 47k up / 10k down gave 0.32 V = permanently disabled (review
+    # 2026-09-29). Quectel Fig 21 uses 10k / 120k.
     sh.net(u8, "8", "U8_OE", length=g(4))
-    sh.series("Device:R", "R62", "10k", (g(178), g(76)), "U8_OE", None,
-              R0805, LCSC_R10K, gnd_b=True)
-    sh.series("Device:R", "R63", "47k", (g(168), g(52)), "VDD_EXT_1V8",
-              "U8_OE", R0805, LCSC_R47K)
+    sh.series("Device:R", "R62", "100k", (g(178), g(76)), "U8_OE", None,
+              R0805, LCSC_R100K, gnd_b=True)
+    sh.series("Device:R", "R63", "10k", (g(168), g(52)), "VDD_EXT_1V8",
+              "U8_OE", R0805, LCSC_R10K)
     # A side 1.8V, named directly for the modem pins they reach:
     # A1 (from B1 = MODEM_TX) drives modem MAIN_RXD(68); A2 <- MAIN_TXD(67)
     sh.net(u8, "2", "MRXD_1V8", length=g(4))
@@ -794,7 +819,7 @@ def build_modem_rf():
               C0603, LCSC_C100N, gnd_b=True)
     sh.text("U8 TXB0104: A=1.8V (VDD_EXT), B=3V3. A1<->B1 carries MCU TX -> "
             "modem MAIN_RXD(68); A2<->B2 modem MAIN_TXD(67) -> MCU RX; "
-            "A3 RI(62); A4 DTR(66). OE held low until VDD_EXT rises.",
+            "A3 RI(62); A4 DTR(66). OE = 10k/100k from VDD_EXT (1.64 V).",
             (g(160), g(30)))
 
     # ---- NETLIGHT LED ------------------------------------------------------
@@ -850,18 +875,23 @@ def build_modem_rf():
     sh.series("Device:R", "R70", "0R", (g(282), g(76)), "USIM_VDD",
               "USIM_VDD_ESIM", R0805, LCSC_R0, dnp=True)
     # ESD array at the holder
-    e1 = sh.place("jlc:SMF05CT1G", "D14", "SMF05C", (g(232), g(130)),
-                  "jlc:SOT-363_L2.0-W1.3-P0.65-LS2.1-BR", LCSC_SMF05C)
+    # PESD5V0L5UY in the SMF05C symbol/footprint: same SOT-363 pin map (2 = GND)
+    e1 = sh.place("jlc:SMF05CT1G", "D14", "PESD5V0L5UY", (g(232), g(130)),
+                  "jlc:SOT-363_L2.0-W1.3-P0.65-LS2.1-BR", LCSC_SIM_ESD)
     sh.net(e1, "1", "SIM_DATA", length=g(4))
     sh.net(e1, "3", "SIM_CLK", length=g(4))
     sh.net(e1, "4", "SIM_RST", length=g(4))
     sh.net(e1, "5", "USIM_VDD", length=g(4))
     sh.gnd(e1, "2", length=g(3))
     sh.nc(e1, "6")
-    sh.text("USIM: 33R series on DATA/CLK/RST, 100nF on VDD, SMF05C at the "
-            "holder. MFF2 eSIM pads (X2, DNP) parallel; VDD via 0R selects "
-            "R69 (fitted, holder) / R70 (DNP, eSIM). SMF05C pin2=GND to be "
-            "confirmed at footprint verification.", (g(226), g(146)))
+    # USIM_DET: Quectel Fig 18 pulls it up to VDD_EXT through 51k (the pin has
+    # no internal pull-up); the holder's switch shorts it to GND with no card.
+    sh.series("Device:R", "R91", "51k", (g(300), g(60)), "VDD_EXT_1V8",
+              "USIM_DET", R0603, "C23196")   # UNI-ROYAL 0603WAF5102T5E 1%
+    sh.text("USIM: 33R series on DATA/CLK/RST, 100nF on VDD, PESD5V0L5UY (19pF) "
+            "at the holder, 51k USIM_DET pull-up to VDD_EXT. MFF2 eSIM pads "
+            "(X2, DNP) parallel; VDD via 0R selects R69 (fitted, holder) / "
+            "R70 (DNP, eSIM).", (g(226), g(146)))
 
     # ---- USB to test pads with ESD -----------------------------------------
     ud = sh.place("jlc:USBLC6-2SC6", "D15", "USBLC6-2SC6", (g(60), g(160)),
@@ -1003,11 +1033,15 @@ def build_power():
     d1 = sh.place("jlc:S3M_C5204901", "D1", "S3M", (g(60), g(40)),
                   "jlc:SMB_L4.3-W3.6-LS5.3-RD", LCSC_S3M)
     sh.net(d1, "2", "VIN_F", length=g(4))       # anode
-    sh.net(d1, "1", "VIN_P", length=g(4))       # cathode -> protected node
-    d2 = sh.place("Device:D_TVS", "D2", "SMDJ100A", (g(74), g(50)),
+    sh.hier(d1, "1", "VIN_P", "output", length=g(4))   # cathode -> protected node (to io: D7/D8 flyback)
+    # Unidirectional TVS: cathode (pin 1 = the SMC pad with the band) to the
+    # rail, anode to GND. (Was drawn with the bidirectional D_TVS symbol and
+    # pin 2 on the rail: the part would have conducted forward and blown F1
+    # at the first power-up - review 2026-09-29.)
+    d2 = sh.place("Device:D_Zener", "D2", "SMDJ100A", (g(74), g(50)),
                   "Diode_SMD:D_SMC", LCSC_SMDJ100A)
-    sh.net(d2, "2", "VIN_P", length=g(3))
-    sh.gnd(d2, "1", length=g(3))
+    sh.net(d2, "1", "VIN_P", length=g(3))
+    sh.gnd(d2, "2", length=g(3))
     sh.series("Device:C", "C70", "2.2uF 100V", (g(86), g(50)), "VIN_P", None,
               C1210, LCSC_C2U2_100V, gnd_b=True)
     sh.series("Device:C", "C71", "2.2uF 100V", (g(96), g(50)), "VIN_P", None,
@@ -1030,7 +1064,7 @@ def build_power():
               C1210, LCSC_C2U2_100V, gnd_b=True)
     sh.series("Device:C", "C74", "2.2uF 100V", (g(140), g(50)), "VIN_B", None,
               C1210, LCSC_C2U2_100V, gnd_b=True)
-    sh.text("Front end: F1 (250 VDC interrupt) -> D1 S3M reverse block -> "
+    sh.text("Front end: F1 (250 VAC / 125 VDC, 100 A DC interrupt) -> D1 S3M reverse block -> "
             "D2 SMDJ100A 3kW -> R80 1R 2512 anti-surge (F-15 approved) -> "
             "buck. Margin at 3.7A clamp: 34.9%. R80 at the 10.5V floor, full "
             "load: V_B=9.16V, I=0.644A, 0.41W. 10R was a brown-out (no "
@@ -1064,9 +1098,12 @@ def build_power():
                   C0603, LCSC_C100N)
     sh.net(cb, "1", "U5_VB", length=g(3))
     sh.net(cb, "2", "SW_BUCK", length=g(3))
-    # IS sense: F-12 - datasheet gives no R_IS formula; 0R fitted, tune at bench
-    sh.series("Device:R", "R82", "0R (F-12)", (g(158), g(60)), "U5_IS",
-              "SW_BUCK", R0805, LCSC_R0)
+    # IS sense: the EG11752 compares (IS - VS) with 0.2 V (Fig 5-1, s7.2), so
+    # R_IS = 0.2 V / I_peak. 0.1R -> 2.0 A peak limit (normal peak 1.18 A, L1
+    # Isat 2.7 A). 0R (F-12) had disabled the current limit and short-circuit
+    # protection altogether - review 2026-09-29. BV-1: characterise the trip.
+    sh.series("Device:R", "R82", "0.1R", (g(158), g(60)), "U5_IS",
+              "SW_BUCK", R0805, "C327057")   # YAGEO RL0805FR-7W0R1L 1% 250mW
     sh.net(u5, "7", "U5_IS", length=g(4))
     sh.net(u5, "4", "U5_FB", length=g(4))
     # freewheel + inductor + output
@@ -1091,8 +1128,8 @@ def build_power():
     tp5 = sh.place("Connector:TestPoint", "TP19", "5V0", (g(238), g(60)), TP)
     sh.hier(tp5, "1", "5V0", "output", length=g(5))
     sh.text("U5 EG11752: EN 100k from VCC (per fig 6-2); VB-VS 100nF boot; "
-            "IS via R82 0R - F-12: no R_IS formula in the V1.0 datasheet, "
-            "bench/FAE item; FB 4.3k/1.5k -> 5.03V; L 150uH (Isat 2.7A); "
+            "IS via R82 0.1R -> 2 A peak limit (0.2 V / R_IS; BV-1 characterise); "
+            "FB 4.3k/1.5k -> 5.03V; L 150uH (Isat 2.7A); "
             "SS3200 freewheel. #1 bench test: 100V in, 0.7-1A out, Ton~455ns.",
             (g(150), g(96)))
 

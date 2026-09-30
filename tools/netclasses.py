@@ -26,7 +26,7 @@ PCB = os.path.join(PROJ, "telematics-tracker.kicad_pcb")
 # contamination, which is what the 1.5 mm defence-in-depth separation is for.
 # VIN_SENSE / IGN_SENSE are deliberately NOT here: they are the divider
 # OUTPUTS into the ADC and sit at a few volts.
-HV = ["VIN", "/power/VIN_F", "/power/VIN_P", "/power/VIN_B",
+HV = ["VIN", "/power/VIN_F", "VIN_P", "/power/VIN_B",
       "/io/DO1_OUT", "/io/DO2_OUT", "/io/IGN",
       "/io/DI1_IN", "/io/DI2_IN",
       "/io/J1_SPARE1", "/io/J1_SPARE2",

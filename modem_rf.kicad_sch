@@ -5238,7 +5238,7 @@
 		)
 		(uuid "df71229c-53ac-5413-880a-cd980d8ef86c")
 	)
-	(text "VBAT_MODEM: 2x100uF + 1uF + 100nF + SMF5.0A, place <=5mm from U1 VBAT pads (57-60)."
+	(text "VBAT_MODEM: 4x47uF X7R (F-13) + 1uF + 100nF + SMF5.0A, place <=5mm from U1 VBAT pads (57-60)."
 		(exclude_from_sim no)
 		(at 63.5 40.64 0)
 		(effects
@@ -5247,7 +5247,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "65dbbdea-ee13-5757-8468-e6b865346835")
+		(uuid "8d1c127d-8db5-5def-912b-5e7592fd186e")
 	)
 	(wire
 		(pts
@@ -6460,7 +6460,7 @@
 		)
 		(uuid "330d3383-6041-5dbe-9baf-0eac706229ba")
 	)
-	(text "U8 TXB0104: A=1.8V (VDD_EXT), B=3V3. A1<->B1 carries MCU TX -> modem MAIN_RXD(68); A2<->B2 modem MAIN_TXD(67) -> MCU RX; A3 RI(62); A4 DTR(66). OE held low until VDD_EXT rises."
+	(text "U8 TXB0104: A=1.8V (VDD_EXT), B=3V3. A1<->B1 carries MCU TX -> modem MAIN_RXD(68); A2<->B2 modem MAIN_TXD(67) -> MCU RX; A3 RI(62); A4 DTR(66). OE = 10k/100k from VDD_EXT (1.64 V)."
 		(exclude_from_sim no)
 		(at 203.2 38.1 0)
 		(effects
@@ -6469,7 +6469,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "35680926-0d46-5704-8401-f77807382eed")
+		(uuid "3029f4e2-6100-554a-97aa-2fe00ab9c9e9")
 	)
 	(wire
 		(pts
@@ -7221,7 +7221,47 @@
 		(at 309.88 157.48)
 		(uuid "d7800de4-dd31-5d40-b57c-b5cef8fc6f6c")
 	)
-	(text "USIM: 33R series on DATA/CLK/RST, 100nF on VDD, SMF05C at the holder. MFF2 eSIM pads (X2, DNP) parallel; VDD via 0R selects R69 (fitted, holder) / R70 (DNP, eSIM). SMF05C pin2=GND to be confirmed at footprint verification."
+	(wire
+		(pts
+			(xy 381 72.39) (xy 381 68.58)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "65b1ed91-aa34-5fe4-9894-c67a568910b8")
+	)
+	(label "VDD_EXT_1V8"
+		(at 381 68.58 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "2bf200dc-2750-583d-abfc-3723d826b82b")
+	)
+	(wire
+		(pts
+			(xy 381 80.01) (xy 381 83.82)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "344b48aa-d24a-5c02-98f5-e117d929d0ed")
+	)
+	(label "USIM_DET"
+		(at 381 83.82 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "0364c07e-35b2-5f48-ba5d-2fab1e93c20c")
+	)
+	(text "USIM: 33R series on DATA/CLK/RST, 100nF on VDD, PESD5V0L5UY (19pF) at the holder, 51k USIM_DET pull-up to VDD_EXT. MFF2 eSIM pads (X2, DNP) parallel; VDD via 0R selects R69 (fitted, holder) / R70 (DNP, eSIM)."
 		(exclude_from_sim no)
 		(at 287.02 185.42 0)
 		(effects
@@ -7230,7 +7270,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "25f19f4e-9852-5f65-9556-6faeb284b212")
+		(uuid "60c870ba-86bc-5f97-becd-79ea9f898aa5")
 	)
 	(wire
 		(pts
@@ -7240,7 +7280,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "54ff7b5d-72fd-5ce4-89fb-807a41b3123d")
+		(uuid "5dc77118-fc0d-514a-966d-020484b66663")
 	)
 	(label "USB_DP_M"
 		(at 54.61 195.58 180)
@@ -7250,7 +7290,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "9e4d0a28-bd0d-5c8e-9f56-4252a46c5523")
+		(uuid "ecf878b9-d1d6-5680-86bd-9bd31a4eb19c")
 	)
 	(wire
 		(pts
@@ -7260,7 +7300,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "002659fb-8213-51c1-ab82-0bc125fc9631")
+		(uuid "8e09fb8e-83fb-516a-a5b4-7d1a2078f581")
 	)
 	(label "USB_DM_M"
 		(at 54.61 210.82 180)
@@ -7270,7 +7310,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "4cca956a-9d69-5410-936d-468c8deab536")
+		(uuid "71a9bd7d-7532-5f7e-a15e-58d09459a188")
 	)
 	(wire
 		(pts
@@ -7280,7 +7320,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "5050c66e-9141-5bac-b03e-f1fc2ce4f2da")
+		(uuid "dae48c5e-f1cb-5129-b680-1f9e8d63460b")
 	)
 	(label "USB_DP_TP"
 		(at 97.79 195.58 0)
@@ -7290,7 +7330,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "0e4cf8f8-b052-579b-a4e0-fb5e5e1068e2")
+		(uuid "e07450fe-3f0b-574f-b73f-e5c443de4602")
 	)
 	(wire
 		(pts
@@ -7300,7 +7340,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "75f294e6-0944-51e1-89f0-d663ec570ee1")
+		(uuid "3171d9ce-5f7c-5ea8-87d5-cc2c4795138c")
 	)
 	(label "USB_DM_TP"
 		(at 97.79 210.82 0)
@@ -7310,7 +7350,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "0f308acb-6525-58cc-bdeb-ebe85e8107a3")
+		(uuid "2c2b468a-55f4-5e0a-ac75-38893076e9a0")
 	)
 	(wire
 		(pts
@@ -7320,7 +7360,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "be6de294-f4fe-5570-b075-84760ed69063")
+		(uuid "9c72985e-f654-56bf-8dca-de8134dc47b8")
 	)
 	(label "USB_VBUS"
 		(at 97.79 203.2 0)
@@ -7330,7 +7370,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "4becc7cd-25fc-5793-9296-c107334945fb")
+		(uuid "49c800f6-fbd1-570f-bd3b-706fa2773431")
 	)
 	(wire
 		(pts
@@ -7340,7 +7380,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "da3f4d92-c711-51ec-85c7-1602546a783e")
+		(uuid "aaec34cc-8a89-5ca8-b318-40c7b1c192c3")
 	)
 	(wire
 		(pts
@@ -7350,7 +7390,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "735c91d8-616e-5e15-9310-221ce605f2f7")
+		(uuid "567ff700-5f8a-5ce0-9cea-86e4a039e2ac")
 	)
 	(label "USB_DP_TP"
 		(at 114.3 204.47 270)
@@ -7360,7 +7400,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "f0d6033e-26ae-555b-a476-5bcfb087c362")
+		(uuid "56dd1c04-df86-5d1b-a9f0-1a335a070b12")
 	)
 	(wire
 		(pts
@@ -7370,7 +7410,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "ef67030b-f21d-524f-8f1e-987f3999e9b3")
+		(uuid "29299a15-f917-590b-8910-ad76c60e8f2e")
 	)
 	(label "USB_DM_TP"
 		(at 124.46 204.47 270)
@@ -7380,7 +7420,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "fae7b834-d98d-51a0-bb9c-0dd92447d061")
+		(uuid "78abc0f2-6372-571c-b668-dd0454c3e18a")
 	)
 	(wire
 		(pts
@@ -7390,7 +7430,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "55c37ccc-af72-53a3-a310-27eb1415f327")
+		(uuid "f062d88c-f8b8-5923-889a-4c3f419b88b7")
 	)
 	(label "USB_VBUS"
 		(at 134.62 204.47 270)
@@ -7400,7 +7440,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "609dd201-2af4-5df8-8c20-7d4364a0c9c1")
+		(uuid "999720a7-ebcc-5729-bb84-4faf354edfac")
 	)
 	(wire
 		(pts
@@ -7410,7 +7450,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "b24ee199-0626-5fb1-a991-a46ce30f1ccb")
+		(uuid "43275165-a922-571c-8450-f580a0c6f1e3")
 	)
 	(text "USB (FOTA/Quectel tools): DP/DM/VBUS + GND on 4 test pads via USBLC6-2SC6 flow-through ESD."
 		(exclude_from_sim no)
@@ -7431,7 +7471,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "7d6970d7-0c32-5b06-a960-4b4dd50317ac")
+		(uuid "118e7523-494c-5642-9243-f3ec7e8421e6")
 	)
 	(label "ANT_MAIN_M"
 		(at 241.3 194.31 90)
@@ -7441,7 +7481,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "9199b500-3a6b-545a-9a4b-5c4c88fe035f")
+		(uuid "f9adbc0b-68be-5856-8679-47d1a73b7803")
 	)
 	(wire
 		(pts
@@ -7451,7 +7491,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "cdf03a7f-ee3a-546d-bc9b-e42b383aa681")
+		(uuid "15b04693-a027-5b32-b27b-360d92e347b2")
 	)
 	(label "ANT_MAIN_C"
 		(at 241.3 212.09 270)
@@ -7461,7 +7501,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "81ec5b7a-ca17-50a0-8030-f06bf174ff87")
+		(uuid "5bfeb15f-3227-502c-a477-9a8cd13efa38")
 	)
 	(wire
 		(pts
@@ -7471,7 +7511,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "bd3779cf-056e-5af9-a17e-86871641051b")
+		(uuid "392e9ad6-4772-522e-8205-bfbf904ccede")
 	)
 	(label "ANT_MAIN_M"
 		(at 233.68 205.74 90)
@@ -7481,7 +7521,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "da2a5bea-9323-51bd-8b51-572cd550cb42")
+		(uuid "c69616bb-4896-5a8a-9421-8b9fe5699ded")
 	)
 	(wire
 		(pts
@@ -7491,7 +7531,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "83dc9392-d7e3-51d9-bf96-678c3b6727bd")
+		(uuid "c64869f6-6fa6-574f-9107-4c444fff28f9")
 	)
 	(wire
 		(pts
@@ -7501,7 +7541,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "9d64b123-f3bd-500b-b06e-597d75ff4a9c")
+		(uuid "71be09f6-b5cf-5e9e-885e-b255974fabec")
 	)
 	(label "ANT_MAIN_C"
 		(at 248.92 205.74 90)
@@ -7511,7 +7551,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "ff7963e5-3e71-5a62-acb6-742d0b1fdeb5")
+		(uuid "60dda8d9-3374-5117-be10-60b52d23698a")
 	)
 	(wire
 		(pts
@@ -7521,7 +7561,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "24f58149-491b-538f-a147-d0da41256e48")
+		(uuid "7a36c363-b4a8-51c7-8216-c90a37be3cb5")
 	)
 	(wire
 		(pts
@@ -7531,7 +7571,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "58388eb2-9b56-57eb-8674-121ad97595c5")
+		(uuid "b9fbfa67-2f87-5803-8e40-3c85991d099c")
 	)
 	(label "ANT_MAIN_C"
 		(at 273.05 194.31 0)
@@ -7541,7 +7581,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "8a4363ee-52c9-513a-839c-3bcfa21aa3fd")
+		(uuid "1c4941ab-1000-5e30-a3ae-9f50aac2ba88")
 	)
 	(no_connect
 		(at 267.97 191.77)
@@ -7555,7 +7595,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "5d535216-e086-5131-9a50-ae7b5a12e8a6")
+		(uuid "c9e4cd7b-dab4-5a51-9316-9c00d8d50fa8")
 	)
 	(wire
 		(pts
@@ -7565,7 +7605,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "79ae21c2-e794-5f1c-b118-b78c664c6857")
+		(uuid "3310ae55-846a-5474-86b0-6849f2760f3f")
 	)
 	(wire
 		(pts
@@ -7575,7 +7615,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "6147b77d-2664-563f-9d9e-c9af4dcb4c1a")
+		(uuid "8700044c-a713-5cf9-bb82-e7df9cd2c6da")
 	)
 	(label "ANT_GNSS_M"
 		(at 292.1 194.31 90)
@@ -7585,7 +7625,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "0d41c1ff-e558-5218-8b51-f4ea488b8b5a")
+		(uuid "716cbc94-63f9-5cba-87a7-293b0826fc2f")
 	)
 	(wire
 		(pts
@@ -7595,7 +7635,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "411361d8-ca4c-5fc5-a1a0-dabbc03ff702")
+		(uuid "21be42a4-eb00-5f97-8d85-495276bc104a")
 	)
 	(label "ANT_GNSS_C"
 		(at 292.1 212.09 270)
@@ -7605,7 +7645,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "d786e480-58e3-53f5-826d-bebca80a1f36")
+		(uuid "a81cac1b-8880-5047-b255-f5efd47bfe3c")
 	)
 	(wire
 		(pts
@@ -7615,7 +7655,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "6f6bad1c-a97c-5ed7-8ce4-843b2c3d5d91")
+		(uuid "48dcffe7-4055-5356-96fb-1deb2e97da55")
 	)
 	(label "ANT_GNSS_M"
 		(at 284.48 205.74 90)
@@ -7625,7 +7665,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "4069b1ed-43af-50e6-a837-f797c55390ae")
+		(uuid "fda903f5-c459-5b9c-823f-27b3c25711a9")
 	)
 	(wire
 		(pts
@@ -7635,7 +7675,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "7715a1ab-e23c-5455-bcaf-bec936d51bc8")
+		(uuid "6a2c551b-4cea-5509-aa8c-48af7f9c428c")
 	)
 	(wire
 		(pts
@@ -7645,7 +7685,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "f176d168-9a73-57dd-a075-3aefa84a85e2")
+		(uuid "4311963e-5f08-56cd-bbc1-d8971f54ad14")
 	)
 	(label "ANT_GNSS_C"
 		(at 299.72 205.74 90)
@@ -7655,7 +7695,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "2a3a9a77-d2f8-5226-9f89-cc89e915ed4e")
+		(uuid "be36083e-bf7f-58a8-a9da-7f86b21555fa")
 	)
 	(wire
 		(pts
@@ -7665,7 +7705,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "4078b15d-c862-5e64-9e3a-8810fac4f2c1")
+		(uuid "eac17255-3cce-5d4e-9bad-5cbb826f05d4")
 	)
 	(wire
 		(pts
@@ -7675,7 +7715,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "f9df143b-f885-5781-b62f-5341fb1281ae")
+		(uuid "00fbbe0b-27c9-5f1a-bcd2-b9503c76d2ec")
 	)
 	(label "ANT_GNSS_C"
 		(at 304.8 195.58 90)
@@ -7685,7 +7725,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "ef85e96f-32e8-5f30-b93b-4dc577fe7340")
+		(uuid "bb0ea347-ee54-53be-a0a8-53883e3b9b4e")
 	)
 	(wire
 		(pts
@@ -7695,7 +7735,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "118dab30-8f1a-5bd3-a718-4753e44bb4e8")
+		(uuid "4d9a8dc3-3f43-5114-b883-40ee90c46f91")
 	)
 	(label "ANT_GNSS_F"
 		(at 304.8 210.82 270)
@@ -7705,7 +7745,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "ca2d0608-5e85-58b7-82c5-fa8ab08c8ded")
+		(uuid "32e0aed1-9d06-55a2-96ad-2e4a3ea22f8d")
 	)
 	(wire
 		(pts
@@ -7715,7 +7755,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "45d95cd4-1e73-5769-b05a-222a921f8384")
+		(uuid "9932c50d-e162-5f78-869f-a2c331f0ef0c")
 	)
 	(label "ANT_GNSS_F"
 		(at 345.44 195.58 90)
@@ -7725,7 +7765,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "40ec3443-3a8f-52d6-8290-b44017b04adb")
+		(uuid "a1d99a30-be48-524d-b629-b5c63e111449")
 	)
 	(wire
 		(pts
@@ -7735,7 +7775,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "a0edd684-1ed3-515a-9e48-eafbac7a63f9")
+		(uuid "d2ea832e-c5fa-58a2-8c52-40496dfd2218")
 	)
 	(label "GNSS_BIAS"
 		(at 345.44 210.82 270)
@@ -7745,7 +7785,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "c7e117f8-86a0-583f-8683-7391a819492c")
+		(uuid "23c672cf-1f65-5eea-ad7c-4bfcb6029173")
 	)
 	(wire
 		(pts
@@ -7755,7 +7795,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "eb83e0ed-be2c-5196-80a5-046245cce997")
+		(uuid "488387f9-1b95-5c6c-b5e4-6ae43d0e216c")
 	)
 	(label "3V3"
 		(at 365.76 182.88 90)
@@ -7765,7 +7805,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "97c00dc7-5c85-502e-ad05-974724ddd0c5")
+		(uuid "e444222d-ba26-54b2-a07c-cce84c7f0fe4")
 	)
 	(wire
 		(pts
@@ -7775,7 +7815,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "37bd74b3-97cc-57c3-81ce-5d7af1db2fe1")
+		(uuid "3bff5fb2-650c-58d3-8024-8f747a50a322")
 	)
 	(label "GNSS_BIAS"
 		(at 365.76 198.12 270)
@@ -7785,7 +7825,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "4a9ecb6b-245e-5035-972c-6802d9fe5aea")
+		(uuid "621391c1-3afa-5b76-afc3-69ded195d584")
 	)
 	(wire
 		(pts
@@ -7795,7 +7835,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "f3ba823e-3d9c-5e0f-b73c-89d07367188c")
+		(uuid "a4ac7755-c064-5f7a-900a-7e4d269ec4f3")
 	)
 	(label "GNSS_BIAS"
 		(at 350.52 177.8 90)
@@ -7805,7 +7845,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "0c880720-2ff8-5682-8e5e-95613ff23b6e")
+		(uuid "197a40c4-9f76-5133-8ac2-066ddcfe9808")
 	)
 	(wire
 		(pts
@@ -7815,7 +7855,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "0ee1b83c-0649-5398-a8fc-dbadfb96c03e")
+		(uuid "0cae6aab-6ef8-5a06-9bd6-c0e8e6b5b47b")
 	)
 	(wire
 		(pts
@@ -7825,7 +7865,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "41040348-8a45-5776-948e-f38dc43816ce")
+		(uuid "ead8678c-889c-5d22-9a05-e4871fba663c")
 	)
 	(label "GNSS_BIAS"
 		(at 358.14 177.8 90)
@@ -7835,7 +7875,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "ee84edfd-ff87-552a-b62a-20e17932c28f")
+		(uuid "b4b00b2a-d608-5523-a8db-43f7e3404a29")
 	)
 	(wire
 		(pts
@@ -7845,7 +7885,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "f14ca53a-821e-56e4-a5a3-7a02e1d65ca9")
+		(uuid "cc99638e-34db-51fe-85a8-e930681f755d")
 	)
 	(text "GNSS bias-T POPULATED ON ALL BUILDS - antenna C784386 is ACTIVE (LNA 21.5dB, 1.8-3.6V). C84 100pF is the SERIES DC BLOCK (Quectel fig 31), always fitted. L4 68nH per Antenna Design Guide >=56nH, must be WIREWOUND. R90 is the antenna-short current limit - see design-log."
 		(exclude_from_sim no)
@@ -7866,7 +7906,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "984e5230-a920-5ea0-ac58-c2407d87b550")
+		(uuid "90788052-baa4-5819-a27b-2451185e25f5")
 	)
 	(label "ANT_GNSS_F"
 		(at 323.85 194.31 0)
@@ -7876,7 +7916,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "e08bc971-2319-571b-ad4e-1a8751287cba")
+		(uuid "70bf9f8e-bb9c-58b6-b1a6-b17cdf77d918")
 	)
 	(no_connect
 		(at 318.77 191.77)
@@ -7890,7 +7930,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "b92d0e53-f21f-59ad-a725-9e3875077bcd")
+		(uuid "301a3241-e212-5748-b930-51384ca48d65")
 	)
 	(wire
 		(pts
@@ -7900,7 +7940,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "a115d14a-c846-5af2-989f-33f8eb9b00f3")
+		(uuid "fdc8ac8a-4540-56c3-9291-232c041dd64b")
 	)
 	(text "ANT_MAIN(49) / ANT_GNSS(47): 50R CPWG at layout, pi network (series 0R fitted, shunts DNP) to U.FL. SMA drill template is a housing option, not a board part."
 		(exclude_from_sim no)
@@ -10565,7 +10605,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C15849"
+		(property "LCSC" "C106858"
 			(at 101.6 50.8 0)
 			(hide yes)
 			(effects
@@ -11013,7 +11053,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C17407"
+		(property "LCSC" "C149504"
 			(at 30.48 88.9 0)
 			(hide yes)
 			(effects
@@ -12652,7 +12692,7 @@
 				)
 			)
 		)
-		(property "Value" "10k"
+		(property "Value" "100k"
 			(at 226.06 91.44 0)
 			(effects
 				(font
@@ -12678,7 +12718,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C17414"
+		(property "LCSC" "C149504"
 			(at 226.06 96.52 0)
 			(hide yes)
 			(effects
@@ -12759,7 +12799,7 @@
 				)
 			)
 		)
-		(property "Value" "47k"
+		(property "Value" "10k"
 			(at 213.36 60.96 0)
 			(effects
 				(font
@@ -12785,7 +12825,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C17713"
+		(property "LCSC" "C17414"
 			(at 213.36 66.04 0)
 			(hide yes)
 			(effects
@@ -12853,7 +12893,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C15849"
+		(property "LCSC" "C106858"
 			(at 213.36 50.8 0)
 			(hide yes)
 			(effects
@@ -14324,7 +14364,7 @@
 				)
 			)
 		)
-		(property "Value" "SMF05C"
+		(property "Value" "PESD5V0L5UY"
 			(at 294.64 160.02 0)
 			(effects
 				(font
@@ -14350,7 +14390,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C15879"
+		(property "LCSC" "C179747"
 			(at 294.64 165.1 0)
 			(hide yes)
 			(effects
@@ -14420,6 +14460,74 @@
 			(project "telematics-tracker"
 				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68/70fac1b9-7bfc-5985-a8dc-ae866bd73e38"
 					(reference "#PWR136")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 381 76.2 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "7e19e1a1-da97-59ee-bdd9-60e31d23d222")
+		(property "Reference" "R91"
+			(at 381 73.66 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "51k"
+			(at 381 71.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 381 76.2 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 381 76.2 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C23196"
+			(at 381 76.2 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "ce07e96e-b3c4-55db-a82d-0ea8fbe81f06")
+		)
+		(pin "2"
+			(uuid "ceb9df1c-7389-5c9a-acf0-0edcc119bc0b")
+		)
+		(instances
+			(project "telematics-tracker"
+				(path "/784bc421-9fc7-43cb-bfc3-562714cb3f68/70fac1b9-7bfc-5985-a8dc-ae866bd73e38"
+					(reference "R91")
 					(unit 1)
 				)
 			)

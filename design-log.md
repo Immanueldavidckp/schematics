@@ -3703,3 +3703,72 @@ router's path) or are locked MV tracks. DRC 0 / unconnected 0, ERC 0, BOM audit 
 Package: `out/telematics-tracker-mfg-2026-09-29-572f747.zip`, tag
 `v1.0.1-mfg-2026-09-29` (the earlier `v1.0-mfg-2026-09-29` tag keeps the
 unstraightened version).
+
+## 2026-09-30 — pre-order verification review: 12 would-fail faults fixed
+
+The owner asked for the last check before ordering: every part placed and
+connected, every schematic block right against its datasheet, nothing that
+fails on the bench, the debug/flash path usable, and the industry requirements
+listed — with a PDF that says OK / NOT OK per item. Method: schematic↔board
+parity (212 parts, 727 pad nets), the handoff §5 pin checklist, ERC/DRC, a
+datasheet-backed review of every IC (parallel reviewers, each finding then
+re-verified against the datasheet page, and the KiCad library pin names read
+from the .kicad_sym files themselves), current capacity (IPC-2221), clearance
+and creepage, decoupling distances, RF stitching, and the BOM against LCSC /
+JLCPCB. Report: `docs/verification-report.pdf` (also in the package under
+3_documentation).
+
+Faults that would have made the board dead or unsafe on arrival — all fixed
+in tools/sheets.py (regenerated sheets) and on the board (DRC-gated routes):
+
+1. **D2 SMDJ100A wired forward.** Drawn with KiCad's bidirectional D_TVS
+   symbol and its pin 2 on the rail: on the SMC footprint pad 1 is the cathode,
+   so the part would have conducted at the first power-up and opened F1.
+   Now Device:D_Zener, cathode (pin 1) to VIN_P; board: D2 turned 180°.
+2. **D10/D11 BAV99 rail clamps reversed** (3V3 shorted to GND through two
+   forward diodes; the MCU would never have started). KiCad's Diode:BAV99 has
+   hidden pin names K/A/K that contradict its own drawing and Nexperia's
+   datasheet (pin 1 = A1, pin 2 = K2, pin 3 = common). Now pin 1 → GND, pin 2
+   → 3V3; board: both turned 180° (D10 also 0.3 mm south, NRST via moved).
+3. **D5/D6 BAV99 across the opto LEDs reversed** — bypassed the LED on every
+   positive input, so DI1/DI2 would never have read. Now BAV70 (common
+   cathode, C2501) with the same connections: drop-in, no copper change.
+4. **TXB0104 OE at 0.32 V** (47 k up / 10 k down; VIH is 0.65·VCCA = 1.17 V):
+   modem UART, RI and DTR were permanently disabled. Now 10 k / 100 k = 1.64 V.
+5. **R82 = 0 R** disabled the EG11752 current limit and short-circuit
+   protection (the IC compares IS−VS with 0.2 V). Now 0.1 R → 2 A peak; BV-1.
+6. **Reverse polarity was not protected**: the SS3200 flybacks returned to raw
+   VIN, so a reversed supply flowed GND → Q1/Q2 body diode → D7/D8 → VIN around
+   D1 with nothing limiting it. Now the cathodes go to VIN_P (behind D1) —
+   exported from the power sheet as a hierarchical net; board: the VIN trunk
+   re-laid around the diode pads (F.Cu west/north of D7.1, B.Cu under F1),
+   the D7.1–D8.1 via link re-netted, a new 0.5 mm VIN_P B.Cu run to D1.
+7. **Q1/Q2 gate at 4.07 V** against the AM2390N's 4.5 V rating (the 10 k
+   pulldown loaded the 2.2 k / 100 R driver). Now 100 k → 4.89 V.
+8. **DI pull-up margin ≈ 1×** at the input floor with the EL357N(D) CTR at
+   0.22–0.26 mA LED current. 47 k → 220 k (15 µA needed, ≈ 7×); BV-7.
+9. **USIM_DET had no pull-up** (the module has none, Quectel Fig 18): R91
+   51 k to VDD_EXT added (B side, both pads on existing copper).
+10. **SIM ESD array SMF05C (80–130 pF)** against Quectel's 15 pF guideline:
+    now PESD5V0L5UY (≤ 19 pF, nearest SOT-363 part in stock; accepted).
+11. **X5R capacitors** (1 µF, 4.7 µF) against rule 1: now X7R (C106858,
+    C354262).
+12. **Charger power nets at 0.15 mm**: VBAT_BT ran 13 mm on the inner layer at
+    ≈ 0.18 A capability for the 0.69 A charge current. VBAT_BT is now a 0.6 mm
+    F.Cu run U6 → J2, SW_CHG 0.4 mm, PMID 0.3/0.5 mm.
+
+Also on the board: X2, R70, C48–C51 marked DNP; C61 swapped with C80 (the
+charger's VBUS cap was 49 mm from U6, now 11 mm); 28 GND stitching vias along
+both antenna lines; 4 more thermal vias under U5's pad (9). Documented, not
+changed: the 10.5 V input floor leaves the buck at ≈ 9.2 V after D1 + R80,
+under its 10 V minimum — the guaranteed floor is now 12 V, 10.5 V a bench
+figure (BV-5, FW-13); the IGN/VIN dividers (÷ 34) can never produce a logic
+edge, so ignition wake is ADC polling from the RTC (FW-14); the DI inputs are
+ground-referenced, not isolated (handoff, installation sheet corrected).
+
+State after: ERC 0 errors (23 known warnings: same-name local/hierarchical rail
+labels, single-pin sense nets), pin checklist pass, netlist vs the pre-review
+baseline differs in exactly the 7 intended nets, parity 0 mismatches, DRC 0
+errors / 0 unconnected (11 warnings: 8 silk on the DNP eSIM pads, 1 HV-zone
+silk text touching D2's outline, 2 KiCad "dangling" flags on connected
+T-junctions), BOM audit 76/76 lines clean.

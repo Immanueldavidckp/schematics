@@ -62,9 +62,10 @@ than re-fitted.
 
 ## 3. Supply wiring
 
-- Guaranteed input range: **10.5 V to 100 V DC**. Below 10.5 V the unit runs
-  from its backup battery — this is expected behaviour during cranking dips,
-  not a fault.
+- Guaranteed input range: **12 V to 100 V DC** (operation down to 10.5 V is
+  the design target and is confirmed on the bench per unit batch — see the
+  verification report). Below that the unit runs from its backup battery —
+  this is expected behaviour during cranking dips, not a fault.
 - Observe polarity. The unit is reverse-polarity protected but will not
   operate reversed.
 - Fuse the supply feed at the machine end in addition to the unit's internal
@@ -75,7 +76,9 @@ than re-fitted.
 
 ## 4. Digital inputs / outputs
 
-- Digital inputs DI1/DI2: valid input range **9–100 V**, optically isolated.
+- Digital inputs DI1/DI2: valid input range **10.5–100 V**, referenced to the
+  unit's supply negative (not galvanically isolated — the input current
+  returns through the unit's GND pin).
 - Digital outputs DO1/DO2: low-side switches, rated for **relay coils and
   buzzers up to 0.5 A at 12/24 V**. Inductive loads are fine — flyback
   clamping is built in. Do not drive a load returning to a different supply.

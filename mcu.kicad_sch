@@ -7120,7 +7120,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C15849"
+		(property "LCSC" "C106858"
 			(at 83.82 106.68 0)
 			(hide yes)
 			(effects
@@ -7655,7 +7655,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C1779"
+		(property "LCSC" "C354262"
 			(at 350.52 81.28 0)
 			(hide yes)
 			(effects
@@ -8501,7 +8501,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C15849"
+		(property "LCSC" "C106858"
 			(at 259.08 76.2 0)
 			(hide yes)
 			(effects

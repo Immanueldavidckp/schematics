@@ -178,7 +178,7 @@
 					)
 				)
 			)
-		(symbol "Device:D_TVS"
+		(symbol "Device:D_Zener"
 				(pin_numbers
 					(hide yes)
 				)
@@ -198,7 +198,7 @@
 						)
 					)
 				)
-				(property "Value" "D_TVS"
+				(property "Value" "D_Zener"
 					(at 0 -2.54 0)
 					(effects
 						(font
@@ -224,7 +224,7 @@
 						)
 					)
 				)
-				(property "Description" "Bidirectional transient-voltage-suppression diode"
+				(property "Description" "Zener diode"
 					(at 0 0 0)
 					(hide yes)
 					(effects
@@ -233,7 +233,7 @@
 						)
 					)
 				)
-				(property "ki_keywords" "diode TVS thyrector"
+				(property "ki_keywords" "diode"
 					(at 0 0 0)
 					(hide yes)
 					(effects
@@ -251,22 +251,10 @@
 						)
 					)
 				)
-				(symbol "D_TVS_0_1"
+				(symbol "D_Zener_0_1"
 					(polyline
 						(pts
-							(xy -2.54 1.27) (xy -2.54 -1.27) (xy 2.54 1.27) (xy 2.54 -1.27) (xy -2.54 1.27)
-						)
-						(stroke
-							(width 0.254)
-							(type default)
-						)
-						(fill
-							(type none)
-						)
-					)
-					(polyline
-						(pts
-							(xy 0.508 1.27) (xy 0 1.27) (xy 0 -1.27) (xy -0.508 -1.27)
+							(xy -1.27 -1.27) (xy -1.27 1.27) (xy -0.762 1.27)
 						)
 						(stroke
 							(width 0.254)
@@ -288,12 +276,24 @@
 							(type none)
 						)
 					)
+					(polyline
+						(pts
+							(xy 1.27 -1.27) (xy 1.27 1.27) (xy -1.27 0) (xy 1.27 -1.27)
+						)
+						(stroke
+							(width 0.254)
+							(type default)
+						)
+						(fill
+							(type none)
+						)
+					)
 				)
-				(symbol "D_TVS_1_1"
+				(symbol "D_Zener_1_1"
 					(pin passive line
 						(at -3.81 0 0)
 						(length 2.54)
-						(name "A1"
+						(name "K"
 							(effects
 								(font
 									(size 1.27 1.27)
@@ -311,7 +311,7 @@
 					(pin passive line
 						(at 3.81 0 180)
 						(length 2.54)
-						(name "A2"
+						(name "A"
 							(effects
 								(font
 									(size 1.27 1.27)
@@ -2208,35 +2208,16 @@
 		)
 		(uuid "eac900ef-b366-5dc4-840b-f8264faadfdb")
 	)
-	(label "VIN_P"
+	(hierarchical_label "VIN_P"
+		(shape output)
 		(at 66.04 50.8 180)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify right bottom)
+			(justify right)
 		)
-		(uuid "e7069c82-2575-5857-a0f9-9a5aba54452a")
-	)
-	(wire
-		(pts
-			(xy 97.79 63.5) (xy 101.6 63.5)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "44758b8a-dde5-5132-a920-967640fed0ed")
-	)
-	(label "VIN_P"
-		(at 101.6 63.5 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "e340a51c-dc33-57a2-8c8c-815b071f4420")
+		(uuid "4fbf3d26-ec32-5bde-b17f-42211f24f742")
 	)
 	(wire
 		(pts
@@ -2246,7 +2227,27 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "7a980aee-9423-56fa-b58e-476ef344c1aa")
+		(uuid "021135eb-8803-5bb6-a32a-c54ce5a75304")
+	)
+	(label "VIN_P"
+		(at 86.36 63.5 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "dad86663-d76a-50ea-a0d2-5d49b9bc8cdc")
+	)
+	(wire
+		(pts
+			(xy 97.79 63.5) (xy 101.6 63.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "38c86c61-9715-5a0f-b906-3cd430949e4c")
 	)
 	(wire
 		(pts
@@ -2438,7 +2439,7 @@
 		)
 		(uuid "12d7a69b-efb2-56de-95ec-68b6cccd29d6")
 	)
-	(text "Front end: F1 (250 VDC interrupt) -> D1 S3M reverse block -> D2 SMDJ100A 3kW -> R80 1R 2512 anti-surge (F-15 approved) -> buck. Margin at 3.7A clamp: 34.9%. R80 at the 10.5V floor, full load: V_B=9.16V, I=0.644A, 0.41W. 10R was a brown-out (no load-line solution) - see design-log F-15."
+	(text "Front end: F1 (250 VAC / 125 VDC, 100 A DC interrupt) -> D1 S3M reverse block -> D2 SMDJ100A 3kW -> R80 1R 2512 anti-surge (F-15 approved) -> buck. Margin at 3.7A clamp: 34.9%. R80 at the 10.5V floor, full load: V_B=9.16V, I=0.644A, 0.41W. 10R was a brown-out (no load-line solution) - see design-log F-15."
 		(exclude_from_sim no)
 		(at 38.1 35.56 0)
 		(effects
@@ -2447,7 +2448,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "76a8477f-99a9-5500-a3b8-3159297a5f42")
+		(uuid "244e98c8-dbd0-5197-9be8-60eaccb1b260")
 	)
 	(wire
 		(pts
@@ -3082,7 +3083,7 @@
 		)
 		(uuid "872693a9-49c9-5417-ae8b-78adb0dcf05d")
 	)
-	(text "U5 EG11752: EN 100k from VCC (per fig 6-2); VB-VS 100nF boot; IS via R82 0R - F-12: no R_IS formula in the V1.0 datasheet, bench/FAE item; FB 4.3k/1.5k -> 5.03V; L 150uH (Isat 2.7A); SS3200 freewheel. #1 bench test: 100V in, 0.7-1A out, Ton~455ns."
+	(text "U5 EG11752: EN 100k from VCC (per fig 6-2); VB-VS 100nF boot; IS via R82 0.1R -> 2 A peak limit (0.2 V / R_IS; BV-1 characterise); FB 4.3k/1.5k -> 5.03V; L 150uH (Isat 2.7A); SS3200 freewheel. #1 bench test: 100V in, 0.7-1A out, Ton~455ns."
 		(exclude_from_sim no)
 		(at 190.5 121.92 0)
 		(effects
@@ -3091,7 +3092,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "065a3149-0416-5b65-b360-481b334b9200")
+		(uuid "973dccc3-e269-5284-a57e-e0ed408c6a78")
 	)
 	(wire
 		(pts
@@ -4254,7 +4255,7 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:D_TVS")
+		(lib_id "Device:D_Zener")
 		(at 93.98 63.5 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -4323,7 +4324,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 86.36 63.5 0)
+		(at 101.6 63.5 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -4332,7 +4333,7 @@
 		(fields_autoplaced yes)
 		(uuid "a1d616c3-b2a1-5e5f-aedd-950b5690b579")
 		(property "Reference" "#PWR149"
-			(at 86.36 55.88 0)
+			(at 101.6 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4340,7 +4341,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 86.36 63.5 0)
+			(at 101.6 63.5 0)
 			(hide yes)
 			(effects
 				(font
@@ -5200,7 +5201,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C15849"
+		(property "LCSC" "C106858"
 			(at 254 35.56 0)
 			(hide yes)
 			(effects
@@ -5307,7 +5308,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C17407"
+		(property "LCSC" "C149504"
 			(at 241.3 35.56 0)
 			(hide yes)
 			(effects
@@ -5417,7 +5418,7 @@
 				)
 			)
 		)
-		(property "Value" "0R (F-12)"
+		(property "Value" "0.1R"
 			(at 200.66 71.12 0)
 			(effects
 				(font
@@ -5443,7 +5444,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C17477"
+		(property "LCSC" "C327057"
 			(at 200.66 76.2 0)
 			(hide yes)
 			(effects
@@ -6482,7 +6483,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C15849"
+		(property "LCSC" "C106858"
 			(at 71.12 162.56 0)
 			(hide yes)
 			(effects
@@ -6696,7 +6697,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C1779"
+		(property "LCSC" "C354262"
 			(at 96.52 162.56 0)
 			(hide yes)
 			(effects
@@ -8138,7 +8139,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C15849"
+		(property "LCSC" "C106858"
 			(at 261.62 205.74 0)
 			(hide yes)
 			(effects
@@ -8245,7 +8246,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C15849"
+		(property "LCSC" "C106858"
 			(at 299.72 205.74 0)
 			(hide yes)
 			(effects

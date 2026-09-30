@@ -76,7 +76,7 @@ ORDER = ["/power/U5_IS", "/power/SW_BUCK", "/power/U5_VB", "/power/VIN_B",
          # VIN_P is all short local hops around R80/D2/C70-C72 now that
          # the caps are anchored beside their source node - route it
          # before the DI/DO copper can wall the area
-         "/power/VIN_P", "/power/VIN_F",
+         "VIN_P", "/power/VIN_F",
          # DO nets span the whole strip (J1 -> clamps at the top -> FETs
          # at the bottom): they need the north-south freeway before the
          # DI/divider copper eats it. Routed second-to-last they failed;

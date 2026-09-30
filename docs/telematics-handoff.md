@@ -98,10 +98,10 @@ user: confirm this is acceptable, or narrow the product rating to +60 °C.
 | U8 | TXB0104 level shifter (or equiv 4-ch) | select in stock | 1 | 0.30 | MCU 3.3 V ↔ modem 1.8 V UART |
 | U9 | 3.3 V LDO 500 mA (XC6220/ME6217 class) | select in stock | 1 | 0.15 | 3V3 rail from SYS |
 | D1 | S3M reverse-blocking diode | Basic part | 1 | 0.05 | Reverse polarity (P-FET upgrade path) |
-| D2 | SMBJ100A TVS | C151249 | 1 | 0.10 | Input transient clamp |
+| D2 | SMDJ100A TVS (3 kW, unidirectional: cathode to VIN_P) | see bom-audit.md | 1 | 0.10 | Input transient clamp |
 | Q1,Q2 | 100 V logic-level NMOS SOT-23 (select: VDS≥100 V, ID≥1 A, VGS(th)≤2.5 V, JLC Basic) | select | 2 | 0.15 | DO1/DO2 low-side drivers |
 | Q3 | P-FET high-side switch (−30 V, e.g. AO3401 class) | select | 1 | 0.05 | Modem VBAT power-cycle |
-| OK1,OK2 | EL357N(D) high-CTR opto | C359074-family, pick (D) bin | 2 | 0.06 | Isolated DI1/DI2 |
+| OK1,OK2 | EL357N(D) high-CTR opto | C359074-family, pick (D) bin | 2 | 0.06 | DI1/DI2 level shift (ground-referenced: the LED return is the unit GND, so the inputs are NOT galvanically isolated) |
 | X1 | Nano/micro-SIM push-push holder | select in stock | 1 | 0.15 | + parallel MFF2 eSIM pads |
 | J1 | Micro-Fit 3.0 style 12-pin (43045-compatible) | select in stock | 1 | 0.50 | Machine harness |
 | ANT | LTE FPC antenna w/ U.FL + GNSS ceramic active-capable patch w/ U.FL | select | 2 | 0.80 | Internal; SMA drill option for steel installs |
@@ -119,19 +119,19 @@ power-path. Do not apply without user approval.
 ## 4. Power architecture
 
 ```
-J1.VIN (9–100 V) ──F1 fuse──D1 S3M──┬── SMBJ100A → GND
+J1.VIN (12–100 V guaranteed; 10.5 V bench floor, BV-5) ──F1 fuse──D1 S3M──┬── SMDJ100A → GND (cathode to VIN_P)
                                     ├── C: 2×2.2 µF/100 V X7R 1210 + 100 nF
                                     └── U5 LM5164 ──► 5V0 @1 A
                                           (datasheet 5 V/1 A typical app:
                                            L 150–220 µH shielded ≥1.5 A sat,
                                            Cout ≥47 µF eff., RON for ~300 kHz,
                                            FB: 100 k / 31.6 k → 5.0 V)
-5V0 ──► U6 BQ25606 (IN) ──► SYS (3.5–4.4 V, power-path with BT1)
+5V0 ──► U6 BQ25606 (IN) ──► SYS (3.5–4.26 V: SYSMIN 3.5 V, VSET float = 4.208 V; power-path with BT1)
               │  ICHG ≈ 0.7 A (RICHG per datasheet formula)
               │  TS ← battery NTC (JEITA)
               └─ BT1 1S Li-ion (JST, replaceable)
 SYS ──► Q3 P-FET (MODEM_PWR_EN, default ON via pulldown on gate driver) ──► VBAT_MODEM
-        VBAT_MODEM decoupling: 2×100 µF ceramic + 1 µF + 100 nF + TVS, ≤5 mm from U1
+        VBAT_MODEM decoupling: 4×47 µF X7R (F-13) + 1 µF + 100 nF + TVS, ≤5 mm from U1
 SYS ──► U9 LDO ──► 3V3 (MCU, IMU, flash, CAN VIO, level shifter B-side)
 5V0 ──► SIT1051 VCC (CAN alive only when machine power present — accepted)
 U1 VDD_EXT (1.8 V out) ──► level shifter A-side reference
@@ -158,10 +158,10 @@ Sensing dividers (all into MCU ADC, 12-bit, slow sample time):
 | 19 | PB1 | ADC_SPARE | Spare divider footprint (DNP) |
 | 21 | PB10 | MODEM_PWR_EN | Q3 gate driver (modem power-cycle) |
 | 22 | PB11 | NET_STATUS_LED | Status LED (via NPN) |
-| 25 | PB12 | DI1 | OK1 collector (47 k pull-up to 3V3) |
-| 26 | PB13 | DI2 | OK2 collector (47 k pull-up to 3V3) |
-| 27 | PB14 | DO1_GATE | Q1 gate (100 R series, 10 k pulldown) |
-| 28 | PB15 | DO2_GATE | Q2 gate (100 R series, 10 k pulldown) |
+| 25 | PB12 | DI1 | OK1 collector (220 k pull-up to 3V3; was 47 k — review 2026-09-30) |
+| 26 | PB13 | DI2 | OK2 collector (220 k pull-up to 3V3) |
+| 27 | PB14 | DO1_GATE | Q1 gate via the F-10 two-stage driver (100 R series, 100 k pulldown; was 10 k) |
+| 28 | PB15 | DO2_GATE | Q2 gate via the F-10 two-stage driver (100 R series, 100 k pulldown) |
 | 29 | PA8 | MODEM_PWRKEY | NPN open-drain → U1 PWRKEY |
 | 30 | PA9 | MODEM_TX | USART1_TX → U8 → U1 MAIN_RXD (1.8 V domain) |
 | 31 | PA10 | MODEM_RX | USART1_RX ← U8 ← U1 MAIN_TXD |
@@ -194,8 +194,10 @@ used as GPIO. CAN1 uses the PB8/PB9 remap.
 guide reference schematic exactly: VBAT_MODEM at all VBAT pins; PWRKEY and
 RESET_N each through NPN (MMBT3904) with 4.7 k base, 47 k base pulldown;
 USIM_VDD/DATA/CLK/RST/GND to SIM holder X1 with 33 R series on DATA/CLK/RST,
-100 nF on USIM_VDD, ESD array (SMF05C class) at the holder; MFF2 eSIM pads
-wired in parallel with 0 Ω selects. USB_DP/DM/VBUS to 4 test pads (FOTA and
+100 nF on USIM_VDD, low-capacitance ESD array (PESD5V0L5UY; the 80–130 pF
+SMF05C was rejected 2026-09-30 against Quectel's 15 pF limit) at the holder,
+51 k USIM_DET pull-up to VDD_EXT (R91); MFF2 eSIM pads wired in parallel with
+0 Ω selects. USB_DP/DM/VBUS to 4 test pads (FOTA and
 Quectel tools) with ESD protection. ANT_MAIN and ANT_GNSS: 50 Ω CPWG, π
 matching footprint (DNP 0 Ω center) at each, to two U.FL. NETLIGHT → NPN →
 LED. VDD_EXT (1.8 V) powers U8 A-side, 1 µF + 100 nF decoupling.
@@ -208,17 +210,22 @@ split termination 2×60 Ω + 4.7 nF to GND via jumper-selectable solder
 bridge (default OPEN — machine bus is already terminated), common-mode
 choke (51 µH class) + PESD1CAN TVS at connector.
 
-**Digital inputs.** J1.DIx → 24 k series (2×12 k 0805) → OK1/OK2 LED with
-antiparallel BAV99; phototransistor emitter to GND, collector to PB12/13
-with 47 k pull-up + 100 nF. Valid input 9–100 V.
+**Digital inputs.** J1.DIx → 36 k series (3×12 k 1206, F-7) → OK1/OK2 LED with
+antiparallel BAV70 (common-cathode; replaced the BAV99 that was wired for the
+mirror of its real pinout, 2026-09-30); phototransistor emitter to GND,
+collector to PB12/13 with 220 k pull-up + 100 nF. Valid input 10.5–100 V.
+Ground-referenced (the LED return is the unit GND), not galvanically isolated.
 
 **Digital outputs.** Q1/Q2 low-side to J1.DOx, SS3200 (200 V) flyback from
-DOx to VIN, spec loads: relay coils/buzzers ≤0.5 A at 12/24 V.
+DOx to VIN_P (behind D1 — a flyback to raw VIN gave a reverse-polarity path
+through the MOSFET body diodes, fixed 2026-09-30), spec loads: relay
+coils/buzzers ≤0.5 A at 12/24 V.
 NOTE (F-10, approved 2026-09-02): gates are driven from 5V0 through a
 two-stage non-inverting NPN driver per channel (no in-stock 150 V SOT-23
 NMOS guarantees enhancement at 3.3 V worst-case/cold). Provably OFF when
 the MCU pin floats/resets/is unpowered: MCU-side base pulldown + second
-stage clamps the gate; 10 k gate pulldown retained. Consequence: DO1/DO2
+stage clamps the gate; 100 k gate pulldown (10 k left the gate at 4.07 V
+against the AM2390N's 4.5 V rating — 2026-09-30). Consequence: DO1/DO2
 (like CAN) are inactive during battery-backup operation (5V0 absent).
 
 **Storage (U7).** SPI1 @ 30 MHz+, 100 nF + 1 µF. Firmware: ring buffer with

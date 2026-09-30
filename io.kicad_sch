@@ -1923,7 +1923,7 @@
 				)
 				(embedded_fonts no)
 			)
-		(symbol "Diode:BAV99"
+		(symbol "Diode:BAV70"
 				(pin_names
 					(hide yes)
 				)
@@ -1932,14 +1932,15 @@
 				(on_board yes)
 				(duplicate_pin_numbers_are_jumpers no)
 				(property "Reference" "D"
-					(at 0 5.08 0)
+					(at 0.635 -2.54 0)
 					(effects
 						(font
 							(size 1.27 1.27)
 						)
+						(justify left)
 					)
 				)
-				(property "Value" "BAV99"
+				(property "Value" "BAV70"
 					(at 0 2.54 0)
 					(effects
 						(font
@@ -1948,15 +1949,6 @@
 					)
 				)
 				(property "Footprint" "Package_TO_SOT_SMD:SOT-23"
-					(at 0 -12.7 0)
-					(hide yes)
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(property "Datasheet" "https://assets.nexperia.com/documents/data-sheet/BAV99_SER.pdf"
 					(at 0 0 0)
 					(hide yes)
 					(effects
@@ -1965,7 +1957,16 @@
 						)
 					)
 				)
-				(property "Description" "BAV99 High-speed switching diodes, SOT-23"
+				(property "Datasheet" "https://assets.nexperia.com/documents/data-sheet/BAV70_SER.pdf"
+					(at 0 0 0)
+					(hide yes)
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(property "Description" "Dual 100V 215mA high-speed switching diodes, common cathode, SOT-23"
 					(at 0 0 0)
 					(hide yes)
 					(effects
@@ -1992,27 +1993,25 @@
 						)
 					)
 				)
-				(symbol "BAV99_0_1"
+				(symbol "BAV70_0_1"
 					(polyline
 						(pts
-							(xy -5.08 0) (xy 5.08 0)
+							(xy -3.81 1.27) (xy -1.27 0) (xy -3.81 -1.27) (xy -3.81 1.27) (xy -3.81 1.27) (xy -3.81 1.27)
 						)
 						(stroke
-							(width 0)
+							(width 0.254)
 							(type default)
 						)
 						(fill
 							(type none)
 						)
 					)
-				)
-				(symbol "BAV99_1_1"
 					(polyline
 						(pts
-							(xy -3.81 1.27) (xy -1.27 0) (xy -3.81 -1.27) (xy -3.81 1.27) (xy -3.81 1.27) (xy -3.81 1.27)
+							(xy -3.81 0) (xy 3.81 0)
 						)
 						(stroke
-							(width 0.2032)
+							(width 0)
 							(type default)
 						)
 						(fill
@@ -2024,7 +2023,7 @@
 							(xy -1.27 -1.27) (xy -1.27 1.27) (xy -1.27 1.27)
 						)
 						(stroke
-							(width 0.2032)
+							(width 0.254)
 							(type default)
 						)
 						(fill
@@ -2056,10 +2055,10 @@
 					)
 					(polyline
 						(pts
-							(xy 1.27 1.27) (xy 3.81 0) (xy 1.27 -1.27) (xy 1.27 1.27) (xy 1.27 1.27) (xy 1.27 1.27)
+							(xy 1.27 -1.27) (xy 1.27 1.27) (xy 1.27 1.27)
 						)
 						(stroke
-							(width 0.2032)
+							(width 0.254)
 							(type default)
 						)
 						(fill
@@ -2068,10 +2067,10 @@
 					)
 					(polyline
 						(pts
-							(xy 3.81 1.27) (xy 3.81 -1.27) (xy 3.81 -1.27)
+							(xy 3.81 -1.27) (xy 1.27 0) (xy 3.81 1.27) (xy 3.81 -1.27) (xy 3.81 -1.27) (xy 3.81 -1.27)
 						)
 						(stroke
-							(width 0.2032)
+							(width 0.254)
 							(type default)
 						)
 						(fill
@@ -2080,8 +2079,8 @@
 					)
 					(pin passive line
 						(at -7.62 0 0)
-						(length 2.54)
-						(name "K"
+						(length 3.81)
+						(name "A"
 							(effects
 								(font
 									(size 1.27 1.27)
@@ -2098,7 +2097,7 @@
 					)
 					(pin passive line
 						(at 7.62 0 180)
-						(length 2.54)
+						(length 3.81)
 						(name "A"
 							(effects
 								(font
@@ -2786,8 +2785,220 @@
 				)
 				(embedded_fonts no)
 			)
+		(symbol "Diode:BAV99"
+				(pin_names
+					(hide yes)
+				)
+				(exclude_from_sim no)
+				(in_bom yes)
+				(on_board yes)
+				(duplicate_pin_numbers_are_jumpers no)
+				(property "Reference" "D"
+					(at 0 5.08 0)
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(property "Value" "BAV99"
+					(at 0 2.54 0)
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(property "Footprint" "Package_TO_SOT_SMD:SOT-23"
+					(at 0 -12.7 0)
+					(hide yes)
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(property "Datasheet" "https://assets.nexperia.com/documents/data-sheet/BAV99_SER.pdf"
+					(at 0 0 0)
+					(hide yes)
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(property "Description" "BAV99 High-speed switching diodes, SOT-23"
+					(at 0 0 0)
+					(hide yes)
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(property "ki_keywords" "diode"
+					(at 0 0 0)
+					(hide yes)
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(property "ki_fp_filters" "SOT?23*"
+					(at 0 0 0)
+					(hide yes)
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(symbol "BAV99_0_1"
+					(polyline
+						(pts
+							(xy -5.08 0) (xy 5.08 0)
+						)
+						(stroke
+							(width 0)
+							(type default)
+						)
+						(fill
+							(type none)
+						)
+					)
+				)
+				(symbol "BAV99_1_1"
+					(polyline
+						(pts
+							(xy -3.81 1.27) (xy -1.27 0) (xy -3.81 -1.27) (xy -3.81 1.27) (xy -3.81 1.27) (xy -3.81 1.27)
+						)
+						(stroke
+							(width 0.2032)
+							(type default)
+						)
+						(fill
+							(type none)
+						)
+					)
+					(polyline
+						(pts
+							(xy -1.27 -1.27) (xy -1.27 1.27) (xy -1.27 1.27)
+						)
+						(stroke
+							(width 0.2032)
+							(type default)
+						)
+						(fill
+							(type none)
+						)
+					)
+					(polyline
+						(pts
+							(xy 0 0) (xy 0 -2.54)
+						)
+						(stroke
+							(width 0)
+							(type default)
+						)
+						(fill
+							(type none)
+						)
+					)
+					(circle
+						(center 0 0)
+						(radius 0.254)
+						(stroke
+							(width 0)
+							(type default)
+						)
+						(fill
+							(type outline)
+						)
+					)
+					(polyline
+						(pts
+							(xy 1.27 1.27) (xy 3.81 0) (xy 1.27 -1.27) (xy 1.27 1.27) (xy 1.27 1.27) (xy 1.27 1.27)
+						)
+						(stroke
+							(width 0.2032)
+							(type default)
+						)
+						(fill
+							(type none)
+						)
+					)
+					(polyline
+						(pts
+							(xy 3.81 1.27) (xy 3.81 -1.27) (xy 3.81 -1.27)
+						)
+						(stroke
+							(width 0.2032)
+							(type default)
+						)
+						(fill
+							(type none)
+						)
+					)
+					(pin passive line
+						(at -7.62 0 0)
+						(length 2.54)
+						(name "K"
+							(effects
+								(font
+									(size 1.27 1.27)
+								)
+							)
+						)
+						(number "1"
+							(effects
+								(font
+									(size 1.27 1.27)
+								)
+							)
+						)
+					)
+					(pin passive line
+						(at 7.62 0 180)
+						(length 2.54)
+						(name "A"
+							(effects
+								(font
+									(size 1.27 1.27)
+								)
+							)
+						)
+						(number "2"
+							(effects
+								(font
+									(size 1.27 1.27)
+								)
+							)
+						)
+					)
+					(pin passive line
+						(at 0 -5.08 90)
+						(length 2.54)
+						(name "K"
+							(effects
+								(font
+									(size 1.27 1.27)
+								)
+							)
+						)
+						(number "3"
+							(effects
+								(font
+									(size 1.27 1.27)
+								)
+							)
+						)
+					)
+				)
+				(embedded_fonts no)
+			)
 	)
-	(text "MACHINE I/O - CAN, isolated digital inputs, low-side outputs, supply sensing.  HV zone: J1 / dividers / DI series R / DO drains."
+	(text "MACHINE I/O - CAN, ground-referenced digital inputs, low-side outputs, supply sensing.  HV zone: J1 / dividers / DI series R / DO drains."
 		(exclude_from_sim no)
 		(at 25.4 20.32 0)
 		(effects
@@ -2796,9 +3007,9 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "7f61ba42-be39-583c-b78e-0c92ff689aa9")
+		(uuid "1eb2d2d7-0342-50d3-9288-c717577bdf7a")
 	)
-	(text "Valid DI input range 9-100 V.  DO loads: relay coils / buzzers <= 0.5 A at 12/24 V."
+	(text "Valid DI input range 10.5-100 V.  DO loads: relay coils / buzzers <= 0.5 A at 12/24 V."
 		(exclude_from_sim no)
 		(at 25.4 25.4 0)
 		(effects
@@ -2807,7 +3018,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "f7e71fa2-14de-53dd-9258-e132d3640729")
+		(uuid "89a85440-c8bd-5b74-aead-9fe2a906ab22")
 	)
 	(wire
 		(pts
@@ -4211,7 +4422,7 @@
 		)
 		(uuid "ca37c438-3696-5f64-9c47-dfd3e59f281a")
 	)
-	(text "DI1/DI2: 36k series (3x12k 1206, F-7) -> EL357N(D) opto, 47k pull-up + 100nF at the MCU side.  Valid input 10.5-100 V."
+	(text "DI1/DI2: 36k series (3x12k 1206, F-7) -> EL357N(D) opto, 220k pull-up + 100nF at the MCU side.  Valid input 10.5-100 V."
 		(exclude_from_sim no)
 		(at 81.28 157.48 0)
 		(effects
@@ -4220,7 +4431,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "32e5186b-5f0d-5189-a343-2b3830a69978")
+		(uuid "e1626562-830b-5094-95b9-3a51ac1a0a20")
 	)
 	(wire
 		(pts
@@ -4623,15 +4834,16 @@
 		)
 		(uuid "2d7c4f9d-1fb9-59a1-bd02-52e76000875f")
 	)
-	(label "VIN"
+	(hierarchical_label "VIN_P"
+		(shape input)
 		(at 199.39 256.54 180)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify right bottom)
+			(justify right)
 		)
-		(uuid "b7b9e133-e753-5809-abf5-1ca9fc85e59d")
+		(uuid "ed590b82-6bb5-5839-9aa6-787e938f155a")
 	)
 	(wire
 		(pts
@@ -5034,17 +5246,18 @@
 		)
 		(uuid "55d5a4d0-e372-55c3-856d-7b929c2be52b")
 	)
-	(label "VIN"
+	(hierarchical_label "VIN_P"
+		(shape input)
 		(at 199.39 302.26 180)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify right bottom)
+			(justify right)
 		)
-		(uuid "f801f285-4ab3-5b57-b223-b26e8311b2e9")
+		(uuid "4a09663f-215b-544e-b9d5-8b37043be6cb")
 	)
-	(text "DO1/DO2 (F-10): two-stage NPN driver from 5V0, non-inverting, default OFF (base pulldown + QnB clamps gate; 10k gate pulldown retained).  SS3200 200V flyback to VIN (F-11).  DO1/DO2 inactive on battery backup (5V0 absent)."
+	(text "DO1/DO2 (F-10): two-stage NPN driver from 5V0, non-inverting, default OFF (base pulldown + QnB clamps gate; 100k gate pulldown -> 4.9 V VGS).  SS3200 200V flyback to VIN_P, behind D1 (F-11, reverse-polarity review 2026-09-30).  DO1/DO2 inactive on battery backup (5V0 absent)."
 		(exclude_from_sim no)
 		(at 55.88 259.08 0)
 		(effects
@@ -5053,7 +5266,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "b25f3f35-21ec-5780-a892-0f9497d4c30c")
+		(uuid "7989a263-358f-566a-a877-85dd60775b79")
 	)
 	(wire
 		(pts
@@ -5257,33 +5470,33 @@
 	)
 	(wire
 		(pts
-			(xy 363.22 63.5) (xy 358.14 63.5)
+			(xy 363.22 63.5) (xy 359.41 63.5)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "de5bd5c7-5f0d-5415-af7a-c63f6f019106")
+		(uuid "ca97a739-f843-518a-b52b-8ac6d896eb60")
+	)
+	(wire
+		(pts
+			(xy 378.46 63.5) (xy 383.54 63.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5bdd3124-1868-5281-a9ea-f5ac4f9c800a")
 	)
 	(label "3V3"
-		(at 358.14 63.5 180)
+		(at 383.54 63.5 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify right bottom)
+			(justify left bottom)
 		)
-		(uuid "22a5cf55-b859-50c5-adda-4d79a4847b2d")
-	)
-	(wire
-		(pts
-			(xy 378.46 63.5) (xy 382.27 63.5)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "6976516a-de59-548c-954e-b424b2cfa257")
+		(uuid "ff05c908-b4ea-53e6-b973-3c9871daa5a2")
 	)
 	(wire
 		(pts
@@ -5487,33 +5700,33 @@
 	)
 	(wire
 		(pts
-			(xy 363.22 106.68) (xy 358.14 106.68)
+			(xy 363.22 106.68) (xy 359.41 106.68)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "76b87b49-c8ec-5c53-9da7-a7014a061403")
+		(uuid "fc5cfe5e-14d6-5962-bc43-ec2436762d51")
+	)
+	(wire
+		(pts
+			(xy 378.46 106.68) (xy 383.54 106.68)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d0e8ec85-31ad-528a-872d-2a3b0289769f")
 	)
 	(label "3V3"
-		(at 358.14 106.68 180)
+		(at 383.54 106.68 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify right bottom)
+			(justify left bottom)
 		)
-		(uuid "3d3efffe-b04b-5f26-a96d-9d84c03ff40e")
-	)
-	(wire
-		(pts
-			(xy 378.46 106.68) (xy 382.27 106.68)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "9ccfce4f-f869-5104-8cd4-290a682b30da")
+		(uuid "9dedca47-97d3-514e-b072-abe7a911d0ed")
 	)
 	(text "VIN and IGN sensing: 300k (3x100k 0805) : 9.1k, 100nF, BAV99 clamp to 3V3/GND.  IGN also serves as the EXTI wake input."
 		(exclude_from_sim no)
@@ -7137,7 +7350,7 @@
 		)
 	)
 	(symbol
-		(lib_id "Diode:BAV99")
+		(lib_id "Diode:BAV70")
 		(at 121.92 190.5 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -7154,7 +7367,7 @@
 				)
 			)
 		)
-		(property "Value" "BAV99"
+		(property "Value" "BAV70"
 			(at 121.92 185.42 0)
 			(effects
 				(font
@@ -7180,7 +7393,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C2500"
+		(property "LCSC" "C2501"
 			(at 121.92 190.5 0)
 			(hide yes)
 			(effects
@@ -7264,7 +7477,7 @@
 				)
 			)
 		)
-		(property "Value" "47k"
+		(property "Value" "220k"
 			(at 170.18 160.02 0)
 			(effects
 				(font
@@ -7290,7 +7503,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C17713"
+		(property "LCSC" "C17556"
 			(at 170.18 165.1 0)
 			(hide yes)
 			(effects
@@ -7778,7 +7991,7 @@
 		)
 	)
 	(symbol
-		(lib_id "Diode:BAV99")
+		(lib_id "Diode:BAV70")
 		(at 121.92 238.76 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -7795,7 +8008,7 @@
 				)
 			)
 		)
-		(property "Value" "BAV99"
+		(property "Value" "BAV70"
 			(at 121.92 233.68 0)
 			(effects
 				(font
@@ -7821,7 +8034,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C2500"
+		(property "LCSC" "C2501"
 			(at 121.92 238.76 0)
 			(hide yes)
 			(effects
@@ -7905,7 +8118,7 @@
 				)
 			)
 		)
-		(property "Value" "47k"
+		(property "Value" "220k"
 			(at 170.18 208.28 0)
 			(effects
 				(font
@@ -7931,7 +8144,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C17713"
+		(property "LCSC" "C17556"
 			(at 170.18 213.36 0)
 			(hide yes)
 			(effects
@@ -8679,7 +8892,7 @@
 				)
 			)
 		)
-		(property "Value" "10k"
+		(property "Value" "100k"
 			(at 149.86 269.24 0)
 			(effects
 				(font
@@ -8705,7 +8918,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C17414"
+		(property "LCSC" "C149504"
 			(at 149.86 274.32 0)
 			(hide yes)
 			(effects
@@ -9563,7 +9776,7 @@
 				)
 			)
 		)
-		(property "Value" "10k"
+		(property "Value" "100k"
 			(at 149.86 314.96 0)
 			(effects
 				(font
@@ -9589,7 +9802,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C17414"
+		(property "LCSC" "C149504"
 			(at 149.86 320.04 0)
 			(hide yes)
 			(effects
@@ -9874,7 +10087,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C17407"
+		(property "LCSC" "C149504"
 			(at 292.1 50.8 0)
 			(hide yes)
 			(effects
@@ -9942,7 +10155,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C17407"
+		(property "LCSC" "C149504"
 			(at 307.34 50.8 0)
 			(hide yes)
 			(effects
@@ -10010,7 +10223,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C17407"
+		(property "LCSC" "C149504"
 			(at 322.58 50.8 0)
 			(hide yes)
 			(effects
@@ -10321,7 +10534,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 382.27 63.5 0)
+		(at 359.41 63.5 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10330,7 +10543,7 @@
 		(fields_autoplaced yes)
 		(uuid "d969ff75-7e70-5499-9429-3ce6baf0f0f4")
 		(property "Reference" "#PWR058"
-			(at 382.27 55.88 0)
+			(at 359.41 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10338,7 +10551,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 382.27 63.5 0)
+			(at 359.41 63.5 0)
 			(hide yes)
 			(effects
 				(font
@@ -10402,7 +10615,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C17407"
+		(property "LCSC" "C149504"
 			(at 292.1 93.98 0)
 			(hide yes)
 			(effects
@@ -10470,7 +10683,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C17407"
+		(property "LCSC" "C149504"
 			(at 307.34 93.98 0)
 			(hide yes)
 			(effects
@@ -10538,7 +10751,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C17407"
+		(property "LCSC" "C149504"
 			(at 322.58 93.98 0)
 			(hide yes)
 			(effects
@@ -10849,7 +11062,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 382.27 106.68 0)
+		(at 359.41 106.68 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10858,7 +11071,7 @@
 		(fields_autoplaced yes)
 		(uuid "846f4ec0-f004-5d85-b445-f2a9fec0193f")
 		(property "Reference" "#PWR061"
-			(at 382.27 99.06 0)
+			(at 359.41 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10866,7 +11079,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 382.27 106.68 0)
+			(at 359.41 106.68 0)
 			(hide yes)
 			(effects
 				(font

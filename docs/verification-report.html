@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Telematics tracker — design verification report</title>
+<style>
+  @page { size: A4; margin: 14mm 13mm; }
+  body { font: 10.5pt/1.38 "DejaVu Sans", Arial, sans-serif; color: #1a1a1a; margin: 0; }
+  h1 { font-size: 20pt; margin: 0 0 2mm; }
+  h2 { font-size: 13.5pt; margin: 8mm 0 2.5mm; padding-bottom: 1mm; border-bottom: 1.5px solid #333; page-break-after: avoid; }
+  h3 { font-size: 11.5pt; margin: 5mm 0 1.5mm; page-break-after: avoid; }
+  p { margin: 0 0 2.2mm; }
+  table { border-collapse: collapse; width: 100%; margin: 1.5mm 0 3.5mm; font-size: 9.3pt; page-break-inside: auto; }
+  tr { page-break-inside: avoid; }
+  th, td { border: 1px solid #999; padding: 1.3mm 1.8mm; vertical-align: top; text-align: left; }
+  th { background: #e9e9e9; }
+  .meta { color: #444; font-size: 9.5pt; margin-bottom: 4mm; }
+  .tag { display: inline-block; font-weight: bold; padding: 0 1.6mm; border-radius: 2px; font-size: 8.8pt; white-space: nowrap; }
+  .ok { background: #d5f0d5; color: #145214; }
+  .fixed { background: #d9e6fb; color: #123a7a; }
+  .verify { background: #fff0c2; color: #6b4d00; }
+  .notok { background: #f8d3d3; color: #7a1010; }
+  .na { background: #e6e6e6; color: #444; }
+  .box { border: 1.5px solid #333; padding: 2.5mm 3mm; margin: 2mm 0 4mm; background: #fafafa; }
+  .small { font-size: 8.8pt; color: #444; }
+  code { font-family: "DejaVu Sans Mono", monospace; font-size: 8.8pt; }
+  ul { margin: 0 0 2.5mm 5mm; padding: 0; }
+  li { margin: 0 0 0.8mm; }
+  .nobreak { page-break-inside: avoid; }
+</style>
+</head>
+<body>
+
+<h1>MEWP telematics tracker — design verification report</h1>
+<p class="meta">Board <b>telematics-tracker</b>, 100 × 68 mm, 4-layer (JLC04161H-7628, ENIG) · schematic and board at tag
+<b>v1.0.2-verified-2026-09-30</b> (branch <code>relief6-stretch</code>) · review date 2026-09-30 ·
+prepared by Claude Code for Immanuel David · manufacturing package: <code>out/telematics-tracker-mfg-2026-09-30-&lt;commit&gt;.zip</code></p>
+
+<div class="box">
+<p><b>Verdict.</b> The design as packaged on 2026-09-29 (v1.0.1) would <b>not</b> have worked on arrival: five faults would have killed
+the board or a whole function at the first power-up (input TVS wired forward, 3.3 V rail shorted through two clamp diodes, both
+digital inputs blind, modem UART permanently disabled, buck current limit disabled), and a reversed supply would have destroyed it.
+All twelve faults found are <b>fixed in this revision</b>, re-verified, and every machine check is clean:
+schematic ↔ board parity 0 mismatches (212 parts, 727 pad connections), ERC 0 errors, DRC 0 errors / 0 unconnected,
+pin checklist pass, BOM 76/76 lines available at JLCPCB.</p>
+<p><b>Ready to order</b> for the prototype batch. Before a production release, seven bench measurements (section 6) and the
+certification tests in section 7 remain — those cannot be closed by review.</p>
+</div>
+
+<p>Legend: <span class="tag ok">OK</span> verified correct &nbsp; <span class="tag fixed">FIXED</span> was NOT OK, corrected and re-verified in this revision &nbsp;
+<span class="tag verify">VERIFY</span> correct by design, must be measured or tested &nbsp; <span class="tag notok">NOT OK</span> open, needs action &nbsp;
+<span class="tag na">N/A</span> not applicable.</p>
+
+<h2>1. Summary by area</h2>
+<table>
+<tr><th style="width:30%">Area</th><th style="width:12%">Result</th><th>Evidence</th></tr>
+<tr><td>All parts placed and connected</td><td><span class="tag ok">OK</span></td><td>212 schematic parts = 212 board footprints (+5 mounting holes); 727 pad-to-net connections identical on both sides; 0 unconnected items; every handoff §5 MCU pin on its net (tools/checkpins.py); no dangling nets other than the 7 known single-pin nets (spares, U6 STAT/PG, sense labels).</td></tr>
+<tr><td>Schematic correct against datasheets</td><td><span class="tag fixed">FIXED</span></td><td>Every IC pin checked against its datasheet; 12 faults found (section 3), all corrected in the generator (tools/sheets.py) and on the board, regenerated and re-checked.</td></tr>
+<tr><td>Board rules (DRC)</td><td><span class="tag ok">OK</span></td><td>0 errors, 0 unconnected under the LV-127 rule set plus the HV creepage rules (.kicad_dru). 11 warnings, all harmless (8 silkscreen marks on the DNP eSIM pads, 1 silk text touching D2's outline, 2 KiCad "dangling" flags on connected T-junctions).</td></tr>
+<tr><td>Current capacity / thermal</td><td><span class="tag fixed">FIXED</span></td><td>Charger nets were 0.15 mm (≈ 0.18 A) for 0.69 A: now 0.6 / 0.4 / 0.3 mm. 5V0, SYS, 3V3, VIN, VBAT_MODEM trunks 0.5–2.0 mm. Buck exposed pad: 9 thermal vias to its inner-layer island.</td></tr>
+<tr><td>High-voltage clearance and creepage (100 V)</td><td><span class="tag ok">OK</span></td><td>HV nets in their own class (0.6 mm), 1.5 mm HV-to-signal inside the HV zone, 1.0 mm to the board edge, conformal coating required (F-20) — all enforced by DRC rules, 0 violations.</td></tr>
+<tr><td>Decoupling, crystals, RF</td><td><span class="tag fixed">FIXED</span></td><td>C61 (charger input cap) moved from 49 mm to 11 mm from U6; 28 GND stitching vias added along both 50 Ω antenna lines; crystal load caps and placement OK.</td></tr>
+<tr><td>BOM (availability, footprint, ratings)</td><td><span class="tag ok">OK</span></td><td>tools/bom_audit.py: 76 lines, every LCSC number resolved, in stock, package matches footprint, 0 fixes needed (docs/bom-audit.md). X5R caps replaced by X7R (rule 1).</td></tr>
+<tr><td>Debug, flash and bring-up path</td><td><span class="tag ok">OK</span></td><td>SWD, ROM-bootloader UART, modem USB, modem UART monitor and every rail on test points (section 5).</td></tr>
+<tr><td>Enclosure IP65</td><td><span class="tag verify">VERIFY</span></td><td>Housing (Blender → STEP/STL, two variants) checked against the assembled-board STEP; gland, gasket groove, antenna lid. Ingress rating is proven only by an IEC 60529 test.</td></tr>
+<tr><td>Industry / regulatory requirements</td><td><span class="tag notok">NOT OK</span></td><td>Design provisions are in place; no EMC, radio, safety, ingress or battery certification test has been run yet (section 7). Required before selling.</td></tr>
+</table>
+
+<h2>2. What was checked and how</h2>
+<table>
+<tr><th style="width:28%">Check</th><th>Method</th><th style="width:20%">Result</th></tr>
+<tr><td>Schematic ↔ board parity</td><td>Netlist export vs. board pads: reference, footprint, value, DNP flag and the net of every pad</td><td>0 mismatches</td></tr>
+<tr><td>MCU pin map</td><td>Handoff §5 table vs. netlist (tools/checkpins.py), plus F-10 default-OFF structure</td><td>all pins on their nets, pass</td></tr>
+<tr><td>ERC</td><td>kicad-cli, all severities</td><td>0 errors, 23 known warnings</td></tr>
+<tr><td>DRC</td><td>kicad-cli, all severities, LV-127 rules + HV .kicad_dru</td><td>0 errors, 0 unconnected, 11 warnings</td></tr>
+<tr><td>Datasheet review of every block</td><td>Pin-by-pin against the manufacturer PDFs (Artery, Quectel HW Design V1.2, EG Micro, TI, Nexperia, SIT, Everlight, Analog Power, GigaDevice, QST, ST, Hirose/JXTCONN); KiCad library pin names read from the .kicad_sym files; independent second pass on every finding</td><td>12 faults → fixed</td></tr>
+<tr><td>Current capacity</td><td>IPC-2221 for track width / layer / copper weight vs. worst-case current on every power net</td><td>3 nets widened</td></tr>
+<tr><td>Copper path resistance</td><td>Graph of tracks/vias/pours, shortest resistive path per rail</td><td>no bottlenecks left</td></tr>
+<tr><td>Clearance / creepage</td><td>DRC rule set; measured minimum distances HV ↔ LV, HV ↔ edge</td><td>OK</td></tr>
+<tr><td>Decoupling distance</td><td>Cap-to-pin distance for every decoupling cap</td><td>1 moved</td></tr>
+<tr><td>RF</td><td>CPWG geometry on the declared stackup (0.2104 mm dielectric), stitching, keep-outs</td><td>stitching added</td></tr>
+<tr><td>BOM</td><td>LCSC + JLCPCB APIs: stock, package, key attributes per line</td><td>76/76 clean</td></tr>
+<tr><td>Mechanical</td><td>Board STEP inside the housing model, part heights, gland/locknut, lid antennas</td><td>OK by model</td></tr>
+</table>
+
+<h2>3. Faults found and fixed (all would have failed on the bench)</h2>
+<table>
+<tr><th style="width:3%">#</th><th style="width:19%">Item</th><th style="width:26%">What would have happened</th><th style="width:26%">Root cause</th><th>Fix (schematic / board)</th></tr>
+<tr><td>1</td><td>D2 SMDJ100A input TVS</td><td>Conducts forward at the first power-up: input shorted through the TVS, F1 opens. Dead on arrival.</td><td>Drawn with KiCad's bidirectional D_TVS symbol; pin 2 on the rail, but on the SMC footprint pad 1 is the cathode (band).</td><td>Symbol D_Zener, cathode (pin 1) to VIN_P, anode to GND. Board: D2 turned 180°.</td></tr>
+<tr><td>2</td><td>D10 / D11 BAV99 clamps on VIN_SENSE / IGN_SENSE</td><td>Both diodes forward between 3V3 and GND: 3.3 V rail held at ≈ 1.2 V, MCU never starts. Dead on arrival.</td><td>KiCad's Diode:BAV99 symbol carries hidden pin names K/A/K that contradict its own drawing and Nexperia's datasheet (pin 1 = A1, pin 2 = K2, pin 3 = common).</td><td>Pin 1 (anode) → GND, pin 2 (cathode) → 3V3, pin 3 signal. Board: both turned 180°; D10 moved 0.3 mm, NRST via relocated, VIN_SENSE re-fed.</td></tr>
+<tr><td>3</td><td>D5 / D6 BAV99 across the DI opto LEDs</td><td>Bypasses the opto LED on every positive input: DI1 and DI2 never read. Function dead.</td><td>Same pin-name trap, wired for the mirror of the real pinout.</td><td>BAV70 (common cathode) with the same three connections — pin-compatible, no copper change.</td></tr>
+<tr><td>4</td><td>U8 TXB0104 output enable</td><td>Modem UART, RI and DTR permanently disabled: no modem communication at all.</td><td>OE divider 47 k up / 10 k down = 0.32 V; TXB0104 needs ≥ 0.65 × VCCA = 1.17 V.</td><td>R63 10 k up, R62 100 k down → 1.64 V (Quectel uses 10 k / 120 k).</td></tr>
+<tr><td>5</td><td>R82 buck current-sense resistor</td><td>No over-current or short-circuit protection on the 5 V converter; a shorted 5V0 destroys U5/L1.</td><td>Fitted 0 R (F-12: "no formula in the datasheet"). The EG11752 compares (IS − VS) with 0.2 V, so R_IS = 0.2 V / I_peak.</td><td>0.1 R (YAGEO RL0805FR-7W0R1L) → 2 A peak limit, normal peak ≈ 1.2 A, L1 saturation 2.7 A. Bench BV-1.</td></tr>
+<tr><td>6</td><td>Reverse-polarity protection</td><td>A reversed supply flows GND → Q1/Q2 body diode → D7/D8 → VIN around the D1 blocking diode with nothing limiting it: Q1/Q2, D7/D8 destroyed, then F1.</td><td>Flyback diodes returned to raw VIN instead of the protected node.</td><td>D7/D8 cathodes to VIN_P (behind D1), exported as a hierarchical net. Board: VIN trunk re-laid around the diode pads, new 0.5 mm VIN_P run to D1. Bench BV-6.</td></tr>
+<tr><td>7</td><td>Q1 / Q2 gate drive</td><td>DO1/DO2 MOSFETs only partly enhanced: hot, may not switch a 0.5 A load.</td><td>10 k gate pulldown loaded the 2.2 k / 100 R driver: 4.07 V at the gate vs. the AM2390N's 4.5 V specification.</td><td>R25/R26 100 k → 4.89 V, gate still discharges in ≈ 25 µs.</td></tr>
+<tr><td>8</td><td>DI1 / DI2 pull-up</td><td>Inputs read "off" while driven at the low end of the range or when hot.</td><td>47 k pull-up needs 70 µA from the opto; at 0.22–0.26 mA LED current the EL357N(D) delivers about that (≈ 1× margin).</td><td>R21/R22 220 k (15 µA needed, ≈ 7× margin). Bench BV-7.</td></tr>
+<tr><td>9</td><td>SIM card detect</td><td>USIM_DET floats: hot-plug detection unusable.</td><td>The EC200U has no internal pull-up on USIM_DET (Quectel Fig 18 shows 51 k to VDD_EXT).</td><td>R91 51 k VDD_EXT ↔ USIM_DET added (bottom side, both pads on existing copper). Firmware FW-17.</td></tr>
+<tr><td>10</td><td>SIM ESD array</td><td>SIM signal edges loaded by 80–130 pF per line; risk of SIM errors.</td><td>SMF05C chosen; Quectel asks for ≤ 15 pF.</td><td>PESD5V0L5UY (≤ 19 pF, same SOT-363 pinout). 19 vs 15 pF accepted: nearest in-stock part, SIM clock ≤ 5 MHz.</td></tr>
+<tr><td>11</td><td>Ceramic capacitor dielectric</td><td>X5R 1 µF / 4.7 µF lose most of their capacitance with bias and temperature (rule 1 of the handoff).</td><td>Library defaults.</td><td>1 µF → YAGEO CC0603KRX7R8BB105 (X7R 25 V), 4.7 µF → CC0805KKX7R8BB475 (X7R 25 V).</td></tr>
+<tr><td>12</td><td>Charger power copper</td><td>VBAT_BT ran 13 mm on the inner layer at 0.15 mm (≈ 0.18 A) for the 0.69 A charge current: overheating trace; SW_CHG and PMID also 0.15 mm.</td><td>Router class assignment.</td><td>VBAT_BT 0.6 mm on F.Cu U6 → J2, SW_CHG 0.4 mm, PMID 0.3/0.5 mm.</td></tr>
+</table>
+<p>Also corrected on the board: X2, R70, C48–C51 marked DNP so pick-and-place skips them; C61 (charger VBUS cap) swapped with C80 to sit 11 mm from U6; 28 GND stitching vias along both antenna lines; 4 more thermal vias under U5.
+Documented rather than changed (section 8): the 10.5 V input floor, ignition wake by ADC polling, the ground-referenced (not isolated) digital inputs, and the SYS 3.5–4.26 V range.</p>
+
+<h2>4. Verified OK, block by block</h2>
+<table>
+<tr><th style="width:22%">Block</th><th>Checked</th><th style="width:9%">Result</th></tr>
+<tr><td>Input front end</td><td>F1 1 A 250 VAC / 125 VDC fuse (100 A DC interrupt) → D1 S3M reverse block → D2 SMDJ100A 3 kW TVS (now correctly oriented) → R80 1 R 2512 surge resistor → C70/C71 2.2 µF 100 V + C72 100 nF. Clamp margin at 3.7 A: 34.9 %. TP23 on VIN.</td><td><span class="tag ok">OK</span></td></tr>
+<tr><td>5 V buck U5 EG11752</td><td>Every pin per datasheet: EN 100 k from VCC (fig 6-2), VB–VS 100 nF bootstrap, FB 4.3 k / 1.5 k → 5.03 V, L1 150 µH (Isat 2.7 A), D3 SS3200 free-wheel, IS 0.1 R (2 A), exposed pad = VIN_B on its own inner island with 9 vias, 0.6 mm clearance inside the BUCK_HV area, output 4 × 10 µF + 100 nF, TP19.</td><td><span class="tag ok">OK</span></td></tr>
+<tr><td>Charger / power path U6 BQ25606</td><td>Pin 2 NC per datasheet, ICHG 0.69 A, ILIM 0.89 A, VSET floating = 4.208 V, SYSMIN 3.5 V, BTST 47 nF, L3 2.2 µH, PMID / SYS / VBUS capacitors, TS JEITA divider R88/R89 with the pack NTC (charge inhibited outside 0–45 °C), STAT/PG left open, J2 battery connector (B+, NTC, B−), TP13 on SYS.</td><td><span class="tag ok">OK</span></td></tr>
+<tr><td>3.3 V LDO U9 ME6211</td><td>Pinout, input/output capacitors, 500 mA class vs. the 3V3 load, TP6.</td><td><span class="tag ok">OK</span></td></tr>
+<tr><td>MCU U2 AT32F403ACGT7</td><td>47/47 handoff §5 pins on their nets; BOOT0 10 k + JP1, BOOT1 low; NRST 100 nF + TP3; 8 MHz crystal + 2 × 18 pF and 32.768 kHz + 2 × 6.8 pF; VDDA ferrite + 1 µF/100 nF; 100 nF at every VDD pin; SWD on TP1/TP2; USART2 (ROM bootloader) on TP4/TP5; CAN1 remap PB8/PB9; PC13 LED within its 3 mA limit; JTAG pins reused as GPIO (FW-1).</td><td><span class="tag ok">OK</span></td></tr>
+<tr><td>Modem U1 Quectel EC200U-CN</td><td>All 112 pads: VBAT (4 × 47 µF X7R + 1 µF + 100 nF + TVS within 5 mm), all GND pads tied, PWRKEY and RESET_N through NPN inverters, STATUS through NPN (inverted, FW-5), NETLIGHT → NPN → LED, VDD_EXT 1.8 V → U8, USB_DP/DM/VBUS → USBLC6 → TP15–17, USIM (33 R series, 100 nF, PESD, 51 k detect pull-up), antennas 50 Ω CPWG with π pads to U.FL (AF1 LTE, AF2 GNSS), GNSS active-antenna bias L4/R90/C83/C85, MODEM_PWR_EN P-FET power cut (FW-6).</td><td><span class="tag ok">OK</span></td></tr>
+<tr><td>Level shifter U8 TXB0104</td><td>A-side 1.8 V (VDD_EXT), B-side 3.3 V, OE 1.64 V (fixed), TX/RX/RI/DTR channel mapping to PA9–PA12, unused channels tied.</td><td><span class="tag fixed">FIXED</span></td></tr>
+<tr><td>CAN U4 SIT1051</td><td>VCC 5V0, VIO 3V3, STB → PA15 (FW-18), TXD/RXD to the remapped CAN1, common-mode choke (1–4, 2–3), PESD1CAN TVS at the connector, split termination 2 × 60 R + 4.7 nF behind JP2 (open by default), TP25/TP26.</td><td><span class="tag ok">OK</span></td></tr>
+<tr><td>Digital inputs</td><td>36 k (3 × 12 k 1206) → EL357N(D) opto + BAV70 reverse diode, 220 k pull-up + 100 nF to PB12/PB13; valid 10.5–100 V; ground-referenced.</td><td><span class="tag fixed">FIXED</span></td></tr>
+<tr><td>Digital outputs</td><td>F-10 two-stage NPN driver from 5V0 (provably off with the MCU unpowered), AM2390N 100 V MOSFET, 100 R gate, 100 k pulldown, SS3200 flyback to VIN_P; rated 0.5 A at 12/24 V.</td><td><span class="tag fixed">FIXED</span></td></tr>
+<tr><td>Sense dividers</td><td>VIN and IGN 3 × 100 k : 9.1 k (÷ 34; 100 V → 2.9 V) with BAV99 clamps to 3V3/GND (fixed) and 100 nF; VBAT 1 M : 1 M from SYS.</td><td><span class="tag fixed">FIXED</span></td></tr>
+<tr><td>Storage U7 GD25Q64E (I-grade)</td><td>SPI1 pins, WP#/HOLD# high, 100 nF + 1 µF, CS pull-up.</td><td><span class="tag ok">OK</span></td></tr>
+<tr><td>IMU U3 QMI8658B</td><td>I2C address 0x6A (SA0 high), CS high = I2C mode, INT1 → PB5, decoupling, 2.2 k I2C pull-ups.</td><td><span class="tag ok">OK</span></td></tr>
+<tr><td>Connectors</td><td>J1 Micro-Fit 12-pin pin map (VIN, GND, IGN, CANH, CANL, GND, DI1, DI2, DO1, DO2, 2 spares) matches the installation sheet; J2 battery; X1 SIM holder pin map incl. CD switch; U.FL ×2.</td><td><span class="tag ok">OK</span></td></tr>
+<tr><td>Layout</td><td>Solid GND on L2, 3V3/SYS pours on L3, HV zone x &lt; 44 mm with the 1.5 mm rule, LV-127 rules at JLCPCB standard capability (0.127 mm clearance, 0.15 mm track, 0.2 mm drill), staircase tracks straightened, 5 GND-tied M3 holes, silk references on F.Fab for passives (assembly drawing).</td><td><span class="tag ok">OK</span></td></tr>
+<tr><td>Enclosure</td><td>IP65 housing model (two variants: internal lid antennas / external SMA), M16 gland, cavity clearances measured against the board STEP (12.1 mm over J1, 2.4 mm under bottom parts, gland locknut clear), STL meshes manifold.</td><td><span class="tag verify">VERIFY</span></td></tr>
+</table>
+
+<h2>5. Development: debug, flash and first power-up</h2>
+<table>
+<tr><th style="width:24%">Interface</th><th>Test points / parts</th><th>Use</th></tr>
+<tr><td>SWD (primary programming and debug)</td><td>TP1 SWDIO, TP2 SWCLK, TP3 NRST, TP6 3V3 (target reference), TP7 GND</td><td>Artery AT-Link, J-Link or a DAPLink probe with Artery's ICP tool / OpenOCD (AT32 support). Full flash, breakpoints, RTT.</td></tr>
+<tr><td>ROM bootloader (serial ISP, no debugger)</td><td>JP1 solder jumper = BOOT0 high; TP4 DBG_TX (MCU PA2, USART2 TX), TP5 DBG_RX (PA3), 3.3 V logic, TP7 GND</td><td>Artery ISP programmer over any 3.3 V USB-UART. Open JP1 again after flashing. The same pads are the application's console port.</td></tr>
+<tr><td>Modem USB</td><td>TP15 USB_DP, TP16 USB_DM, TP17 USB_VBUS (5 V in), TP18 GND</td><td>Quectel QFlash firmware update, QNavigator AT console, USB modem/ECM test, DFOTA setup.</td></tr>
+<tr><td>Modem UART monitor</td><td>TP27 MODEM_TX, TP28 MODEM_RX (3.3 V side of U8)</td><td>Sniff the MCU ↔ modem AT traffic with a logic analyser.</td></tr>
+<tr><td>Power rails</td><td>TP23 VIN, TP19 5V0 (5.03 V), TP13 SYS (3.5–4.26 V), TP24 VBAT_MODEM, TP6 3V3 (3.30 V), modem VDD_EXT 1.8 V at C44</td><td>First power-up checklist; current-limited bench supply 24 V / 0.5 A, battery disconnected.</td></tr>
+<tr><td>CAN</td><td>TP25 CANH, TP26 CANL; JP2 closes the split termination</td><td>Bus tests with a CAN analyser; close JP2 only on a bench bus without terminators.</td></tr>
+<tr><td>Indicators</td><td>SYS_LED (PC13 heartbeat), NET_STATUS_LED (modem NETLIGHT)</td><td>Boot and registration at a glance.</td></tr>
+</table>
+<p>First power-up order (details in docs/bringup-test-plan.md): 5V0 → SYS → 3V3 with the modem held off (PB10 high), then release the modem, expect STATUS low (FW-5) and VDD_EXT 1.8 V ≈ 4–5 s after PWRKEY, then <code>AT</code> on TP27/TP28. Firmware constraints that hardware imposes are listed as FW-1 … FW-22 in docs/firmware-notes.md (JTAG disable, CAN remap, CAN standby pin, modem power sequence, OE behaviour, no internal pull-ups on the modem UART pins, ADC-polled ignition wake, IWDG in sleep, battery floor, LTE-only scan, SIM detect polarity).</p>
+
+<h2>6. Bench measurements required before production</h2>
+<table>
+<tr><th style="width:8%">#</th><th style="width:34%">Measurement</th><th>Why / pass criterion</th></tr>
+<tr><td>BV-1</td><td>Buck current limit (short 5V0 through 0.1 R at 100 V in)</td><td>Converter folds back without damage; trip near 2 A peak.</td></tr>
+<tr><td>BV-2</td><td>Buck minimum on-time at 100 V in, 0.7–1 A out, and light load</td><td>Stable 5.03 V, no pulse skipping instability (Ton ≈ 455 ns).</td></tr>
+<tr><td>BV-3</td><td>EN pin voltage across the VCC range</td><td>Within the 7 V absolute maximum.</td></tr>
+<tr><td>BV-4</td><td>U5 qualification: 3 units, 1000 h at 100 V / 85 °C, thermal cycling −40 ↔ +85 °C</td><td>No drift, no failure (U5 approval condition).</td></tr>
+<tr><td>BV-5</td><td>Input dropout: VIN at which 5V0 leaves regulation at 1 A</td><td>Expected 10.5–12 V; sets the firmware "on battery" threshold (FW-13).</td></tr>
+<tr><td>BV-6</td><td>Reverse polarity −24 V with the DO loads connected</td><td>No current, no damage (fix 6).</td></tr>
+<tr><td>BV-7</td><td>DI threshold at 10.5 V, −20 °C and +70 °C</td><td>PB12/PB13 read low with margin (fix 8).</td></tr>
+<tr><td>—</td><td>Thermal soak at 60 °C ambient with modem transmitting and the battery charging</td><td>Modem ≤ 70 °C case, buck and charger within ratings (handoff thermal rule).</td></tr>
+<tr><td>—</td><td>Antennas: GNSS fix and LTE registration inside the closed housing; GNSS ↔ LTE isolation &gt; 40 dB</td><td>Cold fix &lt; 60 s outdoors; RSRP within 3 dB of a reference antenna.</td></tr>
+<tr><td>—</td><td>Battery: charge/discharge cycle, JEITA inhibit outside 0–45 °C, ride-through on VIN loss</td><td>Per handoff §4.</td></tr>
+</table>
+
+<h2>7. Industry and regulatory requirements</h2>
+<table>
+<tr><th style="width:26%">Requirement</th><th style="width:11%">Status</th><th>Design provision / what is still needed</th></tr>
+<tr><td>RoHS (2011/65/EU) and lead-free assembly</td><td><span class="tag verify">VERIFY</span></td><td>JLCPCB assembles lead-free; every LCSC line is a RoHS-marked part. Collect the assembler's and part suppliers' declarations for the technical file.</td></tr>
+<tr><td>EMC — emissions and immunity (CE: EN IEC 61000-6-2 / 61000-6-4; machinery: ISO 13766 for construction machinery, EN 280 for MEWPs)</td><td><span class="tag notok">NOT OK</span></td><td>Provisions: input TVS and surge resistor, CAN common-mode choke + TVS, ESD arrays on SIM/USB/CAN, solid ground plane, filtered sense inputs, conformal coating. Not yet tested — book a pre-compliance scan (radiated/conducted emissions, ESD, EFT, surge, RF immunity).</td></tr>
+<tr><td>Automotive/mobile-machine supply transients (ISO 7637-2 pulses, ISO 16750-2 load dump, reverse battery)</td><td><span class="tag verify">VERIFY</span></td><td>100 V standoff, 3 kW TVS, 1 R surge resistor, reverse blocking diode + fixed flyback return. Pulse test on the bench (BV-6 plus ISO 7637 pulses 1, 2a, 3a/3b).</td></tr>
+<tr><td>Radio approval — LTE module (India WPC ETA; elsewhere CE-RED / FCC via the module's grants)</td><td><span class="tag verify">VERIFY</span></td><td>EC200U-CN covers India's LTE bands (B1/B3/B5/B8/B40/B41). The module is pre-certified by Quectel; confirm with the Quectel India distributor that the EC200U-CN variant's WPC ETA is on file (or file the self-declaration ETA), and use the module's certified antenna gain limits.</td></tr>
+<tr><td>India TEC MTCTE (telecom equipment) </td><td><span class="tag verify">VERIFY</span></td><td>Cellular IoT/tracking devices may fall under MTCTE. Confirm the applicable category with a TEC-designated lab before sale.</td></tr>
+<tr><td>AIS-140 (vehicle tracking, India)</td><td><span class="tag na">N/A</span></td><td>Applies to transport-vehicle tracking devices, not to MEWP fleet telematics. If a customer demands it: AIS-140 adds embedded dual-profile SIM, 4 h backup, ARAI/ICAT type approval — not covered by this design.</td></tr>
+<tr><td>Electrical safety (IEC 62368-1): 100 V DC input is above the 60 V ES1 limit</td><td><span class="tag verify">VERIFY</span></td><td>The HV zone is enclosed (IP65 housing), coated (F-20) and separated by the DRC creepage rules; no user-touchable HV parts. Formal classification by a safety lab if the product is certified.</td></tr>
+<tr><td>Ingress protection IP65 (IEC 60529)</td><td><span class="tag verify">VERIFY</span></td><td>Housing with gasket groove, M16 cable gland, lid antennas under the cover. Needs the IP6X dust and IPX5 water-jet test on a finished sample.</td></tr>
+<tr><td>Environmental: temperature, vibration, shock (ISO 16750-3/-4, IEC 60068-2-6/-27/-64)</td><td><span class="tag notok">NOT OK</span></td><td>Product rating −20 … +60 °C; five M3 mounts; only J1/J2 through-hole. No vibration or thermal-cycling test yet.</td></tr>
+<tr><td>Battery safety and transport (IEC 62133-2 cell, UN 38.3, India BIS CRS under IS 16046 for Li-ion cells/packs)</td><td><span class="tag notok">NOT OK</span></td><td>1S 103450 pack with NTC and JEITA charging is the right architecture; the cell/pack itself must come with IEC 62133-2, UN 38.3 and (for India) BIS registration from the pack vendor.</td></tr>
+<tr><td>Conformal coating</td><td><span class="tag notok">NOT OK</span></td><td>Mandatory for the 100 V creepage (F-20). Specify it in the assembly order (acrylic or silicone, mask the connectors, U.FL, test points and the SIM holder).</td></tr>
+<tr><td>Marking and documentation</td><td><span class="tag notok">NOT OK</span></td><td>Rating label (12–100 V DC, IP65, model, serial), installation sheet (docs/installation-sheet.md, corrected), declaration of conformity once the tests above pass.</td></tr>
+</table>
+
+<h2>8. Open items (NOT OK or accepted deviations)</h2>
+<table>
+<tr><th style="width:34%">Item</th><th style="width:11%">Status</th><th>Detail / owner</th></tr>
+<tr><td>Guaranteed input floor</td><td><span class="tag verify">VERIFY</span></td><td>Specified 10.5 V; after D1 and R80 the buck sees ≈ 9.2 V at full load, under its 10 V minimum. Documented as 12 V guaranteed / 10.5 V bench figure (BV-5, FW-13, installation sheet). Fix option if the bench fails: R80 1 R → 0.47 R.</td></tr>
+<tr><td>Ignition wake</td><td><span class="tag fixed">FIXED</span> (firmware)</td><td>The ÷ 34 divider cannot produce a logic edge, so IGN cannot wake the MCU by EXTI: RTC-timed ADC polling (FW-14). Hardware alternative for a later revision: a comparator or a 100 k / 9.1 k divider with a 5.1 V zener.</td></tr>
+<tr><td>Digital inputs are not galvanically isolated</td><td><span class="tag ok">OK</span> (documented)</td><td>The opto is used as a 100 V level shifter; the input return is the unit's GND. Handoff and installation sheet corrected ("optically isolated" removed).</td></tr>
+<tr><td>SIM ESD array capacitance</td><td><span class="tag verify">VERIFY</span></td><td>PESD5V0L5UY ≤ 19 pF vs. Quectel's 15 pF guideline; nearest in-stock SOT-363 part. Check SIM communication on the first units; a 4-line 0.5 pF array on a different footprint is the fallback.</td></tr>
+<tr><td>DRC warnings (11)</td><td><span class="tag ok">OK</span></td><td>8 silk marks on the DNP eSIM pads, 1 silk text near D2, 2 KiCad "dangling" flags on connected T-junctions. No effect on manufacture.</td></tr>
+<tr><td>ERC warnings (23)</td><td><span class="tag ok">OK</span></td><td>Rails carrying both a local and a hierarchical label (3V3, 5V0, SYS, VIN, VIN_P …) and single-pin sense labels; the netlist confirms every rail is one net.</td></tr>
+<tr><td>Bench and certification items in sections 6 and 7</td><td><span class="tag notok">NOT OK</span></td><td>Owner: hardware bring-up (bench), certification lab (EMC, radio, IP, safety), pack vendor (battery certificates).</td></tr>
+</table>
+
+<h2>9. Deliverables</h2>
+<ul>
+<li>Manufacturing package (one zip, ready for JLCPCB or a local fab): <code>out/telematics-tracker-mfg-2026-09-30-&lt;commit&gt;.zip</code> — 1_PCB_fabrication (Gerbers, drill, ODB++, IPC-2581, fabrication drawing), 2_PCB_assembly (BOM with LCSC and manufacturer part numbers, pick-and-place, assembly drawings), 3_documentation (schematic PDF, assembled-board STEP, BOM audit, this report), 4_enclosure (STEP/STL/Blender for both housing variants), README.</li>
+<li>Sources: <code>tools/sheets.py</code> (schematic generator), <code>telematics-tracker.kicad_pcb</code>, git tag <code>v1.0.2-verified-2026-09-30</code> on GitHub (Immanueldavidckp/schematics).</li>
+<li>Documents corrected in this review: docs/firmware-notes.md (FW-6/8/13/14/17, FW-18…22, BV-1, BV-5…7), docs/telematics-handoff.md, docs/installation-sheet.md, design-log.md (entry 2026-09-30).</li>
+</ul>
+<p class="small">Method note: every finding was confirmed against the manufacturer document, not the KiCad symbol; where the two disagreed (BAV99, D_TVS) the datasheet won. All board changes were applied through DRC-gated scripts (tools/manual_routes.py, tools/board_fixes.py) so that no change could leave the board with more violations than before.</p>
+
+</body>
+</html>
