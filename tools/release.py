@@ -132,12 +132,17 @@ def export(outdir):
             z.write(os.path.join(gdir, f), f)
     print(f"gerbers: {len(files)} files -> {zpath}")
 
-    # BOM in JLCPCB's column order; grouped so one line per part number
+    # BOM in JLCPCB's column order; grouped so one line per part number.
+    # --ref-range-delimiter "" spells every reference out: KiCad's default
+    # compresses runs into "C45-C47", which JLCPCB's BOM parser does not
+    # expand - it reports "C45-C47 designators don't exist in the CPL file"
+    # and silently drops those parts from the assembly (2026-09-30).
     bom = os.path.join(outdir, "bom.csv")
     r = run(["kicad-cli", "sch", "export", "bom", "-o", bom,
              "--fields", "Value,Reference,Footprint,LCSC",
              "--labels", "Comment,Designator,Footprint,LCSC",
-             "--group-by", "Value,Footprint,LCSC", "--exclude-dnp", SCH])
+             "--group-by", "Value,Footprint,LCSC",
+             "--ref-range-delimiter", "", "--exclude-dnp", SCH])
     if r.returncode:
         sys.exit(f"BOM export failed:\n{r.stdout}\n{r.stderr}")
     rows = list(csv.DictReader(open(bom, newline="", encoding="utf-8")))
@@ -178,6 +183,21 @@ def export(outdir):
             n += 1
     os.unlink(kpos)
     print(f"CPL: {n} placements -> {cpl}")
+
+    # The assembler matches the two files by designator: every BOM reference
+    # must appear in the CPL and vice versa, or those parts are dropped from
+    # the build. Test points and solder jumpers are on the board but not in
+    # the BOM by design.
+    bom_refs = {d.strip() for row in rows for d in row["Designator"].split(",") if d.strip()}
+    cpl_refs = {row[0] for row in csv.reader(open(cpl, newline="", encoding="utf-8"))} - {"Designator"}
+    only_bom = sorted(bom_refs - cpl_refs)
+    only_cpl = sorted(r for r in cpl_refs - bom_refs if not re.match(r"(TP|JP)\d+$", r))
+    if only_bom or only_cpl:
+        sys.exit(f"BOM/CPL designator mismatch - the assembler would drop these:\n"
+                 f"  only in the BOM: {', '.join(only_bom) or 'none'}\n"
+                 f"  only in the CPL: {', '.join(only_cpl) or 'none'}")
+    print(f"BOM/CPL designators match: {len(bom_refs)} parts "
+          f"(+{len(cpl_refs) - len(bom_refs)} test points / jumpers placed but not purchased)")
     print("REMINDER: check U1/U2/QFN rotations against JLCPCB's conventions, "
           "re-check every LCSC number is in stock, and order WITH conformal "
           "coating (mandatory - creepage at U5, see docs/SKILL.md P1).")
