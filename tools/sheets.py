@@ -431,9 +431,12 @@ def build_io():
             sh.series("Device:R", f"R{base + k}", "12k",
                       (g(58 + k * 12), g(ybase)), chain[k], chain[k + 1],
                       R1206, LCSC_R12K_1206)
+        # C42385002 = EL357N(D)(TA)-G, the 300-600 % CTR bin the 220k pull-up
+        # margin is calculated with. C359074 (used until 2026-09-30) is the
+        # (A) bin, 50-150 %: works, but with ~3x margin instead of ~17x.
         ok = sh.place("jlc:EL357N", f"OK{n}", "EL357N(D)",
                       (g(112), g(ybase + 8)),
-                      "jlc:OPTO-SMD-4_L4.4-W4.1-P2.54-LS7.0-BL", "C359074")
+                      "jlc:OPTO-SMD-4_L4.4-W4.1-P2.54-LS7.0-BL", "C42385002")
         sh.net(ok, "1", f"DI{n}_LED", length=g(5))
         sh.gnd(ok, "2", length=g(3))
         sh.gnd(ok, "3", length=g(3))

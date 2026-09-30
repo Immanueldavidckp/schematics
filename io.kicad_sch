@@ -7241,7 +7241,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C359074"
+		(property "LCSC" "C42385002"
 			(at 142.24 175.26 0)
 			(hide yes)
 			(effects
@@ -7882,7 +7882,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C359074"
+		(property "LCSC" "C42385002"
 			(at 142.24 223.52 0)
 			(hide yes)
 			(effects
