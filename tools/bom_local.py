@@ -189,7 +189,7 @@ wrap=Alignment(wrap_text=True,vertical="top")
 ws["A1"]="MEWP Telematics Tracker — BOM for local purchase price comparison"; ws["A1"].font=f(bold=True,size=14)
 ws["A2"]="Source: schematic sheets (power, mcu, io, modem_rf, storage) as committed. Test points, solder jumpers and DNP parts are not purchased (see other tabs)."; ws["A2"].font=f(italic=True,size=9)
 inputs=[("Boards to build",10,"Number of boards you are buying parts for."),
-        ("USD → INR rate",88,"Assumption, edit to today's rate. Used only to convert the JLC/LCSC reference price."),
+        ("USD → INR rate",96,"~₹95.9 interbank on 1-Oct-2026. Edit to today's rate. Used only to convert the JLC/LCSC reference price."),
         ("Default spares per line (pcs)",0,"Extra pieces added to every line. Small passives are often sold in strips of 10-100 anyway.")]
 for i,(lab,val,cm) in enumerate(inputs):
     r=3+i; ws.cell(r,1,lab).font=f(bold=True); c=ws.cell(r,3,val); c.font=f(color="0000FF",bold=True); c.fill=YEL; c.border=BOX
@@ -268,6 +268,9 @@ flags=[
 ("High","C72","100 nF on the 10.5-100 V input rail uses the same general-purpose 0603 part (C14663) as the logic decoupling caps. A 50 V-class cap on a 100 V rail can crack or short.","100 nF X7R rated ≥100 V. Then update the schematic part number."),
 ("High","R56, R58","Value says 47 kΩ but the LCSC field is C17414 (10 kΩ). An order placed by LCSC number gets the wrong resistor.","47 kΩ 0805. Fix the LCSC field in tools/sheets.py."),
 ("High","R66, R67, R68","Value says 33 Ω (USIM series) but the LCSC field is C17408 (100 Ω). Known F-5 placeholder.","33 Ω 0805."),
+("Medium","C12, C63","LCSC C23733 is a 4.7 µF 10 V part in 0402, but the footprint is 0805 (found in price check).","4.7 µF ≥10 V 0805 X5R/X7R, e.g. LCSC C1779."),
+("Medium","C1, C2","LCSC C1653 is 22 pF, but the value is 18 pF (8 MHz crystal load caps).","18 pF C0G 0603, e.g. LCSC C1647."),
+("Medium","Y1","LCSC C115962 is an 8 MHz crystal in a 5.0x3.2 mm package with 20 pF load, but the footprint is 3.2x2.5 mm.","8 MHz 3225 4-pin crystal; recheck load caps against its CL."),
 ("Medium","R71, R72","Footprint is 0402 but the LCSC field is C17477 (0805 0 Ω).","0 Ω 0402."),
 ("Medium","C83","Footprint is 0402 but the LCSC field is C14663 (0603 100 nF).","100 nF X7R 0402."),
 ("Medium","D13, D20, D21","Labelled NET, GRN and BLU, but all three use LCSC C2286. Colours are undecided.","Pick colours, then buy 0603 LEDs."),
@@ -305,6 +308,146 @@ for i,p in enumerate(sorted(parts,key=lambda p:(re.match(r'[A-Z]+',p["ref"]).gro
     for j,v in enumerate([p["sheet"],p["ref"],p["val"],p["fp"],p["lcsc"],p["dnp"]],1): al.cell(i,j,v).font=f()
 for j,w in enumerate([10,8,22,44,14,6],1): al.column_dimensions[get_column_letter(j)].width=w
 al.freeze_panes="A2"; al.auto_filter.ref=f"A1:F{len(parts)+1}"
+
+
+# ======================= Price estimate tab =======================
+# Prices gathered 2026-10-02 from LCSC / JLCPCB price ladders (via web search;
+# the shop sites were not directly reachable). status: live = LCSC/JLC ladder,
+# alt = other distributor or a sibling LCSC number, est = no price found, estimate.
+# (p1, p10, moq, status, source)
+PR={
+"C2916205":(13.65,11.54,1,"live","JLCPCB C2916205"),
+"C55058656":(2.1686,1.938,1,"alt","LCSC C528437 (same MPN)"),
+"C5380158":(1.4209,1.18,1,"live","LCSC C5380158"),
+"C5382551":(0.4356,0.3513,1,"live","LCSC C5382551"),
+"C53368402":(0.50,0.50,1,"est","NO PRICE FOUND. Placeholder $0.50"),
+"C374063":(1.6253,1.4132,1,"live","LCSC C374063"),
+"C2831359":(1.137,0.79,1,"live","LCSC 1+, JLC-China 10+"),
+"C60708":(0.5835,0.5681,1,"live","LCSC C60708"),
+"C82942":(0.0604,0.0604,10,"live","LCSC 10+"),
+"C359074":(0.0739,0.0739,1,"alt","LCSC C142283 EL357N(D)"),
+"C51886143":(0.61,0.406,1,"alt","DigiKey AM2390N"),
+"C1977839":(1.02,0.638,1,"alt","DigiKey SMDJ100A"),
+"C15127":(0.0589,0.0589,10,"live","LCSC 10+"),
+"C20526":(0.0127,0.0127,50,"live","JLC/LCSC 50+"),
+"C75549":(0.0577,0.0577,10,"live","LCSC 10+"),
+"C2500":(0.0211,0.0211,20,"live","LCSC 20+"),
+"C5204901":(0.0276,0.0276,20,"live","LCSC 20+"),
+"C65001":(0.0469,0.0469,20,"alt","LCSC MDD SS3200 SMA 100+ tier"),
+"C2286":(0.0073,0.0073,1,"live","JLC 1+"),
+"C193402":(0.0276,0.0276,20,"live","LCSC 20+"),
+"C15771":(0.0721,0.0721,10,"live","LCSC 10+"),
+"C15879":(0.1747,0.1747,5,"live","LCSC 5+"),
+"C7519":(0.164,0.164,5,"live","LCSC 5+"),
+"C95352":(2.37,1.966,1,"alt","DigiKey 0443001.DR"),
+"C21325":(0.2231,0.2212,5,"live","JLC 1+ / LCSC 5+"),
+"C391305":(0.1631,0.1091,5,"live","JLC 1+ / LCSC 5+"),
+"C76584":(0.3571,0.3571,2,"live","LCSC 2+"),
+"C1017":(0.0127,0.0127,1,"live","JLC 1+"),
+"C3221844":(0.10,0.10,1,"est","no LCSC price; Arrow ~$0.065"),
+"C115962":(0.1959,0.1959,1,"live","JLC 1+"),
+"C32346":(0.1734,0.1734,5,"live","LCSC 5+"),
+"C7588012":(0.21,0.21,1,"est","design log $0.21@500"),
+"C144394":(0.0546,0.0546,10,"live","LCSC 10+"),
+"C53207808":(0.181,0.181,1,"est","design log $0.181"),
+"C53133524":(0.05,0.05,1,"est","similar IPEX1 parts from $0.04"),
+"C496569":(0.6006,0.4959,1,"live","JLC 1+"),
+"C784386":(2.06,2.06,1,"est","unverified JLC ~$2.06"),
+"C5449052":(0.08,0.08,10,"est","no price found"),
+"C84494":(0.4878,0.3811,1,"live","LCSC C84494"),
+"C109040":(0.1052,0.1052,5,"live","LCSC 5+"),
+"C55348540":(0.15,0.15,5,"est","FRS2512 family $0.105-0.20"),
+"C17912":(0.0046,0.0046,100,"est","unverified $0.0046"),
+"C228935":(0.0109,0.0109,100,"est","unverified $0.0109"),
+"C23733":(0.0348,0.0348,20,"alt","0805 4.7uF C1779 20+ (C23733 is 0402)"),
+"C15849":(0.0275,0.0275,50,"live","LCSC 50+"),
+"C14663":(0.0031,0.0031,100,"live","LCSC 100+"),
+"C17414":(0.0025,0.0025,100,"live","LCSC 100+"),
+"C1653":(0.0041,0.0041,100,"alt","LCSC C1653 100+ (it is 22pF)"),
+"BATTERY":(339/96,339/96,1,"live","probots.co.in Rs 339 incl GST, no NTC/JST"),
+}
+R0805=(0.0025,0.0025,100,"est","as 0805 1% resistor C17414")
+C0603=(0.0041,0.0041,100,"est","as small 0603/0402 MLCC")
+SPECIAL={("100nF","0603","VIN"):(0.03,0.03,20,"est","100V X7R 0805/1206 estimate"),
+         ("68R","1210"):(0.01,0.01,100,"est","1210 resistor estimate"),
+         ("1R 2512 anti-surge","2512"):PR["C55348540"]}
+def price_for(l):
+    key=(l["part"],l["pkg"])
+    if l["mpn"].startswith("100 nF") or l["spec"].startswith("100 nF ≥100 V"): return SPECIAL[("100nF","0603","VIN")]
+    if key in SPECIAL: return SPECIAL[key]
+    if l["refs"]=="BT1": return PR["BATTERY"]
+    m=re.match(r'(C\d+)',l["lcsc"])
+    if m and m.group(1) in PR and not l["lcsc"].endswith("(wrong value)") and not l["lcsc"].endswith("(wrong size)"):
+        return PR[m.group(1)]
+    if l["cat"].startswith("8"): return R0805
+    if l["cat"].startswith("7"): return C0603
+    raise SystemExit("no price for "+str(key))
+
+pe=wb.create_sheet("Price estimate",1)
+pe["A1"]="Estimated cost for 1 and 5 boards (LCSC / JLCPCB small-quantity prices)"; pe["A1"].font=f(bold=True,size=14)
+pe["A2"]="Prices collected 2026-10-02. 'Parts value' = qty used × unit price. 'Order cost' includes LCSC minimum order quantities (MOQ), which is what you actually pay. Shipping, customs duty and GST are NOT included."; pe["A2"].font=f(italic=True,size=9)
+pe["A3"]="USD → INR"; pe["A3"].font=f(bold=True); pe["C3"]=96; pe["C3"].font=f(color="0000FF",bold=True); pe["C3"].fill=YEL
+pe["D3"]="Interbank rate ~₹95.9 on 1-Oct-2026 (apacnewsnetwork.com). Edit if needed."; pe["D3"].font=f(size=9,italic=True)
+PH=["#","Part","Refs","Qty / board","Unit $ @1","Unit $ @10","MOQ","Price status","Source",
+    "1 board: buy qty","1 board: unit $","1 board parts value ₹","1 board order cost ₹",
+    "5 boards: need","5 boards: buy qty","5 boards: unit $","5 boards parts value ₹","5 boards order cost ₹"]
+PHR=6
+for j,h in enumerate(PH,1):
+    c=pe.cell(PHR,j,h); c.font=f(bold=True,color="FFFFFF"); c.fill=HDR; c.alignment=Alignment(wrap_text=True,vertical="center",horizontal="center"); c.border=BOX
+for j,w in enumerate([4,26,22,7,9,9,6,9,30,8,9,11,11,8,8,9,11,11],1): pe.column_dimensions[get_column_letter(j)].width=w
+pe.row_dimensions[PHR].height=44
+EST=PatternFill("solid",fgColor="FCE4D6")
+rr=PHR+1; pstart=rr; prow={}
+for i,l in enumerate(lines,1):
+    p1,p10,moq,st,src=price_for(l)
+    nm=l["part"] if l["cat"][0] not in "78" else f'{l["part"]} {l["pkg"]}'
+    vals=[i,nm,l["refs"],l["qty"],round(p1,4),round(p10,4),moq,st,src]
+    for j,v in enumerate(vals,1): pe.cell(rr,j,v)
+    pe.cell(rr,10,f"=MAX(D{rr},G{rr})")
+    pe.cell(rr,11,f"=E{rr}")
+    pe.cell(rr,12,f"=D{rr}*K{rr}*$C$3")
+    pe.cell(rr,13,f"=J{rr}*K{rr}*$C$3")
+    pe.cell(rr,14,f"=D{rr}*5")
+    pe.cell(rr,15,f"=MAX(N{rr},G{rr})")
+    pe.cell(rr,16,f"=IF(O{rr}>=10,F{rr},E{rr})")
+    pe.cell(rr,17,f"=N{rr}*P{rr}*$C$3")
+    pe.cell(rr,18,f"=O{rr}*P{rr}*$C$3")
+    for j in range(1,19):
+        c=pe.cell(rr,j); c.border=BOX; c.font=f(color=("0000FF" if j in(5,6,7) else None)); c.alignment=Alignment(vertical="top",wrap_text=(j in(2,3,9)))
+    for j,fmt in ((5,'$0.0000'),(6,'$0.0000'),(11,'$0.0000'),(16,'$0.0000'),(12,'₹#,##0.00'),(13,'₹#,##0.00'),(17,'₹#,##0.00'),(18,'₹#,##0.00')):
+        pe.cell(rr,j).number_format=fmt
+    if st!="live":
+        pe.cell(rr,8).fill=EST
+    prow[i]=rr; rr+=1
+pend=rr-1
+rr+=1
+tot=rr
+pe.cell(tot,2,"TOTAL").font=f(bold=True,size=12)
+for col in "LMQR":
+    c=pe[f"{col}{tot}"]; c.value=f"=SUM({col}{pstart}:{col}{pend})"; c.number_format='₹#,##0'; c.font=f(bold=True,size=12)
+pe.cell(tot+1,2,"Per board").font=f(bold=True)
+for col,div in (("L",1),("M",1),("Q",5),("R",5)):
+    c=pe[f"{col}{tot+1}"]; c.value=f"={col}{tot}/{div}"; c.number_format='₹#,##0'; c.font=f(bold=True)
+pe.cell(tot+2,2,"Lines that are estimates or from another source").font=f(size=9)
+pe.cell(tot+2,4,f'=COUNTIF(H{pstart}:H{pend},"<>live")').font=f(size=9)
+pe.cell(tot+3,2,"Value of estimated lines, 1 board ₹").font=f(size=9)
+c=pe.cell(tot+3,12,f'=SUMIF(H{pstart}:H{pend},"est",L{pstart}:L{pend})'); c.number_format='₹#,##0'; c.font=f(size=9)
+pe.cell(tot+4,1,"Price status: live = LCSC/JLCPCB ladder found · alt = other distributor (DigiKey) or a sibling LCSC number · est = no price found, estimate (orange). Not included: PCB, assembly, enclosure, harness, shipping, customs duty, GST on LCSC imports.").font=f(size=9,italic=True)
+
+# Top expensive (per board), ranked in Python, values pulled by formula
+top=sorted(lines,key=lambda l:-(price_for(l)[0]*l["qty"]))[:15]
+t0=tot+6
+pe.cell(t0,1,"Most expensive parts (per board, 1-board price)").font=f(bold=True,size=12)
+for j,h in enumerate(["Rank","Part","Refs","Qty","Unit $","Cost / board ₹","% of board"],1):
+    c=pe.cell(t0+1,j,h); c.font=f(bold=True,color="FFFFFF"); c.fill=HDR
+for k,l in enumerate(top,1):
+    src=prow[lines.index(l)+1]; r=t0+1+k
+    pe.cell(r,1,k); pe.cell(r,2,f"=B{src}"); pe.cell(r,3,f"=C{src}"); pe.cell(r,4,f"=D{src}")
+    pe.cell(r,5,f"=E{src}").number_format='$0.000'
+    pe.cell(r,6,f"=L{src}").number_format='₹#,##0.00'
+    pe.cell(r,7,f"=L{src}/$L${tot}").number_format='0.0%'
+    for j in range(1,8): pe.cell(r,j).font=f(); pe.cell(r,j).border=BOX
+pe.freeze_panes=pe.cell(PHR+1,3)
 
 from openpyxl.workbook.properties import CalcProperties
 wb.calculation=CalcProperties(fullCalcOnLoad=True)
